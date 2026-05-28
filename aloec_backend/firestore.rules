@@ -1,0 +1,57 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: verifica si el usuario está autenticado
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper: verifica si el usuario accede a sus propios datos
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Helper: verifica si el usuario tiene rol de administrador
+    // Nota: Esto asume una lectura rápida al documento del usuario en la colección 'users'
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Regla para la colección 'users'
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated(); // Permitir registro inicial
+      allow update, delete: if isOwner(userId) || isAdmin();
+    }
+
+    // Regla para la colección 'imc_records'
+    match /imc_records/{recordId} {
+      allow read, write: if isAuthenticated() && (resource == null || resource.data.userUid == request.auth.uid || request.resource.data.userUid == request.auth.uid || isAdmin());
+    }
+
+    // Regla para la colección 'juices'
+    match /juices/{juiceId} {
+      allow read: if isAuthenticated(); // Todos los usuarios registrados pueden ver las recetas
+      allow write: if isAdmin(); // Solo administradores pueden agregar/editar recetas
+    }
+
+    // Regla para la colección 'diet_plans'
+    match /diet_plans/{planId} {
+      allow read: if isAuthenticated(); // Todos los usuarios registrados pueden ver los planes
+      allow write: if isAdmin(); // Solo administradores pueden gestionar los planes
+    }
+
+    // Regla para la colección 'user_schedules'
+    match /user_schedules/{scheduleId} {
+      allow read, write: if isAuthenticated() && (resource == null || resource.data.userUid == request.auth.uid || request.resource.data.userUid == request.auth.uid || isAdmin());
+    }
+
+    // Regla para la colección 'videocourses'
+    match /videocourses/{courseId} {
+      allow read: if isAuthenticated(); // Todos los usuarios pueden ver el catálogo de videos
+      allow write: if isAdmin(); // Solo administradores pueden subir o gestionar videos
+    }
+  }
+}
