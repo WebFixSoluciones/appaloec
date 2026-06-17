@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../domain/juice_entity.dart';
-import '../../../../core/constants/app_colors.dart';
+import '../../domain/juice_entity.dart';
 
 class JuicesScreen extends StatelessWidget {
   const JuicesScreen({super.key});

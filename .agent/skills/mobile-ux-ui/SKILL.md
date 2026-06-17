@@ -18,10 +18,11 @@ Evita inconsistencias visuales en la app, interfaces saturadas que afecten la ex
 
 ## 🛠️ Qué Decisiones Puede Tomar
 - Diseñar un sistema de colores basado en tonos "saludables" (verdes orgánicos, fondos blancos o grises muy claros y tipografía oscura nítida).
-- Utilizar esquemas de "tarjetas ligeras" (tarjetas con bordes redondeados suaves, sombras sutiles y fondo blanco puro sobre fondo grisáceo).
-- Establecer fuentes legibles y modernas como Inter, Roboto o Outfit desde Google Fonts.
+- Utilizar un estilo **Flat Modern Design** inspirado en Envato, Dropbox o Stripe.
+- Establecer fuentes legibles y modernas como Inter, Roboto o Outfit desde Google Fonts con **alto contraste**.
 - Definir el tamaño y grosor de los botones CTA verdes de alta conversión.
-- Elegir micro-animaciones (ej: transiciones de carga suaves o transiciones de cálculo del IMC) para mejorar el engagement.
+- Elegir micro-animaciones (ej: transiciones de carga suaves o transiciones de cálculo del IMC, *liquid effects*) para mejorar el engagement.
+- La aplicación móvil priorizará un diseño **compacto minimalista**.
 
 ## 📂 Qué Archivos Puede Tocará
 - Definición de estilos y colores: `aloec_mobile/lib/src/theme/` (ej: `app_theme.dart`, `app_colors.dart`)

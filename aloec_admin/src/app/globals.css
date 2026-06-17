@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-background text-ink-900 antialiased;
+  }
+}
+
+@layer components {
+  /* Flat Minimal Containers (Dropbox style) */
+  .premium-card {
+    @apply bg-white border border-ink-200;
+  }
+  
+  /* Buttons */
+  .btn-primary {
+    @apply w-full py-4 bg-primary-500 hover:bg-primary-600 text-white font-bold rounded-none transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2;
+  }
+
+  .btn-primary-sm {
+    @apply px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white font-bold rounded-none transition-colors duration-200;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 bg-white hover:bg-ink-50 text-ink-900 font-bold rounded-none border border-ink-200 transition-colors duration-200;
+  }
+
+  /* Form Elements */
+  .form-input {
+    @apply w-full p-4 bg-white border border-ink-300 rounded-none outline-none focus:ring-0 focus:border-ink-900 transition-colors text-ink-900;
+  }
+
+  .form-label {
+    @apply block text-sm font-bold text-ink-900 mb-2;
+  }
+
+  /* Layout */
+  .page-container {
+    @apply p-8 max-w-7xl mx-auto;
+  }
+
+  .page-header {
+    @apply flex justify-between items-center mb-8;
+  }
+
+  .page-title {
+    @apply text-3xl font-bold text-ink-900 tracking-tight;
+  }
+
+  .empty-state {
+    @apply bg-white border border-ink-200 p-12 flex flex-col items-center justify-center text-center;
+  }
+}
+

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,6 +13,14 @@ void main() async {
     await Firebase.initializeApp();
   } catch (e) {
     debugPrint('Firebase not configured yet: $e');
+  }
+
+  // Initialize Local Notification Service for protocol reminders
+  try {
+    await NotificationService().initialize();
+    debugPrint('✅ NotificationService initialized');
+  } catch (e) {
+    debugPrint('⚠️ NotificationService init failed: $e');
   }
 
   runApp(

@@ -132,5 +132,19 @@ service cloud.firestore {
     match /grocery_lists/{listId} {
       allow read, write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || request.resource.data.userId == request.auth.uid || isAdmin());
     }
+
+    // Protocolos Médicos por IMC (colección gestionada desde el panel admin)
+    // Los usuarios autenticados pueden LEER para que la app muestre el protocolo sugerido.
+    // Solo los administradores pueden ESCRIBIR (crear, editar, eliminar).
+    match /diet_protocols/{protocolId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Protocolo activo del usuario (el protocolo que el usuario ha "activado")
+    // Solo el dueño o un admin puede leer/escribir su protocolo activo.
+    match /user_active_protocols/{docId} {
+      allow read, write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || request.resource.data.userId == request.auth.uid || isAdmin());
+    }
   }
 }

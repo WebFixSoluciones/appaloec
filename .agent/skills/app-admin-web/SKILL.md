@@ -22,7 +22,8 @@ Facilita la administración centralizada de la aplicación móvil (subida de nue
 - Utilizar **Next.js App Router** con componentes React de servidor (Server Components) por defecto para mayor rendimiento y SEO.
 - Usar **TypeScript** para garantizar seguridad de tipos alineada con los esquemas de `shared-context.md`.
 - Implementar el diseño visual bilingüe usando middleware de localización como `next-intl` o enrutamiento dinámico `/es/admin` / `/en/admin`.
-- Seguir el lineamiento visual: diseño limpio, saludable, minimalista, tarjetas ligeras y botones verdes (`#2e7d32` o verdes similares de alta conversión).
+- **UI/UX Premium:** Priorizar **Tailwind CSS v3** con un estilo **Flat Modern Design** inspirado en páginas como Envato, Dropbox y Stripe.
+- **Estética:** Uso homogéneo de colores, diseño compacto minimalista, tipografías de alto contraste, "liquid effects", contenedores y sidebar de primera calidad, e iconos especializados premium (ej. Lucide). El administrador operará en **solo modo light** (no aplicar modo oscuro).
 - Configurar variables de entorno estrictas (`.env.local` / Vercel Environment Variables) para llaves públicas/privadas de Firebase.
 
 ## 📂 Qué Archivos Puede Tocará
@@ -30,11 +31,11 @@ Facilita la administración centralizada de la aplicación móvil (subida de nue
 - Estructura de páginas y rutas: dentro de `aloec_admin/src/app/`
 - Middleware de control de sesión y traducción: `aloec_admin/src/middleware.ts`
 - Inicialización y configuración de Firebase en el cliente/servidor: `aloec_admin/src/lib/firebase/`
-- Hojas de estilos del diseño premium: `aloec_admin/src/app/globals.css` y archivos CSS modulares.
+- Configuración de Tailwind y hojas de estilos: `aloec_admin/tailwind.config.ts`, `aloec_admin/postcss.config.js` y `aloec_admin/src/app/globals.css`.
 
 ## 📦 Qué Entregables Debe Producir
-- Boilerplate de Next.js configurado con TypeScript, Tailwind o CSS nativo (priorizando Vanilla CSS según lineamientos globales).
-- Dashboard principal con métricas de usuarios registrados, promedio de IMC calculado y conteo de recetas activas.
+- Boilerplate de Next.js configurado con TypeScript y Tailwind CSS v3.
+- Dashboard principal con métricas de usuarios registrados, promedio de IMC calculado y conteo de recetas activas. Diseño premium impecable.
 - Formularios CRUD bilingües con validación de datos para la creación de Recetas (Jugos) e inclusión de videos promocionales.
 - Configuración lista para despliegue automático en Vercel (`vercel.json` o settings de CI/CD).
 

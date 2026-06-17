@@ -33,6 +33,7 @@ dependencies:
   firebase_crashlytics: ^5.2.2
   google_sign_in: ^6.2.1
   flutter_facebook_auth: ^6.1.0
+  flutter_local_notifications: ^17.2.1
 
   # Multimedia y Componentes
   cached_video_player: ^2.0.4
