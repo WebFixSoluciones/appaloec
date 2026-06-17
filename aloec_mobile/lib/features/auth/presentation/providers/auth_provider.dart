@@ -43,7 +43,24 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = AuthState.loading();
     try {
       await _authRepository.signInWithEmail(email, password);
-      // state will be updated by the stream listener
+    } catch (e) {
+      state = AuthState.error(e.toString());
+    }
+  }
+
+  Future<void> signInWithGoogle() async {
+    state = AuthState.loading();
+    try {
+      await _authRepository.signInWithGoogle();
+    } catch (e) {
+      state = AuthState.error(e.toString());
+    }
+  }
+
+  Future<void> signInWithFacebook() async {
+    state = AuthState.loading();
+    try {
+      await _authRepository.signInWithFacebook();
     } catch (e) {
       state = AuthState.error(e.toString());
     }

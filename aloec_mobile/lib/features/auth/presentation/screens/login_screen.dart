@@ -97,12 +97,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   children: [
                     IconButton(
                       icon: const Icon(Icons.g_mobiledata, size: 40, color: Colors.blue),
-                      onPressed: () {},
+                      onPressed: () {
+                        ref.read(authNotifierProvider.notifier).signInWithGoogle();
+                      },
                     ),
                     const SizedBox(width: 16),
                     IconButton(
                       icon: const Icon(Icons.facebook, size: 36, color: Colors.blueAccent),
-                      onPressed: () {},
+                      onPressed: () {
+                        ref.read(authNotifierProvider.notifier).signInWithFacebook();
+                      },
                     ),
                   ],
                 ),
