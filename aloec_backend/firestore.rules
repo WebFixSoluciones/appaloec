@@ -13,7 +13,6 @@ service cloud.firestore {
     }
 
     // Helper: verifica si el usuario tiene rol de administrador
-    // Nota: Esto asume una lectura rápida al documento del usuario en la colección 'users'
     function isAdmin() {
       return isAuthenticated() && 
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
@@ -23,7 +22,8 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated(); // Permitir registro inicial
-      allow update, delete: if isOwner(userId) || isAdmin();
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
     }
 
     // Regla para la colección 'imc_records'
@@ -31,7 +31,7 @@ service cloud.firestore {
       allow read, write: if isAuthenticated() && (resource == null || resource.data.userUid == request.auth.uid || request.resource.data.userUid == request.auth.uid || isAdmin());
     }
 
-    // Regla para la colección 'juices'
+    // Regla para la colección 'juices' (recetas)
     match /juices/{juiceId} {
       allow read: if isAuthenticated(); // Todos los usuarios registrados pueden ver las recetas
       allow write: if isAdmin(); // Solo administradores pueden agregar/editar recetas
@@ -48,10 +48,89 @@ service cloud.firestore {
       allow read, write: if isAuthenticated() && (resource == null || resource.data.userUid == request.auth.uid || request.resource.data.userUid == request.auth.uid || isAdmin());
     }
 
-    // Regla para la colección 'videocourses'
+    // Regla para la colección 'videocourses' / 'courses'
     match /videocourses/{courseId} {
-      allow read: if isAuthenticated(); // Todos los usuarios pueden ver el catálogo de videos
-      allow write: if isAdmin(); // Solo administradores pueden subir o gestionar videos
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    match /courses/{courseId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Regla para la colección 'lessons'
+    match /lessons/{lessonId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Regla para la colección 'memberships'
+    match /memberships/{membershipId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Regla para la colección 'gateways' (CRÍTICO: Solo admin lee y escribe)
+    match /gateways/{gatewayId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Regla para la colección 'orders' (facturas y compras)
+    match /orders/{orderId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    // Regla para la colección 'marketing_banners'
+    match /marketing_banners/{bannerId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Regla para la colección 'user_progress'
+    match /user_progress/{progressId} {
+      allow read, write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || request.resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // Regla para la colección 'audit_logs' (Bitácora inmutable)
+    match /audit_logs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated(); // Permitir loggear acciones desde el cliente
+      allow update, delete: if false; // Nadie puede editar o borrar logs de auditoría
+    }
+
+    // Regla para la colección 'system_settings'
+    match /system_settings/{settingId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // --- Soporte a Módulos Futuros y Gamificación ---
+    
+    // Streaks de hábitos
+    match /gamification_streaks/{streakId} {
+      allow read, write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || request.resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // Logros desbloqueados
+    match /user_achievements/{achievementId} {
+      allow read, write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || request.resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // Diario de consumo de jugos
+    match /juicing_journal/{journalId} {
+      allow read, write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || request.resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // Preferencias y objetivos de salud
+    match /personalized_goals/{goalId} {
+      allow read, write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || request.resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // Lista de compras
+    match /grocery_lists/{listId} {
+      allow read, write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || request.resource.data.userId == request.auth.uid || isAdmin());
     }
   }
 }

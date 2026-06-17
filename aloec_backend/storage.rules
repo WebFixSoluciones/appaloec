@@ -31,8 +31,20 @@ service firebase.storage {
       allow write: if isAdmin();
     }
 
-    // Videos de cursos promocionales (solo admins escriben y borran, usuarios leen)
-    match /videocourses/{allPaths=**} {
+    // Catálogo de cursos (miniatuas, portadas)
+    match /courses/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Videos de lecciones del curso
+    match /lessons_videos/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Banners promocionales y de marketing
+    match /marketing_banners/{allPaths=**} {
       allow read: if isAuthenticated();
       allow write: if isAdmin();
     }
