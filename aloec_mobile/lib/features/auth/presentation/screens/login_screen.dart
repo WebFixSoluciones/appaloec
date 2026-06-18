@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
 import '../../../../core/widgets/aloec_button.dart';
 import '../../../../core/widgets/aloec_text_field.dart';
+import '../../../../core/widgets/aloec_logo.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -15,6 +16,39 @@ class LoginScreen extends ConsumerStatefulWidget {
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailCtrl.dispose();
+    _passCtrl.dispose();
+    super.dispose();
+  }
+
+  void _signIn() {
+    final email = _emailCtrl.text.trim();
+    final pass = _passCtrl.text.trim();
+
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ingresa tu correo electrónico')),
+      );
+      return;
+    }
+    if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('El formato del correo no es válido')),
+      );
+      return;
+    }
+    if (pass.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ingresa tu contraseña')),
+      );
+      return;
+    }
+
+    ref.read(authNotifierProvider.notifier).signIn(email, pass);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,16 +73,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Placeholder for Logo
-                const Text(
-                  'ALOEC',
-                  style: TextStyle(
-                    fontSize: 40,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF67B539),
-                    letterSpacing: 2.0,
-                  ),
-                ),
+                const AloecLogo(size: 150),
                 const Text('revitaliza tu vida', style: TextStyle(color: Colors.grey)),
                 const SizedBox(height: 48),
                 const Text(
@@ -80,14 +105,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 const SizedBox(height: 24),
                 AloecButton(
-                  text: 'Acceso',
+                  text: 'Iniciar sesión',
                   isLoading: authState.status == AuthStateStatus.loading,
-                  onPressed: () {
-                    ref.read(authNotifierProvider.notifier).signIn(
-                      _emailCtrl.text,
-                      _passCtrl.text,
-                    );
-                  },
+                  onPressed: _signIn,
                 ),
                 const SizedBox(height: 24),
                 const Text('O', style: TextStyle(color: Colors.grey)),
@@ -113,9 +133,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const SizedBox(height: 24),
                 TextButton(
                   onPressed: () => context.push('/auth/register'),
-                  child: const Text(
-                    '¿Aún no tienes una cuenta? Registro',
-                    style: TextStyle(color: Colors.grey),
+                  child: RichText(
+                    text: const TextSpan(
+                      children: [
+                        TextSpan(
+                          text: '¿Aún no tienes cuenta? ',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                        TextSpan(
+                          text: 'Regístrate aquí',
+                          style: TextStyle(
+                            color: Color(0xFF67B539),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],

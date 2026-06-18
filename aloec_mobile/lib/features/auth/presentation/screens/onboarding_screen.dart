@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/widgets/aloec_button.dart';
+import '../../../../core/widgets/aloec_logo.dart';
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
@@ -17,16 +18,8 @@ class OnboardingScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Spacer(),
-              const Text(
-                'ALOEC',
-                style: TextStyle(
-                  fontSize: 60,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF67B539),
-                  letterSpacing: 2.0,
-                ),
-                textAlign: TextAlign.center,
-              ),
+              const Center(child: AloecLogo(size: 200)),
+              const SizedBox(height: 12),
               const Text(
                 'revitaliza tu vida',
                 style: TextStyle(color: Colors.grey, fontSize: 18),

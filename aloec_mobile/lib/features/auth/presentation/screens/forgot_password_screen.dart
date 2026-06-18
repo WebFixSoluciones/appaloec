@@ -1,15 +1,71 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/widgets/aloec_button.dart';
 import '../../../../core/widgets/aloec_text_field.dart';
+import '../../../../core/widgets/aloec_logo.dart';
+import '../../../../core/errors/auth_error_messages.dart';
 
-class ForgotPasswordScreen extends ConsumerWidget {
+class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final emailCtrl = TextEditingController();
+  ConsumerState<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+}
 
+class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
+  final _emailCtrl = TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _emailCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _sendResetEmail() async {
+    final email = _emailCtrl.text.trim();
+
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ingresa tu correo electrónico')),
+      );
+      return;
+    }
+
+    if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('El formato del correo no es válido')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Correo de recuperación enviado. Revisa tu bandeja de entrada.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      context.pop();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(mapAuthError(e))),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -24,15 +80,7 @@ class ForgotPasswordScreen extends ConsumerWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  'ALOEC',
-                  style: TextStyle(
-                    fontSize: 40,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF67B539),
-                    letterSpacing: 2.0,
-                  ),
-                ),
+                const AloecLogo(size: 150),
                 const Text('revitaliza tu vida', style: TextStyle(color: Colors.grey)),
                 const SizedBox(height: 48),
                 const Text(
@@ -48,17 +96,16 @@ class ForgotPasswordScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 32),
                 AloecTextField(
-                  controller: emailCtrl,
+                  controller: _emailCtrl,
                   hintText: 'Correo electrónico',
                   prefixIcon: Icons.email_outlined,
                   keyboardType: TextInputType.emailAddress,
                 ),
                 const SizedBox(height: 32),
                 AloecButton(
-                  text: 'Entregar',
-                  onPressed: () {
-                    // Implement password reset
-                  },
+                  text: 'Enviar correo de recuperación',
+                  isLoading: _isLoading,
+                  onPressed: _sendResetEmail,
                 ),
               ],
             ),

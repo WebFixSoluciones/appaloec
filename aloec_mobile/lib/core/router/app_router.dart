@@ -88,8 +88,8 @@ final goRouter = GoRouter(
       path: '/protocol-detail',
       builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>?;
-        final protocol =
-            extra?['protocol'] as ProtocolModel? ?? AloecProtocols.overweight;
+        final protocol = extra?['protocol'] as ProtocolModel?;
+        if (protocol == null) return const Scaffold(body: Center(child: Text('Protocolo no disponible')));
         return ProtocolDetailScreen(protocol: protocol);
       },
     ),

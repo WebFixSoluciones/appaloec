@@ -31,10 +31,17 @@ service cloud.firestore {
       allow read, write: if isAuthenticated() && (resource == null || resource.data.userUid == request.auth.uid || request.resource.data.userUid == request.auth.uid || isAdmin());
     }
 
+    // DEPRECATED: migrar a 'recipes'
     // Regla para la colección 'juices' (recetas)
     match /juices/{juiceId} {
-      allow read: if isAuthenticated(); // Todos los usuarios registrados pueden ver las recetas
-      allow write: if isAdmin(); // Solo administradores pueden agregar/editar recetas
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Regla para la colección 'recipes' (reemplaza 'juices')
+    match /recipes/{recipeId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
     }
 
     // Regla para la colección 'diet_plans'
@@ -102,6 +109,12 @@ service cloud.firestore {
 
     // Regla para la colección 'system_settings'
     match /system_settings/{settingId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Regla para la colección 'app_config'
+    match /app_config/{configId} {
       allow read: if isAuthenticated();
       allow write: if isAdmin();
     }

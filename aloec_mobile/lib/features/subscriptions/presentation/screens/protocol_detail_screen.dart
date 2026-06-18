@@ -110,15 +110,8 @@ class _ProtocolDetailScreenState extends State<ProtocolDetailScreen>
   @override
   Widget build(BuildContext context) {
     final protocol = widget.protocol;
-    final categoryColor = Color(AloecProtocols.getCategoryColorValue(
-      protocol.category == BmiCategory.underweight
-          ? 17.0
-          : protocol.category == BmiCategory.overweight
-              ? 27.0
-              : protocol.category == BmiCategory.obesity1
-                  ? 32.0
-                  : 38.0,
-    ));
+    final bmiEstimate = protocol.bmiMin ?? (protocol.bmiMax != null ? protocol.bmiMax! - 1 : 22.0);
+    final categoryColor = Color(ProtocolModel.getCategoryColorValue(bmiEstimate));
 
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,

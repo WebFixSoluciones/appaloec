@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
 import '../../../../core/widgets/aloec_button.dart';
 import '../../../../core/widgets/aloec_text_field.dart';
+import '../../../../core/widgets/aloec_logo.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -18,6 +19,67 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   bool _acceptedTerms = false;
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _phoneCtrl.dispose();
+    _emailCtrl.dispose();
+    _passCtrl.dispose();
+    super.dispose();
+  }
+
+  void _register() {
+    final name = _nameCtrl.text.trim();
+    final email = _emailCtrl.text.trim();
+    final pass = _passCtrl.text.trim();
+
+    final phone = _phoneCtrl.text.trim();
+
+    if (name.isEmpty) {
+      _showError('Ingresa tu nombre completo.');
+      return;
+    }
+    if (name.trim().split(' ').length < 2) {
+      _showError('Ingresa tu nombre y apellido.');
+      return;
+    }
+    if (phone.isNotEmpty &&
+        !RegExp(r'^\+?[0-9]{7,15}$').hasMatch(phone.replaceAll(' ', ''))) {
+      _showError('El número de teléfono no es válido.');
+      return;
+    }
+    if (email.isEmpty) {
+      _showError('Ingresa tu correo electrónico.');
+      return;
+    }
+    if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email)) {
+      _showError('El formato del correo no es válido.');
+      return;
+    }
+    if (pass.isEmpty) {
+      _showError('Ingresa una contraseña.');
+      return;
+    }
+    if (pass.length < 6) {
+      _showError('La contraseña debe tener al menos 6 caracteres.');
+      return;
+    }
+    if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d).+$').hasMatch(pass)) {
+      _showError('La contraseña debe contener letras y números.');
+      return;
+    }
+    if (!_acceptedTerms) {
+      _showError('Debes aceptar los términos y condiciones.');
+      return;
+    }
+
+    ref.read(authNotifierProvider.notifier).register(email, pass, name);
+  }
+
+  void _showError(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +109,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                const Center(child: AloecLogo(size: 130)),
+                const SizedBox(height: 16),
                 const Text(
                   'Hola,\nCrea una cuenta',
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -101,17 +165,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
                 const SizedBox(height: 24),
                 AloecButton(
-                  text: 'Registro',
+                  text: 'Crear cuenta',
                   isLoading: authState.status == AuthStateStatus.loading,
-                  onPressed: _acceptedTerms
-                      ? () {
-                          ref.read(authNotifierProvider.notifier).register(
-                            _emailCtrl.text,
-                            _passCtrl.text,
-                            _nameCtrl.text,
-                          );
-                        }
-                      : () {},
+                  onPressed: _register,
                 ),
                 const SizedBox(height: 24),
                 const Text('O', style: TextStyle(color: Colors.grey)),
@@ -121,21 +177,38 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   children: [
                     IconButton(
                       icon: const Icon(Icons.g_mobiledata, size: 40, color: Colors.blue),
-                      onPressed: () {},
+                      onPressed: () {
+                        ref.read(authNotifierProvider.notifier).signInWithGoogle();
+                      },
                     ),
                     const SizedBox(width: 16),
                     IconButton(
                       icon: const Icon(Icons.facebook, size: 36, color: Colors.blueAccent),
-                      onPressed: () {},
+                      onPressed: () {
+                        ref.read(authNotifierProvider.notifier).signInWithFacebook();
+                      },
                     ),
                   ],
                 ),
                 const SizedBox(height: 24),
                 TextButton(
                   onPressed: () => context.pop(),
-                  child: const Text(
-                    '¿Ya tienes una cuenta? Acceso',
-                    style: TextStyle(color: Colors.grey),
+                  child: RichText(
+                    text: const TextSpan(
+                      children: [
+                        TextSpan(
+                          text: '¿Ya tienes una cuenta? ',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                        TextSpan(
+                          text: 'Iniciar sesión',
+                          style: TextStyle(
+                            color: Color(0xFF67B539),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],

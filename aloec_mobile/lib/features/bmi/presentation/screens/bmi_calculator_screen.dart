@@ -60,8 +60,8 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
 
     setState(() {
       _bmi = calculatedBmi;
-      _statusLabel = AloecProtocols.getCategoryLabel(calculatedBmi);
-      _statusColor = AloecProtocols.getCategoryColorValue(calculatedBmi);
+      _statusLabel = ProtocolModel.getCategoryLabel(calculatedBmi);
+      _statusColor = ProtocolModel.getCategoryColorValue(calculatedBmi);
     });
   }
 
@@ -98,11 +98,9 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
         },
         onViewProtocol: () {
           context.pop();
-          final protocol = AloecProtocols.fromBmi(_bmi!);
           context.push('/bmi-result', extra: {
             'bmi': _bmi,
             'status': _statusLabel,
-            'protocol': protocol,
           });
         },
       ),
@@ -207,9 +205,6 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
                 hintText: _isMetric ? 'Edad (años)' : 'Age (years)',
                 prefixIcon: Icons.cake_outlined,
                 keyboardType: TextInputType.number,
-                validator: (v) => (v == null || v.trim().isEmpty)
-                    ? 'Ingresa tu edad'
-                    : null,
               ),
               const SizedBox(height: 14),
               AloecTextField(
@@ -218,9 +213,6 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
                 prefixIcon: Icons.height,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
-                validator: (v) => (v == null || v.trim().isEmpty)
-                    ? 'Ingresa tu altura'
-                    : null,
               ),
               const SizedBox(height: 14),
               AloecTextField(
@@ -229,9 +221,6 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
                 prefixIcon: Icons.monitor_weight_outlined,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
-                validator: (v) => (v == null || v.trim().isEmpty)
-                    ? 'Ingresa tu peso'
-                    : null,
               ),
               const SizedBox(height: 28),
 
@@ -466,7 +455,8 @@ class _PremiumProtocolModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final protocol = AloecProtocols.fromBmi(bmi);
+    final protocolTitle = 'Protocolo ${ProtocolModel.getCategoryLabel(bmi)}';
+    final protocolSubtitle = 'IMC ${bmi.toStringAsFixed(1)} – ${statusLabel}';
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -509,13 +499,13 @@ class _PremiumProtocolModal extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            protocol.title,
+            protocolTitle,
             style: const TextStyle(
                 fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark),
             textAlign: TextAlign.center,
           ),
           Text(
-            protocol.subtitle,
+            protocolSubtitle,
             style: TextStyle(fontSize: 13, color: AppColors.textLight),
           ),
           const SizedBox(height: 20),

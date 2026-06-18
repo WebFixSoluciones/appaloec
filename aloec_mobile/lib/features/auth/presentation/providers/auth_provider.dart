@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/errors/auth_error_messages.dart';
 import '../../data/firebase_auth_repository.dart';
 import '../../domain/auth_repository.dart';
 
@@ -44,7 +45,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       await _authRepository.signInWithEmail(email, password);
     } catch (e) {
-      state = AuthState.error(e.toString());
+      state = AuthState.error(mapAuthError(e));
     }
   }
 
@@ -53,7 +54,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       await _authRepository.signInWithGoogle();
     } catch (e) {
-      state = AuthState.error(e.toString());
+      state = AuthState.error(mapAuthError(e));
     }
   }
 
@@ -62,7 +63,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       await _authRepository.signInWithFacebook();
     } catch (e) {
-      state = AuthState.error(e.toString());
+      state = AuthState.error(mapAuthError(e));
     }
   }
 
@@ -71,7 +72,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       await _authRepository.registerWithEmail(email, password, name);
     } catch (e) {
-      state = AuthState.error(e.toString());
+      state = AuthState.error(mapAuthError(e));
     }
   }
 

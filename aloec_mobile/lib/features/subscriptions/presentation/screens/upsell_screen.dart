@@ -152,7 +152,7 @@ class _UpsellScreenState extends State<UpsellScreen>
                       icon: '🥤',
                       title: 'Recetas Exclusivas de Jugos Verdes',
                       description:
-                          'Más de 50 recetas de jugos verdes categorized for all protocols, each with benefits and step-by-step preparation.',
+                          'Más de 50 recetas de jugos verdes clasificadas por protocolo, con beneficios y preparación paso a paso.',
                       color: const Color(0xFF00838F),
                     ),
                     _FeatureCard(
