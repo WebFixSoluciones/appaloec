@@ -3,6 +3,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import '../domain/auth_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/services/email_queue_service.dart';
 
 final firebaseAuthProvider = Provider<FirebaseAuth>((ref) => FirebaseAuth.instance);
 
@@ -29,6 +30,16 @@ class FirebaseAuthRepository implements AuthRepository {
     UserCredential credential = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email, password: password);
     await credential.user?.updateDisplayName(name);
+
+    // Encolar email de bienvenida
+    try {
+      await EmailQueueService().enqueueWelcomeEmail(
+        toEmail: email,
+        userName: name,
+      );
+    } catch (_) {
+      // No bloquear el registro si falla el enqueue
+    }
   }
 
   @override
@@ -67,8 +78,8 @@ class FirebaseAuthRepository implements AuthRepository {
 
   @override
   Future<void> signOut() async {
-    await GoogleSignIn().signOut();
-    await FacebookAuth.instance.logOut();
+    try { await GoogleSignIn().signOut(); } catch (_) {}
+    try { await FacebookAuth.instance.logOut(); } catch (_) {}
     await _firebaseAuth.signOut();
   }
 

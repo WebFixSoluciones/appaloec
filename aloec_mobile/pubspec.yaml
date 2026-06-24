@@ -2,7 +2,7 @@ name: aloec_mobile
 description: "ALOEC - Aplicación Móvil de Dieta de Jugos Verdes, Planes e IMC"
 publish_to: 'none'
 
-version: 1.0.0+1 # v01
+version: 1.2.0+3 # v03
 
 environment:
   sdk: '>=3.2.0 <4.0.0'

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/constants/app_colors.dart';
 
 class JuiceScheduleScreen extends StatefulWidget {
@@ -11,12 +13,31 @@ class JuiceScheduleScreen extends StatefulWidget {
 class _JuiceScheduleScreenState extends State<JuiceScheduleScreen> {
   late DateTime _selectedDate;
   late List<DateTime> _weekDays;
+  bool _hasActiveProtocol = false;
+  bool _checkedProtocol = false;
 
   @override
   void initState() {
     super.initState();
     _selectedDate = DateTime.now();
     _weekDays = _buildWeekDays(_selectedDate);
+    _checkActiveProtocol();
+  }
+
+  Future<void> _checkActiveProtocol() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .get();
+
+    if (!mounted) return;
+    setState(() {
+      _hasActiveProtocol = doc.exists && doc.data()?['activeProtocolId'] != null;
+      _checkedProtocol = true;
+    });
   }
 
   List<DateTime> _buildWeekDays(DateTime reference) {
@@ -86,72 +107,134 @@ class _JuiceScheduleScreenState extends State<JuiceScheduleScreen> {
             ),
             const SizedBox(height: 32),
 
-            // Indicador si no hay plan asignado
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: AppColors.primaryGreen.withOpacity(0.07),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                    color: AppColors.primaryGreen.withOpacity(0.2)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.info_outline,
-                      color: AppColors.primaryGreen, size: 18),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Activa un protocolo para ver tu agenda diaria personalizada.',
-                      style: TextStyle(
-                          fontSize: 13,
-                          color: AppColors.textLight,
-                          height: 1.4),
+            // Empty state cuando no hay protocolo activo
+            if (_checkedProtocol && !_hasActiveProtocol) ...[
+              const SizedBox(height: 40),
+              Center(
+                child: Column(
+                  children: [
+                    Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryGreen.withOpacity(0.08),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.assignment_outlined,
+                          size: 50, color: AppColors.primaryGreen),
                     ),
-                  ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'No tienes protocolos seleccionados',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textDark,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Calcula tu IMC para recibir un protocolo personalizado con tu agenda diaria de jugos.',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textLight,
+                        height: 1.5,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primaryGreen,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        icon: const Icon(Icons.calculate),
+                        label: const Text('Selecciona uno',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                        onPressed: () {
+                          // Notificar al HomeScreen para cambiar al tab IMC
+                          SelectProtocolNotification().dispatch(context);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ] else ...[
+              // Contenido normal con protocolo activo
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryGreen.withOpacity(0.07),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                      color: AppColors.primaryGreen.withOpacity(0.2)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info_outline,
+                        color: AppColors.primaryGreen, size: 18),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Activa un protocolo para ver tu agenda diaria personalizada.',
+                        style: TextStyle(
+                            fontSize: 13,
+                            color: AppColors.textLight,
+                            height: 1.4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              _MealSection(
+                title: 'Desayuno',
+                calories: '2 tomas · 230 kcal',
+                juices: const [
+                  _JuiceTile(
+                      name: 'Jugo de remolacha',
+                      time: '07:00',
+                      isDone: true),
+                  _JuiceTile(
+                      name: 'Jugo de limón y jengibre',
+                      time: '07:30',
+                      isDone: false),
                 ],
               ),
-            ),
-            const SizedBox(height: 24),
-
-            _MealSection(
-              title: 'Desayuno',
-              calories: '2 tomas · 230 kcal',
-              juices: const [
-                _JuiceTile(
-                    name: 'Jugo de remolacha',
-                    time: '07:00',
-                    isDone: true),
-                _JuiceTile(
-                    name: 'Jugo de limón y jengibre',
-                    time: '07:30',
-                    isDone: false),
-              ],
-            ),
-            _MealSection(
-              title: 'Almuerzo',
-              calories: '2 tomas · 500 kcal',
-              juices: const [
-                _JuiceTile(
-                    name: 'Jugo de zanahoria y manzana',
-                    time: '13:00',
-                    isDone: false),
-                _JuiceTile(
-                    name: 'Jugo verde detox',
-                    time: '13:30',
-                    isDone: false),
-              ],
-            ),
-            _MealSection(
-              title: 'Cena',
-              calories: '1 toma · 150 kcal',
-              juices: const [
-                _JuiceTile(
-                    name: 'Jugo de manzana natural',
-                    time: '18:00',
-                    isDone: false),
-              ],
-            ),
+              _MealSection(
+                title: 'Almuerzo',
+                calories: '2 tomas · 500 kcal',
+                juices: const [
+                  _JuiceTile(
+                      name: 'Jugo de zanahoria y manzana',
+                      time: '13:00',
+                      isDone: false),
+                  _JuiceTile(
+                      name: 'Jugo verde detox',
+                      time: '13:30',
+                      isDone: false),
+                ],
+              ),
+              _MealSection(
+                title: 'Cena',
+                calories: '1 toma · 150 kcal',
+                juices: const [
+                  _JuiceTile(
+                      name: 'Jugo de manzana natural',
+                      time: '18:00',
+                      isDone: false),
+                ],
+              ),
+            ],
           ],
         ),
       ),
@@ -307,3 +390,6 @@ class _JuiceTile extends StatelessWidget {
     );
   }
 }
+
+/// Notification para que HomeScreen cambie al tab de IMC
+class SelectProtocolNotification extends Notification {}
