@@ -9,7 +9,6 @@ class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authNotifierProvider);
     final user = FirebaseAuth.instance.currentUser;
     return Scaffold(
       appBar: AppBar(
