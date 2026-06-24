@@ -1,5 +1,8 @@
+import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
@@ -16,11 +19,39 @@ import '../../features/bmi/presentation/screens/bmi_result_screen.dart';
 import '../../features/subscriptions/presentation/screens/protocol_detail_screen.dart';
 import '../../features/subscriptions/domain/protocol_model.dart';
 
+const _publicRoutes = ['/splash', '/onboarding', '/auth/login', '/auth/register', '/auth/forgot-password'];
+
+class GoRouterRefreshStream extends ChangeNotifier {
+  GoRouterRefreshStream(Stream<dynamic> stream) {
+    notifyListeners();
+    _subscription = stream.asBroadcastStream().listen((_) => notifyListeners());
+  }
+
+  late final StreamSubscription<dynamic> _subscription;
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+}
+
 final goRouter = GoRouter(
   initialLocation: '/splash',
+  refreshListenable: GoRouterRefreshStream(
+    FirebaseAuth.instance.authStateChanges(),
+  ),
   observers: [
     FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance),
   ],
+  redirect: (context, state) {
+    final user = FirebaseAuth.instance.currentUser;
+    final isPublicRoute = _publicRoutes.contains(state.matchedLocation);
+    if (user == null && !isPublicRoute) {
+      return '/splash';
+    }
+    return null;
+  },
   routes: [
     GoRoute(
       path: '/splash',

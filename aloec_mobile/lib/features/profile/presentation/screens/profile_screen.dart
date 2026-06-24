@@ -141,7 +141,8 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                 );
                 if (confirm == true) {
-                  ref.read(authNotifierProvider.notifier).signOut();
+                  await ref.read(authNotifierProvider.notifier).signOut();
+                  // GoRouter redirect handles navigation automatically
                 }
               },
             ),
