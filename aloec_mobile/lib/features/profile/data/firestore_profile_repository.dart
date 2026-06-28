@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../domain/profile_entity.dart';
 import '../domain/profile_repository.dart';
 
@@ -8,6 +9,23 @@ final firestoreProvider = Provider<FirebaseFirestore>((ref) => FirebaseFirestore
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
   return FirestoreProfileRepository(ref.watch(firestoreProvider));
 });
+
+final userProfileStreamProvider = StreamProvider<ProfileEntity?>((ref) {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return Stream.value(null);
+  
+  return FirebaseFirestore.instance
+      .collection('users')
+      .doc(user.uid)
+      .snapshots()
+      .map((snapshot) {
+        if (snapshot.exists && snapshot.data() != null) {
+          return ProfileEntity.fromMap(snapshot.data()!, user.uid);
+        }
+        return null;
+      });
+});
+
 
 class FirestoreProfileRepository implements ProfileRepository {
   final FirebaseFirestore _firestore;

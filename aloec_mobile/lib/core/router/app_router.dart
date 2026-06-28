@@ -14,6 +14,7 @@ import '../../features/juices/presentation/screens/juice_detail_screen.dart';
 import '../../features/courses/presentation/screens/course_detail_screen.dart';
 import '../../features/subscriptions/presentation/screens/upsell_screen.dart';
 import '../../features/subscriptions/presentation/screens/checkout_screen.dart';
+import '../../features/subscriptions/data/memberships_repository.dart';
 import '../../features/bmi/presentation/screens/bmi_calculator_screen.dart';
 import '../../features/bmi/presentation/screens/bmi_result_screen.dart';
 import '../../features/subscriptions/presentation/screens/protocol_detail_screen.dart';
@@ -47,9 +48,17 @@ final goRouter = GoRouter(
   redirect: (context, state) {
     final user = FirebaseAuth.instance.currentUser;
     final isPublicRoute = _publicRoutes.contains(state.matchedLocation);
+
+    // Si no hay usuario y está en ruta protegida → al onboarding
     if (user == null && !isPublicRoute) {
-      return '/splash';
+      return '/onboarding';
     }
+
+    // Si hay usuario y está en ruta pública (excepto splash inicial) → al home
+    if (user != null && isPublicRoute && state.matchedLocation != '/splash') {
+      return '/home';
+    }
+
     return null;
   },
   routes: [
@@ -97,7 +106,11 @@ final goRouter = GoRouter(
     ),
     GoRoute(
       path: '/premium-checkout',
-      builder: (context, state) => const CheckoutScreen(),
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        final membership = extra?['membership'] as MembershipEntity?;
+        return CheckoutScreen(membership: membership);
+      },
     ),
 
     // ─── IMC / Protocolo Médico ─────────────────────────────────────────────

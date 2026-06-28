@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_colors.dart';
@@ -32,12 +33,34 @@ class _ProtocolDetailScreenState extends State<ProtocolDetailScreen>
     _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeInOut);
     _animController.forward();
     _loadLinkedCourse();
+    _checkIfProtocolIsActive();
   }
 
   @override
   void dispose() {
     _animController.dispose();
     super.dispose();
+  }
+
+  /// Consulta Firestore para ver si este protocolo es el activo actualmente.
+  Future<void> _checkIfProtocolIsActive() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      if (doc.exists && doc.data()?['activeProtocolId'] == widget.protocol.id) {
+        if (mounted) {
+          setState(() {
+            _notificationsActive = true;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('⚠️ [ProtocolDetailScreen] Error al verificar protocolo activo: $e');
+    }
   }
 
   /// Consulta Firestore para obtener el curso vinculado al protocolo.
@@ -71,9 +94,22 @@ class _ProtocolDetailScreenState extends State<ProtocolDetailScreen>
   Future<void> _toggleNotifications() async {
     setState(() => _isLoadingNotif = true);
     final service = NotificationService();
+    final user = FirebaseAuth.instance.currentUser;
 
     if (_notificationsActive) {
+      // Desactivar recordatorios y remover de Firestore
       await service.cancelAllNotifications();
+      if (user != null) {
+        try {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .update({'activeProtocolId': null});
+        } catch (e) {
+          debugPrint('⚠️ [ProtocolDetailScreen] Error al limpiar activeProtocolId: $e');
+        }
+      }
+
       setState(() {
         _notificationsActive = false;
         _isLoadingNotif = false;
@@ -87,10 +123,23 @@ class _ProtocolDetailScreenState extends State<ProtocolDetailScreen>
         );
       }
     } else {
+      // Activar recordatorios e Iniciar protocolo en Firestore
       final notifications = widget.protocol.schedule
           .map((meal) => meal.toNotification())
           .toList();
       await service.scheduleProtocolNotifications(notifications);
+
+      if (user != null) {
+        try {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .update({'activeProtocolId': widget.protocol.id});
+        } catch (e) {
+          debugPrint('⚠️ [ProtocolDetailScreen] Error al guardar activeProtocolId: $e');
+        }
+      }
+
       setState(() {
         _notificationsActive = true;
         _isLoadingNotif = false;
@@ -106,6 +155,7 @@ class _ProtocolDetailScreenState extends State<ProtocolDetailScreen>
       }
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

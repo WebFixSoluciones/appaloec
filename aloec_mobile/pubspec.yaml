@@ -35,9 +35,13 @@ dependencies:
   flutter_facebook_auth: ^6.1.0
   flutter_local_notifications: ^17.2.1
 
+  # HTTP Client
+  http: ^1.2.0
+
   # Multimedia y Componentes
   cached_network_image: ^3.3.1
   google_fonts: ^8.1.0
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:
@@ -46,6 +50,16 @@ dev_dependencies:
   # Generación de código
   riverpod_generator: ^2.3.9
   build_runner: ^2.4.8
+
+  # Ícono de la app
+  flutter_launcher_icons: ^0.14.3
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/images/favicon.JPG"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/favicon.JPG"
 
 flutter:
   uses-material-design: true

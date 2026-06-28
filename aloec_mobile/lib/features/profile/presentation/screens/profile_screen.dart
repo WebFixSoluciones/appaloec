@@ -142,7 +142,7 @@ class ProfileScreen extends ConsumerWidget {
                 if (confirm == true) {
                   await ref.read(authNotifierProvider.notifier).signOut();
                   if (context.mounted) {
-                    context.go('/splash');
+                    context.go('/onboarding');
                   }
                 }
               },

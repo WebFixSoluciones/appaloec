@@ -27,54 +27,109 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
   }
 
   Future<void> _loadData() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      setState(() => _isLoading = false);
-      return;
-    }
+    if (!mounted) return;
+    setState(() => _isLoading = true);
 
-    final bmiSnapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .collection('bmi_records')
-        .orderBy('date', descending: true)
-        .limit(1)
-        .get();
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+        return;
+      }
 
-    if (bmiSnapshot.docs.isNotEmpty) {
-      final data = bmiSnapshot.docs.first.data();
-      _latestBmi = (data['bmi'] as num?)?.toDouble();
-      _bmiCategory = data['category'] as String?;
-      final timestamp = data['date'] as Timestamp?;
-      _bmiDate = timestamp?.toDate();
-    }
+      // 1. Fetch latest BMI record
+      try {
+        final bmiSnapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .collection('bmi_records')
+            .orderBy('date', descending: true)
+            .limit(1)
+            .get();
 
-    int streak = 0;
-    var date = DateTime.now();
-    for (var i = 0; i < 90; i++) {
-      final key =
-          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-      final doc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .collection('protocol_progress')
-          .doc(key)
-          .get();
+        if (bmiSnapshot.docs.isNotEmpty) {
+          final data = bmiSnapshot.docs.first.data();
+          _latestBmi = (data['bmi'] as num?)?.toDouble();
+          _bmiCategory = data['category'] as String?;
+          final timestamp = data['date'] as Timestamp?;
+          _bmiDate = timestamp?.toDate();
+        } else {
+          _latestBmi = null;
+          _bmiCategory = null;
+          _bmiDate = null;
+        }
+      } catch (e) {
+        debugPrint('Error loading BMI: $e');
+        _latestBmi = null;
+        _bmiCategory = null;
+        _bmiDate = null;
+      }
 
-      if (doc.exists &&
-          (doc.data()?['completedBlocks'] as List?)?.isNotEmpty == true) {
-        streak++;
-        date = date.subtract(const Duration(days: 1));
-      } else {
-        break;
+      // 2. Fetch protocol progress to compute streak
+      int streak = 0;
+      try {
+        // Query the last 90 progress documents in a single call using built-in document ID ordering
+        final progressSnapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .collection('protocol_progress')
+            .orderBy(FieldPath.documentId, descending: true)
+            .limit(90)
+            .get();
+
+        final completedDates = <String>{};
+        for (var docSnap in progressSnapshot.docs) {
+          final data = docSnap.data();
+          if ((data['completedBlocks'] as List?)?.isNotEmpty == true) {
+            completedDates.add(docSnap.id);
+          }
+        }
+
+        final now = DateTime.now();
+        final todayKey =
+            '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+        final yesterday = now.subtract(const Duration(days: 1));
+        final yesterdayKey =
+            '${yesterday.year}-${yesterday.month.toString().padLeft(2, '0')}-${yesterday.day.toString().padLeft(2, '0')}';
+
+        String startKey = '';
+        if (completedDates.contains(todayKey)) {
+          startKey = todayKey;
+        } else if (completedDates.contains(yesterdayKey)) {
+          startKey = yesterdayKey;
+        }
+
+        if (startKey.isNotEmpty) {
+          var checkDate = startKey == todayKey ? now : yesterday;
+          for (var i = 0; i < 90; i++) {
+            final key =
+                '${checkDate.year}-${checkDate.month.toString().padLeft(2, '0')}-${checkDate.day.toString().padLeft(2, '0')}';
+            if (completedDates.contains(key)) {
+              streak++;
+              checkDate = checkDate.subtract(const Duration(days: 1));
+            } else {
+              break;
+            }
+          }
+        }
+      } catch (e) {
+        debugPrint('Error loading streak: $e');
+        streak = 0;
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _streak = streak;
+        _isLoading = false;
+      });
+    } catch (e) {
+      debugPrint('General error in _loadData: $e');
+      if (mounted) {
+        setState(() => _isLoading = false);
       }
     }
-
-    if (!mounted) return;
-    setState(() {
-      _streak = streak;
-      _isLoading = false;
-    });
   }
 
   @override

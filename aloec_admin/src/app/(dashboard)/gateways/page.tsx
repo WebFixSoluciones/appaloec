@@ -210,12 +210,12 @@ export default function GatewaysPage() {
 
             <div>
               <label className="block text-xs font-bold text-ink-700 uppercase mb-1.5 flex items-center gap-1">
-                <Key size={12} /> Key / ID Público
+                <Key size={12} /> Store ID
               </label>
               <input
                 type="text"
                 className="w-full p-2.5 bg-white border border-ink-300 outline-none focus:border-ink-900 text-sm font-mono text-ink-900"
-                placeholder="Introduzca clave pública..."
+                placeholder="Introduzca el Store ID de PayPhone..."
                 value={payphonePublic}
                 onChange={(e) => setPayphonePublic(e.target.value)}
                 disabled={saving}
@@ -224,7 +224,7 @@ export default function GatewaysPage() {
 
             <div>
               <label className="block text-xs font-bold text-ink-700 uppercase mb-1.5 flex justify-between items-center">
-                <span className="flex items-center gap-1"><Key size={12} /> Token / Llave Secreta</span>
+                <span className="flex items-center gap-1"><Key size={12} /> Token de Autorización</span>
                 <button
                   type="button"
                   onClick={() => setShowPayphoneSecret(!showPayphoneSecret)}

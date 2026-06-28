@@ -1,53 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../domain/course_entity.dart';
+import '../providers/courses_provider.dart';
 
-class CoursesScreen extends StatelessWidget {
+class CoursesScreen extends ConsumerWidget {
   const CoursesScreen({super.key});
 
-  static const _courses = [
-    _Course(
-      id: '1',
-      title: 'Dieta de Jugos Verdes',
-      subtitle: 'Nivel Básico',
-      description: 'Aprende los fundamentos de la dieta de jugos verdes para desintoxicar tu cuerpo.',
-      lessons: 8,
-      duration: '30 min',
-      color: Color(0xFF67B539),
-    ),
-    _Course(
-      id: '2',
-      title: 'Jugos para tu Salud',
-      subtitle: 'Nivel Intermedio',
-      description: 'Descubre combinaciones de jugos para diferentes condiciones de salud.',
-      lessons: 12,
-      duration: '45 min',
-      color: Color(0xFFE8A838),
-    ),
-    _Course(
-      id: '3',
-      title: 'Plan de Desintoxicación',
-      subtitle: 'Nivel Avanzado',
-      description: 'Programa completo de 7 días para una limpieza profunda y revitalización.',
-      lessons: 15,
-      duration: '60 min',
-      color: Color(0xFFD4526E),
-    ),
-    _Course(
-      id: '4',
-      title: 'Nutrición y Bienestar',
-      subtitle: 'Nivel Experto',
-      description: 'Complementa tu dieta con hábitos saludables y ejercicios recomendados.',
-      lessons: 10,
-      duration: '40 min',
-      color: Color(0xFF5B8DEF),
-    ),
-  ];
+  Color _getDifficultyColor(String difficulty) {
+    final diff = difficulty.toLowerCase();
+    if (diff.contains('bás') || diff.contains('bas') || diff.contains('easy') || diff.contains('fác') || diff.contains('fac')) {
+      return const Color(0xFF67B539);
+    } else if (diff.contains('inter') || diff.contains('med')) {
+      return const Color(0xFFE8A838);
+    } else if (diff.contains('avan') || diff.contains('hard') || diff.contains('dif')) {
+      return const Color(0xFFD4526E);
+    } else {
+      return const Color(0xFF5B8DEF);
+    }
+  }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final user = FirebaseAuth.instance.currentUser;
+    final coursesAsync = ref.watch(coursesProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -92,13 +70,74 @@ class CoursesScreen extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: _courses.length,
-              itemBuilder: (context, index) {
-                final course = _courses[index];
-                return _CourseCard(course: course);
+            child: coursesAsync.when(
+              data: (coursesList) {
+                if (coursesList.isEmpty) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.video_library_outlined, size: 64, color: Colors.grey[300]),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'No hay cursos disponibles',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: AppColors.textDark, fontSize: 16, fontWeight: FontWeight.w600),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'El administrador aún no ha subido ningún videocurso.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.grey, fontSize: 13),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+                return RefreshIndicator(
+                  color: AppColors.primaryGreen,
+                  onRefresh: () => ref.refresh(coursesProvider.future),
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: coursesList.length,
+                    itemBuilder: (context, index) {
+                      final course = coursesList[index];
+                      return _CourseCard(
+                        course: course,
+                        color: _getDifficultyColor(course.difficulty),
+                      );
+                    },
+                  ),
+                );
               },
+              loading: () => const Center(
+                child: CircularProgressIndicator(color: AppColors.primaryGreen),
+              ),
+              error: (err, stack) => Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.error_outline, size: 48, color: Colors.redAccent),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Error al cargar cursos: $err',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () => ref.refresh(coursesProvider),
+                        child: const Text('Reintentar'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
         ],
@@ -107,30 +146,11 @@ class CoursesScreen extends StatelessWidget {
   }
 }
 
-class _Course {
-  final String id;
-  final String title;
-  final String subtitle;
-  final String description;
-  final int lessons;
-  final String duration;
+class _CourseCard extends StatelessWidget {
+  final CourseEntity course;
   final Color color;
 
-  const _Course({
-    required this.id,
-    required this.title,
-    required this.subtitle,
-    required this.description,
-    required this.lessons,
-    required this.duration,
-    required this.color,
-  });
-}
-
-class _CourseCard extends StatelessWidget {
-  final _Course course;
-
-  const _CourseCard({required this.course});
+  const _CourseCard({required this.course, required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -149,10 +169,18 @@ class _CourseCard extends StatelessWidget {
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: course.color.withOpacity(0.15),
+                  color: color.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(16),
+                  image: course.featuredImageUrl.isNotEmpty
+                      ? DecorationImage(
+                          image: NetworkImage(course.featuredImageUrl),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
                 ),
-                child: Icon(Icons.play_circle_fill, color: course.color, size: 40),
+                child: course.featuredImageUrl.isEmpty
+                    ? Icon(Icons.play_circle_fill, color: color, size: 40)
+                    : null,
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -160,9 +188,9 @@ class _CourseCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      course.subtitle,
+                      course.difficulty,
                       style: TextStyle(
-                        color: course.color,
+                        color: color,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -188,14 +216,14 @@ class _CourseCard extends StatelessWidget {
                         Icon(Icons.menu_book, size: 14, color: Colors.grey.shade500),
                         const SizedBox(width: 4),
                         Text(
-                          '${course.lessons} lecciones',
+                          '${course.lessonsCount} lecciones',
                           style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
                         ),
                         const SizedBox(width: 16),
                         Icon(Icons.timer_outlined, size: 14, color: Colors.grey.shade500),
                         const SizedBox(width: 4),
                         Text(
-                          course.duration,
+                          '${course.totalHours} hrs',
                           style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
                         ),
                       ],
@@ -211,3 +239,4 @@ class _CourseCard extends StatelessWidget {
     );
   }
 }
+

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../data/memberships_repository.dart';
 
 class UpsellScreen extends StatefulWidget {
   const UpsellScreen({super.key});
@@ -13,7 +14,12 @@ class _UpsellScreenState extends State<UpsellScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animController;
   late Animation<double> _scaleAnim;
-  int _selectedPlan = 1; // 0 = monthly, 1 = annual
+  int _selectedPlanIndex = 0;
+
+  final _membershipsRepo = MembershipsRepository();
+  List<MembershipEntity> _memberships = [];
+  bool _loadingPlans = true;
+  String? _loadError;
 
   @override
   void initState() {
@@ -24,6 +30,28 @@ class _UpsellScreenState extends State<UpsellScreen>
     );
     _scaleAnim = CurvedAnimation(parent: _animController, curve: Curves.elasticOut);
     _animController.forward();
+    _loadMemberships();
+  }
+
+  Future<void> _loadMemberships() async {
+    try {
+      final plans = await _membershipsRepo.getActiveMemberships();
+      if (!mounted) return;
+      setState(() {
+        _memberships = plans;
+        _loadingPlans = false;
+        // Seleccionar el plan más caro por defecto (mejor valor)
+        if (plans.length > 1) {
+          _selectedPlanIndex = plans.length - 1;
+        }
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loadingPlans = false;
+        _loadError = 'Error al cargar planes: $e';
+      });
+    }
   }
 
   @override
@@ -53,7 +81,6 @@ class _UpsellScreenState extends State<UpsellScreen>
                 ),
                 child: Column(
                   children: [
-                    // Close button
                     Align(
                       alignment: Alignment.topRight,
                       child: GestureDetector(
@@ -69,8 +96,6 @@ class _UpsellScreenState extends State<UpsellScreen>
                       ),
                     ),
                     const SizedBox(height: 12),
-
-                    // Animated crown icon
                     ScaleTransition(
                       scale: _scaleAnim,
                       child: Container(
@@ -88,7 +113,6 @@ class _UpsellScreenState extends State<UpsellScreen>
                       ),
                     ),
                     const SizedBox(height: 18),
-
                     const Text(
                       'ALOEC Premium',
                       style: TextStyle(
@@ -181,76 +205,105 @@ class _UpsellScreenState extends State<UpsellScreen>
                     ),
                     const SizedBox(height: 14),
 
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _PlanOption(
-                            title: 'Mensual',
-                            price: '\$9.99',
-                            period: '/mes',
-                            isSelected: _selectedPlan == 0,
-                            badge: null,
-                            onTap: () => setState(() => _selectedPlan = 0),
+                    if (_loadingPlans)
+                      const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(20),
+                          child: CircularProgressIndicator(
+                              color: AppColors.primaryGreen),
+                        ),
+                      )
+                    else if (_loadError != null)
+                      Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Text(_loadError!,
+                              style: const TextStyle(color: Colors.red)),
+                        ),
+                      )
+                    else if (_memberships.isEmpty)
+                      const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(20),
+                          child: Text(
+                            'No hay planes disponibles en este momento.',
+                            style: TextStyle(color: Colors.grey),
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _PlanOption(
-                            title: 'Anual',
-                            price: '\$79.99',
-                            period: '/año',
-                            isSelected: _selectedPlan == 1,
-                            badge: '🎉 Ahorra 33%',
-                            onTap: () => setState(() => _selectedPlan = 1),
-                          ),
-                        ),
-                      ],
-                    ),
+                      )
+                    else
+                      Row(
+                        children: _memberships.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final plan = entry.value;
+                          final isLast = index == _memberships.length - 1;
+                          return Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.only(
+                                  right: index < _memberships.length - 1 ? 12 : 0),
+                              child: _PlanOption(
+                                title: plan.name,
+                                price: '\$${plan.price.toStringAsFixed(2)}',
+                                period: '/${plan.durationLabel}',
+                                isSelected: _selectedPlanIndex == index,
+                                badge: isLast && _memberships.length > 1
+                                    ? '⭐ Mejor valor'
+                                    : null,
+                                onTap: () =>
+                                    setState(() => _selectedPlanIndex = index),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
                     const SizedBox(height: 24),
 
                     // ─── CTA Button ───────────────────────────────────────
-                    GestureDetector(
-                      onTap: () => context.push('/premium-checkout'),
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 18),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF1B5E20), Color(0xFF67B539)],
-                          ),
-                          borderRadius: BorderRadius.circular(18),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primaryGreen.withOpacity(0.45),
-                              blurRadius: 20,
-                              offset: const Offset(0, 8),
+                    if (_memberships.isNotEmpty)
+                      GestureDetector(
+                        onTap: () {
+                          final selected = _memberships[_selectedPlanIndex];
+                          context.push('/premium-checkout', extra: {
+                            'membership': selected,
+                          });
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 18),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF1B5E20), Color(0xFF67B539)],
                             ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            Text(
-                              _selectedPlan == 0
-                                  ? 'Comenzar por \$9.99/mes'
-                                  : 'Comenzar por \$79.99/año',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 17,
+                            borderRadius: BorderRadius.circular(18),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primaryGreen.withOpacity(0.45),
+                                blurRadius: 20,
+                                offset: const Offset(0, 8),
                               ),
-                            ),
-                            const SizedBox(height: 4),
-                            const Text(
-                              '✓ Cancela cuando quieras',
-                              style: TextStyle(color: Colors.white70, fontSize: 12),
-                            ),
-                          ],
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              Text(
+                                'Comenzar por ${_memberships[_selectedPlanIndex].priceLabel}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 17,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              const Text(
+                                '✓ Cancela cuando quieras',
+                                style: TextStyle(color: Colors.white70, fontSize: 12),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
                     const SizedBox(height: 12),
 
-                    // Restore purchases
                     Center(
                       child: TextButton(
                         onPressed: () {},
@@ -262,8 +315,6 @@ class _UpsellScreenState extends State<UpsellScreen>
                       ),
                     ),
                     const SizedBox(height: 8),
-
-                    // Legal
                     const Center(
                       child: Text(
                         'Al continuar aceptas nuestros Términos y Política de Privacidad.',

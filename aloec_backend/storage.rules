@@ -24,9 +24,17 @@ service firebase.storage {
       allow read: if isAuthenticated();
       allow write: if isAdmin();
     }
+    match /recipes/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
 
     // Catálogo de imágenes de planes (solo admins escriben, usuarios leen)
     match /diet_plans/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    match /protocols/{allPaths=**} {
       allow read: if isAuthenticated();
       allow write: if isAdmin();
     }
