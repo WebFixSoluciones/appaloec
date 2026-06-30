@@ -77,16 +77,20 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Regla para la colección 'gateways' (CRÍTICO: Solo admin lee y escribe)
+    // Regla para la colección 'gateways'
+    // Cualquier usuario autenticado puede leer la config (necesaria para procesar pagos).
+    // Solo admin puede modificar las credenciales.
     match /gateways/{gatewayId} {
-      allow read, write: if isAdmin();
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
     }
 
     // Regla para la colección 'orders' (facturas y compras)
     match /orders/{orderId} {
       allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isAdmin();
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow delete: if isAdmin();
     }
 
     // Regla para la colección 'marketing_banners'
@@ -158,6 +162,16 @@ service cloud.firestore {
     // Solo el dueño o un admin puede leer/escribir su protocolo activo.
     match /user_active_protocols/{docId} {
       allow read, write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || request.resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // Progreso diario del protocolo (bloques completados por dia)
+    match /users/{userId}/protocol_progress/{dateKey} {
+      allow read, write: if isOwner(userId) || isAdmin();
+    }
+
+    // Registros de IMC del usuario (subcoleccion)
+    match /users/{userId}/bmi_records/{recordId} {
+      allow read, write: if isOwner(userId) || isAdmin();
     }
   }
 }

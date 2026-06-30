@@ -193,7 +193,10 @@ export default function LessonsPage() {
       return;
     }
     if (!title.trim() || !videoUrl.trim()) {
-      toast.error('Título y Enlace de video son obligatorios');
+      const missing: string[] = [];
+      if (!title.trim()) missing.push('Titulo');
+      if (!videoUrl.trim()) missing.push(videoSource === 'upload' ? 'Archivo de video (no se ha subido)' : 'Enlace de video');
+      toast.error(`Falta: ${missing.join(' y ')}. Completa los campos obligatorios.`);
       return;
     }
 

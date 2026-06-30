@@ -250,7 +250,14 @@ export default function RecipesPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !imageUrl.trim()) { toast.error('Título e Imagen son obligatorios'); return; }
+
+    const missingFields: string[] = [];
+    if (!title.trim()) missingFields.push('Titulo');
+
+    if (missingFields.length > 0) {
+      toast.error(`Falta: ${missingFields.join(' y ')}. Completa los campos obligatorios.`);
+      return;
+    }
 
     setSaving(true);
     const toastId = toast.loading('Guardando receta...');
@@ -511,7 +518,9 @@ export default function RecipesPage() {
 
               {/* Image Upload */}
               <div className="border border-ink-200 p-4 bg-ink-50 space-y-3">
-                <span className="text-xs font-bold text-ink-700 uppercase block">Imagen de Presentación *</span>
+                <span className="text-xs font-bold text-ink-700 uppercase flex items-center gap-1">
+                  Imagen de Presentacion
+                </span>
                 <div className="flex gap-2">
                   <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" id="recipeImageFile" disabled={uploading || saving} />
                   <label htmlFor="recipeImageFile" className="flex-1 p-2.5 bg-white border border-ink-300 cursor-pointer text-xs font-bold text-ink-700 hover:bg-ink-50 flex items-center justify-center gap-1.5 transition-colors">
@@ -523,10 +532,19 @@ export default function RecipesPage() {
                     </button>
                   )}
                 </div>
+                {uploadFile && (
+                  <p className="text-[10px] text-amber-700 font-bold">Haz clic en Subir para cargar la imagen antes de guardar.</p>
+                )}
                 <div>
-                  <span className="block text-[10px] font-bold text-ink-500 uppercase mb-1">O URL externa:</span>
+                  <span className="block text-[10px] font-bold text-ink-500 uppercase mb-1">O pega una URL externa:</span>
                   <input type="url" className="w-full p-2 bg-white border border-ink-300 outline-none focus:border-ink-900 text-xs font-mono" placeholder="https://..." value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} disabled={uploading || saving} />
                 </div>
+                {imageUrl.trim() && (
+                  <div className="mt-2">
+                    <span className="block text-[10px] font-bold text-ink-500 uppercase mb-1">Vista previa:</span>
+                    <img src={imageUrl.trim()} alt="Preview" className="w-full h-32 object-cover border border-ink-200" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  </div>
+                )}
               </div>
 
               {/* PrepTime, Difficulty, Order, Active, Premium */}

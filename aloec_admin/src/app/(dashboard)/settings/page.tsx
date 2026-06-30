@@ -59,6 +59,20 @@ export default function SettingsPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!supportContactEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(supportContactEmail.trim())) {
+      toast.error('Ingresa un correo de soporte valido');
+      return;
+    }
+    if (!minAppVersionAndroid.trim()) {
+      toast.error('La version minima de Android es obligatoria');
+      return;
+    }
+    if (!minAppVersionIos.trim()) {
+      toast.error('La version minima de iOS es obligatoria');
+      return;
+    }
+
     setSaving(true);
     const toastId = toast.loading('Guardando ajustes del sistema...');
 

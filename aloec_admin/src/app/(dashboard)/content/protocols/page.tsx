@@ -327,7 +327,7 @@ export default function ProtocolsPage() {
   };
 
   const handleUploadImage = () => {
-    if (!uploadFile) return;
+    if (!uploadFile) { toast.error('Selecciona una imagen primero'); return; }
     setUploading(true);
     const fileRef = ref(storage, `protocols/${Date.now()}_${uploadFile.name}`);
     const uploadTask = uploadBytesResumable(fileRef, uploadFile);
@@ -367,8 +367,8 @@ export default function ProtocolsPage() {
         description: description.trim(),
         imageUrl: imageUrl.trim(),
         bmiCategory,
-        bmiMin: bmiMin !== '' ? parseFloat(bmiMin) : null,
-        bmiMax: bmiMax !== '' ? parseFloat(bmiMax) : null,
+        bmiMin: bmiMin !== '' ? (parseFloat(bmiMin) || null) : null,
+        bmiMax: bmiMax !== '' ? (parseFloat(bmiMax) || null) : null,
         linkedCourseTag: linkedCourseTag.trim(),
         linkedCourses: [] as string[],
         isPremium,

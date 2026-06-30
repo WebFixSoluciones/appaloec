@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -14,7 +15,7 @@ class PayphoneTransactionResult {
 }
 
 class PayphoneStatusResult {
-  final int statusCode; // 1=Pendiente, 2=Cancelado, 3=Aprobado
+  final int statusCode;
   final String transactionStatus;
   final String? authorizationCode;
   final String? cardBrand;
@@ -42,7 +43,7 @@ class PayphoneStatusResult {
   bool get isCanceled => statusCode == 2;
   bool get isPending => statusCode == 1;
 
-  factory PayphoneStatusResult.fromJson(Map<String, dynamic> json) {
+  factory PayphoneStatusResult.fromPayphoneJson(Map<String, dynamic> json) {
     return PayphoneStatusResult(
       statusCode: json['statusCode'] ?? 0,
       transactionStatus: json['transactionStatus'] ?? '',
@@ -53,27 +54,44 @@ class PayphoneStatusResult {
       phoneNumber: json['phoneNumber'],
       amount: json['amount'] ?? 0,
       clientTransactionId: json['clientTransactionId'],
+      errorMessage: json['message'],
     );
   }
 }
 
 class PayphoneService {
-  static const String _baseUrl = 'https://pay.payphonetodoesposible.com/api';
+  static const String _prodBaseUrl =
+      'https://pay.payphonetodoesposible.com/api';
+  static const String _sandboxBaseUrl =
+      'https://pay.payphonetodoesposible.com/api';
+
+  static const Duration _timeout = Duration(seconds: 15);
 
   final String _token;
   final String _storeId;
+  final bool _isSandbox;
 
-  PayphoneService({required String token, required String storeId})
-      : _token = token,
-        _storeId = storeId;
+  PayphoneService({
+    required String token,
+    required String storeId,
+    bool isSandbox = false,
+  })  : _token = token,
+        _storeId = storeId,
+        _isSandbox = isSandbox;
+
+  String get _baseUrl => _isSandbox ? _sandboxBaseUrl : _prodBaseUrl;
 
   Map<String, String> get _headers => {
-        'Authorization': 'bearer $_token',
+        'Authorization': 'Bearer $_token',
         'Content-Type': 'application/json',
       };
 
-  /// Crea una transacción de venta en Payphone.
-  /// [amountCents] es el monto total en centavos (ej: $9.99 = 999)
+  String _cleanPhone(String phone) {
+    return phone.replaceAll(RegExp(r'[^0-9]'), '');
+  }
+
+  /// Crea una transaccion de venta en Payphone.
+  /// [amountCents] es el monto total en centavos (ej: $9.99 = 999).
   Future<PayphoneTransactionResult> createSale({
     required String phoneNumber,
     required int amountCents,
@@ -82,8 +100,10 @@ class PayphoneService {
     String countryCode = '593',
   }) async {
     try {
-      final body = {
-        'phoneNumber': phoneNumber,
+      final cleanPhone = _cleanPhone(phoneNumber);
+
+      final body = <String, dynamic>{
+        'phoneNumber': cleanPhone,
         'countryCode': countryCode,
         'amount': amountCents,
         'amountWithoutTax': amountCents,
@@ -98,48 +118,86 @@ class PayphoneService {
         'timeZone': -5,
       };
 
-      final response = await http.post(
-        Uri.parse('$_baseUrl/Sale'),
-        headers: _headers,
-        body: jsonEncode(body),
-      );
+      final response = await http
+          .post(
+            Uri.parse('$_baseUrl/Sale'),
+            headers: _headers,
+            body: jsonEncode(body),
+          )
+          .timeout(_timeout);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = jsonDecode(response.body);
-        return PayphoneTransactionResult(
-          success: true,
-          transactionId: data['transactionId'],
-        );
-      } else {
-        final data = jsonDecode(response.body);
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final txId = data['transactionId'] as int?;
+        if (txId != null) {
+          return PayphoneTransactionResult(success: true, transactionId: txId);
+        }
         return PayphoneTransactionResult(
           success: false,
-          errorMessage: data['message'] ?? 'Error al crear la transacción',
+          errorMessage: _parseError(data, 'Respuesta invalida de Payphone'),
         );
       }
+
+      String errorMsg;
+      try {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        errorMsg = _parseError(data, 'Error HTTP ${response.statusCode}');
+      } catch (_) {
+        errorMsg = 'Error del servidor (${response.statusCode})';
+      }
+
+      return PayphoneTransactionResult(success: false, errorMessage: errorMsg);
+    } on http.ClientException catch (e) {
+      return PayphoneTransactionResult(
+        success: false,
+        errorMessage: 'Error de conexion: ${e.message}',
+      );
+    } on TimeoutException {
+      return PayphoneTransactionResult(
+        success: false,
+        errorMessage: 'Tiempo de espera agotado. Intenta nuevamente.',
+      );
     } catch (e) {
       return PayphoneTransactionResult(
         success: false,
-        errorMessage: 'Error de conexión: $e',
+        errorMessage: 'Error inesperado: $e',
       );
     }
   }
 
-  /// Consulta el estado de una transacción por su ID.
-  Future<PayphoneStatusResult?> checkTransactionStatus(int transactionId) async {
+  /// Consulta el estado de una transaccion por su ID.
+  Future<PayphoneStatusResult?> checkTransactionStatus(
+      int transactionId) async {
     try {
-      final response = await http.get(
-        Uri.parse('$_baseUrl/Sale/$transactionId'),
-        headers: _headers,
-      );
+      final response = await http
+          .get(
+            Uri.parse('$_baseUrl/Sale/$transactionId'),
+            headers: _headers,
+          )
+          .timeout(_timeout);
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return PayphoneStatusResult.fromJson(data);
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        return PayphoneStatusResult.fromPayphoneJson(data);
       }
       return null;
     } catch (e) {
       return null;
     }
+  }
+
+  String _parseError(Map<String, dynamic> data, String fallback) {
+    if (data['message'] is String && (data['message'] as String).isNotEmpty) {
+      return data['message'];
+    }
+    if (data['error'] is String && (data['error'] as String).isNotEmpty) {
+      return data['error'];
+    }
+    if (data['errors'] is Map) {
+      final errors = data['errors'] as Map;
+      final msgs = errors.values.whereType<String>().toList();
+      if (msgs.isNotEmpty) return msgs.join('. ');
+    }
+    return fallback;
   }
 }

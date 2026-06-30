@@ -110,9 +110,57 @@ class OrdersRepository {
     required String userId,
     required String membershipId,
   }) async {
-    await _firestore.collection('users').doc(userId).update({
+    final batch = _firestore.batch();
+
+    final userRef = _firestore.collection('users').doc(userId);
+    batch.update(userRef, {
       'membershipId': membershipId,
       'membershipUpdatedAt': FieldValue.serverTimestamp(),
+      'isPremium': true,
     });
+
+    final bmiSnapshot = await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('bmi_records')
+        .orderBy('date', descending: true)
+        .limit(1)
+        .get();
+
+    if (bmiSnapshot.docs.isNotEmpty) {
+      final bmiData = bmiSnapshot.docs.first.data();
+      final bmi = (bmiData['bmi'] as num?)?.toDouble();
+      if (bmi != null) {
+        String categoryKey;
+        if (bmi < 18.5) {
+          categoryKey = 'underweight';
+        } else if (bmi < 25.0) {
+          categoryKey = 'normal';
+        } else if (bmi < 30.0) {
+          categoryKey = 'overweight';
+        } else if (bmi < 35.0) {
+          categoryKey = 'obesity1';
+        } else if (bmi < 40.0) {
+          categoryKey = 'obesity2';
+        } else {
+          categoryKey = 'obesity3';
+        }
+
+        final protocolSnapshot = await _firestore
+            .collection('diet_protocols')
+            .where('bmiCategory', isEqualTo: categoryKey)
+            .where('isActive', isEqualTo: true)
+            .limit(1)
+            .get();
+
+        if (protocolSnapshot.docs.isNotEmpty) {
+          batch.update(userRef, {
+            'activeProtocolId': protocolSnapshot.docs.first.id,
+          });
+        }
+      }
+    }
+
+    await batch.commit();
   }
 }

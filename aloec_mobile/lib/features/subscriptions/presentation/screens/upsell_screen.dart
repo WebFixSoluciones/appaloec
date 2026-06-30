@@ -217,8 +217,27 @@ class _UpsellScreenState extends State<UpsellScreen>
                       Center(
                         child: Padding(
                           padding: const EdgeInsets.all(20),
-                          child: Text(_loadError!,
-                              style: const TextStyle(color: Colors.red)),
+                          child: Column(
+                            children: [
+                              Text(_loadError!,
+                                  style: const TextStyle(color: Colors.red)),
+                              const SizedBox(height: 12),
+                              OutlinedButton.icon(
+                                onPressed: () {
+                                  setState(() {
+                                    _loadingPlans = true;
+                                    _loadError = null;
+                                  });
+                                  _loadMemberships();
+                                },
+                                icon: const Icon(Icons.refresh, size: 18),
+                                label: const Text('Reintentar'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: AppColors.primaryGreen,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       )
                     else if (_memberships.isEmpty)

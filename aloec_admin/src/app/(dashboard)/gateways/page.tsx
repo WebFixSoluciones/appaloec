@@ -70,6 +70,10 @@ export default function GatewaysPage() {
 
   const handleSavePayphone = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!payphonePublic.trim() || !payphoneSecret.trim()) {
+      toast.error('Store ID y Token de Autorizacion son obligatorios');
+      return;
+    }
     setSaving(true);
     const toastId = toast.loading('Guardando configuración de PayPhone...');
 
@@ -107,6 +111,10 @@ export default function GatewaysPage() {
 
   const handleSaveStripe = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!stripePublic.trim() || !stripeSecret.trim()) {
+      toast.error('Publishable Key y Secret Key son obligatorios');
+      return;
+    }
     setSaving(true);
     const toastId = toast.loading('Guardando configuración de Stripe...');
 

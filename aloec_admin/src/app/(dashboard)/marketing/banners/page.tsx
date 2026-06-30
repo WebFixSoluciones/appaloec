@@ -151,7 +151,10 @@ export default function BannersPage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !imageUrl.trim()) {
-      toast.error('Título e Imagen son campos requeridos');
+      const missing: string[] = [];
+      if (!title.trim()) missing.push('Titulo');
+      if (!imageUrl.trim()) missing.push('Imagen');
+      toast.error(`Falta: ${missing.join(' y ')}. Completa los campos obligatorios.`);
       return;
     }
 

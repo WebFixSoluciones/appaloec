@@ -1,139 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../subscriptions/domain/protocol_model.dart';
+import '../providers/progress_provider.dart';
 
-class ProgressScreen extends ConsumerStatefulWidget {
+class ProgressScreen extends ConsumerWidget {
   const ProgressScreen({super.key});
 
   @override
-  ConsumerState<ProgressScreen> createState() => _ProgressScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final progress = ref.watch(progressProvider);
 
-class _ProgressScreenState extends ConsumerState<ProgressScreen> {
-  double? _latestBmi;
-  String? _bmiCategory;
-  DateTime? _bmiDate;
-  bool _isLoading = true;
-  int _streak = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadData();
-  }
-
-  Future<void> _loadData() async {
-    if (!mounted) return;
-    setState(() => _isLoading = true);
-
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        if (mounted) {
-          setState(() => _isLoading = false);
-        }
-        return;
-      }
-
-      // 1. Fetch latest BMI record
-      try {
-        final bmiSnapshot = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .collection('bmi_records')
-            .orderBy('date', descending: true)
-            .limit(1)
-            .get();
-
-        if (bmiSnapshot.docs.isNotEmpty) {
-          final data = bmiSnapshot.docs.first.data();
-          _latestBmi = (data['bmi'] as num?)?.toDouble();
-          _bmiCategory = data['category'] as String?;
-          final timestamp = data['date'] as Timestamp?;
-          _bmiDate = timestamp?.toDate();
-        } else {
-          _latestBmi = null;
-          _bmiCategory = null;
-          _bmiDate = null;
-        }
-      } catch (e) {
-        debugPrint('Error loading BMI: $e');
-        _latestBmi = null;
-        _bmiCategory = null;
-        _bmiDate = null;
-      }
-
-      // 2. Fetch protocol progress to compute streak
-      int streak = 0;
-      try {
-        // Query the last 90 progress documents in a single call using built-in document ID ordering
-        final progressSnapshot = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .collection('protocol_progress')
-            .orderBy(FieldPath.documentId, descending: true)
-            .limit(90)
-            .get();
-
-        final completedDates = <String>{};
-        for (var docSnap in progressSnapshot.docs) {
-          final data = docSnap.data();
-          if ((data['completedBlocks'] as List?)?.isNotEmpty == true) {
-            completedDates.add(docSnap.id);
-          }
-        }
-
-        final now = DateTime.now();
-        final todayKey =
-            '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
-        final yesterday = now.subtract(const Duration(days: 1));
-        final yesterdayKey =
-            '${yesterday.year}-${yesterday.month.toString().padLeft(2, '0')}-${yesterday.day.toString().padLeft(2, '0')}';
-
-        String startKey = '';
-        if (completedDates.contains(todayKey)) {
-          startKey = todayKey;
-        } else if (completedDates.contains(yesterdayKey)) {
-          startKey = yesterdayKey;
-        }
-
-        if (startKey.isNotEmpty) {
-          var checkDate = startKey == todayKey ? now : yesterday;
-          for (var i = 0; i < 90; i++) {
-            final key =
-                '${checkDate.year}-${checkDate.month.toString().padLeft(2, '0')}-${checkDate.day.toString().padLeft(2, '0')}';
-            if (completedDates.contains(key)) {
-              streak++;
-              checkDate = checkDate.subtract(const Duration(days: 1));
-            } else {
-              break;
-            }
-          }
-        }
-      } catch (e) {
-        debugPrint('Error loading streak: $e');
-        streak = 0;
-      }
-
-      if (!mounted) return;
-      setState(() {
-        _streak = streak;
-        _isLoading = false;
-      });
-    } catch (e) {
-      debugPrint('General error in _loadData: $e');
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
@@ -141,30 +19,95 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
         backgroundColor: AppColors.backgroundLight,
         elevation: 0,
       ),
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.primaryGreen))
-          : RefreshIndicator(
-              color: AppColors.primaryGreen,
-              onRefresh: _loadData,
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  _buildBmiCard(),
-                  const SizedBox(height: 16),
-                  _buildStreakCard(),
-                  const SizedBox(height: 16),
-                  _buildWeeklyPlaceholder(),
-                ],
-              ),
-            ),
+      body: _buildBody(context, ref, progress),
     );
   }
 
-  Widget _buildBmiCard() {
-    final hasBmi = _latestBmi != null;
+  Widget _buildBody(
+      BuildContext context, WidgetRef ref, ProgressState progress) {
+    if (progress.isLoading && progress.error == null) {
+      return const Center(
+          child: CircularProgressIndicator(color: AppColors.primaryGreen));
+    }
+
+    if (progress.error != null && progress.weeklyCompliance.isEmpty &&
+        progress.latestBmi == null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.cloud_off, color: AppColors.textLight, size: 48),
+              const SizedBox(height: 12),
+              const Text('Error al cargar tus datos',
+                  style: TextStyle(
+                      color: AppColors.textDark,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600)),
+              const SizedBox(height: 4),
+              Text(progress.error!,
+                  textAlign: TextAlign.center,
+                  style:
+                      const TextStyle(color: AppColors.textLight, fontSize: 12)),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () =>
+                    ref.read(progressProvider.notifier).loadAll(),
+                icon: const Icon(Icons.refresh),
+                label: const Text('Reintentar'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryGreen,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      color: AppColors.primaryGreen,
+      onRefresh: () => ref.read(progressProvider.notifier).loadAll(),
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          if (progress.error != null)
+            Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.error.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.info_outline,
+                      color: AppColors.error, size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(progress.error!,
+                        style: const TextStyle(
+                            color: AppColors.error, fontSize: 12)),
+                  ),
+                ],
+              ),
+            ),
+          _buildBmiCard(context, progress),
+          const SizedBox(height: 16),
+          _buildStreakCard(progress),
+          const SizedBox(height: 16),
+          _buildWeeklyChart(progress),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBmiCard(BuildContext context, ProgressState progress) {
+    final hasBmi = progress.latestBmi != null;
     final color = hasBmi
-        ? Color(ProtocolModel.getCategoryColorValue(_latestBmi!))
+        ? Color(ProtocolModel.getCategoryColorValue(progress.latestBmi!))
         : AppColors.textLight;
 
     return Container(
@@ -193,7 +136,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
                 ),
                 child: Center(
                   child: Text(
-                    hasBmi ? _latestBmi!.toStringAsFixed(1) : '--',
+                    hasBmi ? progress.latestBmi!.toStringAsFixed(1) : '--',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
@@ -218,8 +161,9 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
                     const SizedBox(height: 4),
                     Text(
                       hasBmi
-                          ? _bmiCategory ??
-                              ProtocolModel.getCategoryLabel(_latestBmi!)
+                          ? (progress.bmiCategory ??
+                              ProtocolModel.getCategoryLabel(
+                                  progress.latestBmi!))
                           : 'Sin calcular',
                       style: TextStyle(
                         fontSize: 13,
@@ -227,10 +171,10 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    if (_bmiDate != null) ...[
+                    if (progress.bmiDate != null) ...[
                       const SizedBox(height: 2),
                       Text(
-                        'Ultimo calculo: ${_bmiDate!.day}/${_bmiDate!.month}/${_bmiDate!.year}',
+                        'Ultimo calculo: ${progress.bmiDate!.day}/${progress.bmiDate!.month}/${progress.bmiDate!.year}',
                         style: const TextStyle(
                           fontSize: 11,
                           color: AppColors.textLight,
@@ -264,7 +208,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
     );
   }
 
-  Widget _buildStreakCard() {
+  Widget _buildStreakCard(ProgressState progress) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -287,15 +231,15 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
               color: Colors.orange.withOpacity(0.12),
               borderRadius: BorderRadius.circular(14),
             ),
-            child:
-                const Icon(Icons.local_fire_department, color: Colors.orange, size: 28),
+            child: const Icon(Icons.local_fire_department,
+                color: Colors.orange, size: 28),
           ),
           const SizedBox(width: 16),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '$_streak dias consecutivos',
+                '${progress.streak} dias consecutivos',
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
@@ -304,8 +248,11 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
               ),
               const SizedBox(height: 2),
               Text(
-                _streak > 0 ? 'Sigue asi!' : 'Completa bloques para empezar tu racha',
-                style: const TextStyle(fontSize: 13, color: AppColors.textLight),
+                progress.streak > 0
+                    ? 'Sigue asi!'
+                    : 'Completa bloques para empezar tu racha',
+                style:
+                    const TextStyle(fontSize: 13, color: AppColors.textLight),
               ),
             ],
           ),
@@ -314,10 +261,11 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
     );
   }
 
-  Widget _buildWeeklyPlaceholder() {
+  Widget _buildWeeklyChart(ProgressState progress) {
+    final compliance = progress.weeklyCompliance;
+
     return Container(
       padding: const EdgeInsets.all(20),
-      height: 200,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -329,27 +277,227 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
           ),
         ],
       ),
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Cumplimiento semanal',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textDark,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Cumplimiento semanal',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textDark,
+                ),
+              ),
+              Text(
+                '${progress.weeklyAverage.toStringAsFixed(0)}% avg',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primaryGreen,
+                ),
+              ),
+            ],
           ),
-          Spacer(),
-          Center(
-            child: Text(
-              'Grafico disponible pronto',
-              style: TextStyle(fontSize: 13, color: AppColors.textLight),
+          if (compliance.isEmpty) ...[
+            const SizedBox(height: 24),
+            Center(
+              child: Column(
+                children: [
+                  Icon(Icons.bar_chart,
+                      color: Colors.grey.shade300, size: 40),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Sin datos de esta semana',
+                    style:
+                        TextStyle(fontSize: 13, color: AppColors.textLight),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Completa bloques diarios para ver tu progreso',
+                    style: TextStyle(fontSize: 11, color: AppColors.textLight),
+                  ),
+                ],
+              ),
             ),
-          ),
-          Spacer(),
+            const SizedBox(height: 16),
+          ] else ...[
+            const SizedBox(height: 20),
+            SizedBox(
+              height: 150,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: compliance.map((day) {
+                  return Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: _DayBar(
+                        label: day.dayLabel,
+                        percentage: day.percentage,
+                        completed: day.completed,
+                        total: day.total,
+                        isToday: day.date.day == DateTime.now().day &&
+                            day.date.month == DateTime.now().month &&
+                            day.date.year == DateTime.now().year,
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryGreen,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                const Text('Completado',
+                    style: TextStyle(fontSize: 11, color: AppColors.textLight)),
+                const SizedBox(width: 16),
+                Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                const Text('Pendiente',
+                    style: TextStyle(fontSize: 11, color: AppColors.textLight)),
+              ],
+            ),
+          ],
         ],
       ),
     );
   }
 }
+
+class _DayBar extends StatefulWidget {
+  final String label;
+  final double percentage;
+  final int completed;
+  final int total;
+  final bool isToday;
+
+  const _DayBar({
+    required this.label,
+    required this.percentage,
+    required this.completed,
+    required this.total,
+    required this.isToday,
+  });
+
+  @override
+  State<_DayBar> createState() => _DayBarState();
+}
+
+class _DayBarState extends State<_DayBar>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic);
+    _controller.forward();
+  }
+
+  @override
+  void didUpdateWidget(covariant _DayBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.percentage != widget.percentage) {
+      _controller
+        ..reset()
+        ..forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hasProtocol = widget.total > 0;
+    final color = hasProtocol
+        ? AppColors.primaryGreen
+        : Colors.grey.shade300;
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        Flexible(
+          child: AnimatedBuilder(
+            animation: _animation,
+            builder: (context, child) {
+              return FractionallySizedBox(
+                heightFactor: hasProtocol
+                    ? _animation.value * (widget.percentage / 100)
+                    : 0.04,
+                child: Container(
+                  width: double.infinity,
+                  margin: EdgeInsets.only(
+                      bottom: widget.percentage > 0 ? 0 : 4),
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              );
+            },
+            child: null,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: 28,
+          height: 28,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: widget.percentage >= 100
+                ? AppColors.primaryGreen.withOpacity(0.15)
+                : widget.isToday
+                    ? AppColors.primaryGreen.withOpacity(0.1)
+                    : Colors.transparent,
+            border: widget.isToday
+                ? Border.all(color: AppColors.primaryGreen, width: 1.5)
+                : null,
+          ),
+          child: Center(
+            child: Text(
+              widget.label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight:
+                    widget.isToday ? FontWeight.w700 : FontWeight.w500,
+                color: widget.isToday
+                    ? AppColors.primaryGreen
+                    : AppColors.textLight,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+

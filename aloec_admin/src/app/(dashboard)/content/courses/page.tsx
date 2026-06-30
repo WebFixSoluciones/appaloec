@@ -195,7 +195,10 @@ export default function CoursesPage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !featuredImageUrl.trim()) {
-      toast.error('Título y Portada son campos obligatorios');
+      const missing: string[] = [];
+      if (!title.trim()) missing.push('Titulo');
+      if (!featuredImageUrl.trim()) missing.push('Imagen de portada');
+      toast.error(`Falta: ${missing.join(' y ')}. Completa los campos obligatorios.`);
       return;
     }
 
