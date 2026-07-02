@@ -1,45 +1,19 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_colors.dart';
-import '../../domain/juice_entity.dart';
-import '../../data/recipes_repository.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/theme/app_colors.dart';
+import '../providers/juices_provider.dart';
 
-class JuiceDetailScreen extends StatefulWidget {
+class JuiceDetailScreen extends ConsumerWidget {
   final String juiceId;
 
   const JuiceDetailScreen({super.key, required this.juiceId});
 
   @override
-  State<JuiceDetailScreen> createState() => _JuiceDetailScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final recipeAsync = ref.watch(recipeByIdProvider(juiceId));
 
-class _JuiceDetailScreenState extends State<JuiceDetailScreen> {
-  final _recipesRepo = RecipesRepository();
-  RecipeEntity? _recipe;
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadRecipe();
-  }
-
-  Future<void> _loadRecipe() async {
-    try {
-      final recipe = await _recipesRepo.getRecipeById(widget.juiceId);
-      setState(() {
-        _recipe = recipe;
-        _isLoading = false;
-      });
-    } catch (e) {
-      debugPrint('Error loading recipe: $e');
-      setState(() => _isLoading = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_isLoading) {
+    if (recipeAsync.isLoading) {
       return Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(backgroundColor: Colors.white, elevation: 0, leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.black), onPressed: () => context.pop())),
@@ -47,7 +21,9 @@ class _JuiceDetailScreenState extends State<JuiceDetailScreen> {
       );
     }
 
-    if (_recipe == null) {
+    final recipe = recipeAsync.valueOrNull;
+
+    if (recipe == null) {
       return Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(backgroundColor: Colors.white, elevation: 0, leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.black), onPressed: () => context.pop())),
@@ -55,7 +31,6 @@ class _JuiceDetailScreenState extends State<JuiceDetailScreen> {
       );
     }
 
-    final recipe = _recipe!;
     final info = recipe.nutritionalInfo;
 
     return Scaffold(
@@ -80,7 +55,6 @@ class _JuiceDetailScreenState extends State<JuiceDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Title + Category
                   Row(
                     children: [
                       Expanded(
@@ -111,16 +85,14 @@ class _JuiceDetailScreenState extends State<JuiceDetailScreen> {
                   const SizedBox(height: 8),
                   Text(recipe.description, style: const TextStyle(color: Colors.grey, height: 1.5)),
                   const SizedBox(height: 24),
-
-                  // Nutrition
-                  const Text('Información Nutricional', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                  const Text('Informacion Nutricional', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
                     children: [
                       _NutritionChip(icon: Icons.local_fire_department, label: '${info.calories} kcal', color: Colors.orange),
-                      _NutritionChip(icon: Icons.fitness_center, label: '${info.protein}g proteína', color: Colors.red),
+                      _NutritionChip(icon: Icons.fitness_center, label: '${info.protein}g proteina', color: Colors.red),
                       _NutritionChip(icon: Icons.grain, label: '${info.carbs}g carbos', color: Colors.amber),
                       _NutritionChip(icon: Icons.water_drop, label: '${info.fat}g grasas', color: Colors.blue),
                       _NutritionChip(icon: Icons.grass, label: '${info.fiber}g fibra', color: Colors.green),
@@ -138,8 +110,6 @@ class _JuiceDetailScreenState extends State<JuiceDetailScreen> {
                     ),
                   ],
                   const SizedBox(height: 24),
-
-                  // Ingredients
                   if (recipe.ingredients.isNotEmpty) ...[
                     const Text('Ingredientes', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                     const SizedBox(height: 12),
@@ -158,16 +128,12 @@ class _JuiceDetailScreenState extends State<JuiceDetailScreen> {
                     ),
                     const SizedBox(height: 24),
                   ],
-
-                  // Preparation
                   if (recipe.preparation.isNotEmpty) ...[
-                    const Text('Preparación', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                    const Text('Preparacion', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                     const SizedBox(height: 12),
                     Text(recipe.preparation, style: const TextStyle(color: Colors.grey, height: 1.6, fontSize: 14)),
                     const SizedBox(height: 24),
                   ],
-
-                  // Benefits
                   if (recipe.benefits.isNotEmpty) ...[
                     const Text('Beneficios', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                     const SizedBox(height: 12),

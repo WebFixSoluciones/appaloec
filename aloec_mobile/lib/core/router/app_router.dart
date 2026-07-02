@@ -20,7 +20,13 @@ import '../../features/bmi/presentation/screens/bmi_result_screen.dart';
 import '../../features/subscriptions/presentation/screens/protocol_detail_screen.dart';
 import '../../features/subscriptions/domain/protocol_model.dart';
 
-const _publicRoutes = ['/splash', '/onboarding', '/auth/login', '/auth/register', '/auth/forgot-password'];
+import '../../features/auth/presentation/screens/force_update_screen.dart';
+import '../../features/profile/presentation/screens/edit_profile_screen.dart';
+import '../../features/profile/presentation/screens/notifications_screen.dart';
+import '../../features/profile/presentation/screens/help_screen.dart';
+import '../../features/profile/presentation/screens/subscription_screen.dart';
+
+const _publicRoutes = ['/splash', '/onboarding', '/auth/login', '/auth/register', '/auth/forgot-password', '/force-update'];
 
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {
@@ -113,7 +119,28 @@ final goRouter = GoRouter(
       },
     ),
 
-    // ─── IMC / Protocolo Médico ─────────────────────────────────────────────
+    GoRoute(
+      path: '/force-update',
+      builder: (context, state) => const ForceUpdateScreen(),
+    ),
+    GoRoute(
+      path: '/edit-profile',
+      builder: (context, state) => const EditProfileScreen(),
+    ),
+    GoRoute(
+      path: '/notifications',
+      builder: (context, state) => const NotificationsScreen(),
+    ),
+    GoRoute(
+      path: '/help',
+      builder: (context, state) => const HelpScreen(),
+    ),
+    GoRoute(
+      path: '/subscription',
+      builder: (context, state) => const SubscriptionScreen(),
+    ),
+
+    // ─── IMC / Protocolo Medico ─────────────────────────────────────────────
     GoRoute(
       path: '/bmi-calculator',
       builder: (context, state) => const BmiCalculatorScreen(),

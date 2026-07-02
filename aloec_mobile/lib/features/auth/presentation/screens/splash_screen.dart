@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
 import '../../../../core/widgets/aloec_logo.dart';
+import '../../../../core/services/version_service.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -17,7 +18,28 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Escucha cambios de estado de auth y navega cuando el estado sea definitivo
+    _initApp();
+  }
+
+  Future<void> _initApp() async {
+    final needsUpdate = await VersionService.isUpdateRequired();
+    if (!mounted) return;
+
+    if (needsUpdate) {
+      _navigated = true;
+      if (mounted) context.go('/force-update');
+      return;
+    }
+
+    final maintenance = await VersionService.isMaintenanceMode();
+    if (!mounted) return;
+
+    if (maintenance) {
+      _navigated = true;
+      if (mounted) context.go('/force-update');
+      return;
+    }
+
     Future.delayed(const Duration(seconds: 2), () {
       if (!mounted) return;
       _checkAndNavigate();

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../providers/protocol_day_provider.dart';
 
 class BlockCard extends StatefulWidget {

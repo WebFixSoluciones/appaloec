@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -70,39 +70,27 @@ class ProfileScreen extends ConsumerWidget {
           const SizedBox(height: 32),
           _buildTile(
             icon: Icons.subscriptions,
-            title: 'Suscripción',
+            title: 'Suscripcion',
             subtitle: 'Gestiona tu plan actual',
-            onTap: () => context.push('/premium-upsell'),
+            onTap: () => context.push('/subscription'),
           ),
           _buildTile(
             icon: Icons.edit,
             title: 'Editar perfil',
             subtitle: 'Nombre, foto y datos personales',
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Próximamente')),
-              );
-            },
+            onTap: () => context.push('/edit-profile'),
           ),
           _buildTile(
             icon: Icons.notifications_outlined,
             title: 'Notificaciones',
             subtitle: 'Configura tus alertas',
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Próximamente')),
-              );
-            },
+            onTap: () => context.push('/notifications'),
           ),
           _buildTile(
             icon: Icons.help_outline,
             title: 'Ayuda',
             subtitle: 'Preguntas frecuentes y soporte',
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Próximamente')),
-              );
-            },
+            onTap: () => context.push('/help'),
           ),
           const SizedBox(height: 32),
           SizedBox(

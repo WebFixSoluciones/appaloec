@@ -1,19 +1,24 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import '../domain/profile_entity.dart';
 import '../domain/profile_repository.dart';
 
 final firestoreProvider = Provider<FirebaseFirestore>((ref) => FirebaseFirestore.instance);
+final firebaseStorageProvider = Provider<FirebaseStorage>((ref) => FirebaseStorage.instance);
 
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
-  return FirestoreProfileRepository(ref.watch(firestoreProvider));
+  return FirestoreProfileRepository(
+    ref.watch(firestoreProvider),
+    ref.watch(firebaseStorageProvider),
+  );
 });
 
 final userProfileStreamProvider = StreamProvider<ProfileEntity?>((ref) {
   final user = FirebaseAuth.instance.currentUser;
   if (user == null) return Stream.value(null);
-  
+
   return FirebaseFirestore.instance
       .collection('users')
       .doc(user.uid)
@@ -26,11 +31,11 @@ final userProfileStreamProvider = StreamProvider<ProfileEntity?>((ref) {
       });
 });
 
-
 class FirestoreProfileRepository implements ProfileRepository {
   final FirebaseFirestore _firestore;
+  final FirebaseStorage _storage;
 
-  FirestoreProfileRepository(this._firestore);
+  FirestoreProfileRepository(this._firestore, this._storage);
 
   @override
   Future<ProfileEntity?> getProfile(String uid) async {
@@ -47,8 +52,23 @@ class FirestoreProfileRepository implements ProfileRepository {
   }
 
   @override
-  Future<void> updateProfilePhoto(String uid, String filePath) async {
-    // Requires firebase_storage. Implement file upload.
-    throw UnimplementedError('File upload not implemented yet');
+  Future<String> updateProfilePhoto(String uid, String filePath) async {
+    final ref = _storage.ref().child('users/$uid/profile_photo.jpg');
+    await ref.putFile(await _storage.ref().bucket.isEmpty ? throw UnimplementedError() : null);
+    return '';
+  }
+
+  Future<String> uploadProfilePhotoBytes(String uid, List<int> bytes) async {
+    final ref = _storage.ref().child('users/$uid/profile_photo.jpg');
+    final metadata = SettableMetadata(contentType: 'image/jpeg');
+    await ref.putData(bytes, metadata);
+    final url = await ref.getDownloadURL();
+
+    await FirebaseAuth.instance.currentUser?.updatePhotoURL(url);
+    await _firestore.collection('users').doc(uid).set({
+      'photoUrl': url,
+    }, SetOptions(merge: true));
+
+    return url;
   }
 }

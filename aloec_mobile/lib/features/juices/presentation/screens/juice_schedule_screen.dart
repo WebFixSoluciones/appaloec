@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../../../core/constants/app_colors.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../providers/juices_provider.dart';
 
-class JuiceScheduleScreen extends StatefulWidget {
+class JuiceScheduleScreen extends ConsumerStatefulWidget {
   const JuiceScheduleScreen({super.key});
 
   @override
-  State<JuiceScheduleScreen> createState() => _JuiceScheduleScreenState();
+  ConsumerState<JuiceScheduleScreen> createState() => _JuiceScheduleScreenState();
 }
 
-class _JuiceScheduleScreenState extends State<JuiceScheduleScreen> {
+class _JuiceScheduleScreenState extends ConsumerState<JuiceScheduleScreen> {
   late DateTime _selectedDate;
   late List<DateTime> _weekDays;
   bool _hasActiveProtocol = false;
-  bool _checkedProtocol = false;
+  bool _loadingProtocol = true;
+  Map<String, dynamic>? _protocolData;
 
   @override
   void initState() {
@@ -26,7 +30,10 @@ class _JuiceScheduleScreenState extends State<JuiceScheduleScreen> {
 
   Future<void> _checkActiveProtocol() async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    if (user == null) {
+      if (mounted) setState(() => _loadingProtocol = false);
+      return;
+    }
 
     final doc = await FirebaseFirestore.instance
         .collection('users')
@@ -34,14 +41,31 @@ class _JuiceScheduleScreenState extends State<JuiceScheduleScreen> {
         .get();
 
     if (!mounted) return;
-    setState(() {
-      _hasActiveProtocol = doc.exists && doc.data()?['activeProtocolId'] != null;
-      _checkedProtocol = true;
-    });
+
+    final protocolId = doc.data()?['activeProtocolId'];
+
+    if (protocolId != null && protocolId is String && protocolId.isNotEmpty) {
+      final protocolDoc = await FirebaseFirestore.instance
+          .collection('diet_protocols')
+          .doc(protocolId)
+          .get();
+
+      if (!mounted) return;
+
+      setState(() {
+        _hasActiveProtocol = protocolDoc.exists;
+        _protocolData = protocolDoc.data();
+        _loadingProtocol = false;
+      });
+    } else {
+      setState(() {
+        _hasActiveProtocol = false;
+        _loadingProtocol = false;
+      });
+    }
   }
 
   List<DateTime> _buildWeekDays(DateTime reference) {
-    // Obtiene los 5 días alrededor del día actual (2 antes, hoy, 2 después)
     return List.generate(5, (i) => reference.subtract(Duration(days: 2 - i)));
   }
 
@@ -54,13 +78,60 @@ class _JuiceScheduleScreenState extends State<JuiceScheduleScreen> {
   }
 
   String _dayName(int weekday) {
-    const days = ['', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+    const days = ['', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
     return days[weekday];
+  }
+
+  List<Map<String, String>> _buildMealsFromProtocol() {
+    if (_protocolData == null) return [];
+    final schedule = _protocolData!['dailySchedule'];
+    if (schedule == null || schedule is! List) return [];
+
+    final List<Map<String, String>> meals = [];
+    for (final day in schedule) {
+      if (day['dayNumber'] == 1) {
+        final juices = day['juices'] ?? [];
+        for (final juice in List<dynamic>.from(juices)) {
+          final recipeId = juice['recipeId'] ?? '';
+          final targetTime = juice['targetTime'] ?? '';
+          final mealType = _mealTypeLabel(juice['type'] ?? '');
+          meals.add({
+            'recipeId': recipeId is String ? recipeId : '',
+            'targetTime': targetTime is String ? targetTime : '',
+            'mealType': mealType,
+            'type': juice['type'] is String ? juice['type'] : '',
+          });
+        }
+      }
+    }
+    return meals;
+  }
+
+  String _mealTypeLabel(String type) {
+    switch (type) {
+      case 'breakfast_substitute': return 'Desayuno';
+      case 'lunch_complement': return 'Almuerzo';
+      case 'dinner_substitute': return 'Cena';
+      case 'snack': return 'Snack';
+      default: return type;
+    }
+  }
+
+  Color _mealTypeColor(String type) {
+    switch (type) {
+      case 'breakfast_substitute': return Colors.orange;
+      case 'lunch_complement': return Colors.blue;
+      case 'dinner_substitute': return Colors.purple;
+      case 'snack': return Colors.teal;
+      default: return Colors.grey;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
+    final meals = _buildMealsFromProtocol();
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -75,7 +146,6 @@ class _JuiceScheduleScreenState extends State<JuiceScheduleScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Calendario strip con fecha real
             Center(
               child: Text(
                 '${_monthName(_selectedDate.month)} ${_selectedDate.year}',
@@ -107,8 +177,14 @@ class _JuiceScheduleScreenState extends State<JuiceScheduleScreen> {
             ),
             const SizedBox(height: 32),
 
-            // Empty state cuando no hay protocolo activo
-            if (_checkedProtocol && !_hasActiveProtocol) ...[
+            if (_loadingProtocol)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(40),
+                  child: CircularProgressIndicator(color: AppColors.primaryGreen),
+                ),
+              )
+            else if (!_hasActiveProtocol) ...[
               const SizedBox(height: 40),
               Center(
                 child: Column(
@@ -156,20 +232,29 @@ class _JuiceScheduleScreenState extends State<JuiceScheduleScreen> {
                           ),
                         ),
                         icon: const Icon(Icons.calculate),
-                        label: const Text('Selecciona uno',
+                        label: const Text('Calcular mi IMC',
                             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                        onPressed: () {
-                          // Notificar al HomeScreen para cambiar al tab IMC
-                          SelectProtocolNotification().dispatch(context);
-                        },
+                        onPressed: () => context.push('/bmi-calculator'),
                       ),
                     ),
                   ],
                 ),
               ),
+            ] else if (meals.isEmpty) ...[
+              const SizedBox(height: 40),
+              Center(
+                child: Column(
+                  children: [
+                    Icon(Icons.restaurant_menu, size: 48, color: Colors.grey[300]),
+                    const SizedBox(height: 12),
+                    const Text('Sin comidas para hoy',
+                        style: TextStyle(fontSize: 14, color: Colors.grey)),
+                  ],
+                ),
+              ),
             ] else ...[
-              // Contenido normal con protocolo activo
               Container(
+                width: double.infinity,
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   color: AppColors.primaryGreen.withOpacity(0.07),
@@ -184,11 +269,14 @@ class _JuiceScheduleScreenState extends State<JuiceScheduleScreen> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Activa un protocolo para ver tu agenda diaria personalizada.',
+                        _protocolData?['title'] is String
+                            ? _protocolData!['title']
+                            : 'Protocolo activo',
                         style: TextStyle(
                             fontSize: 13,
-                            color: AppColors.textLight,
-                            height: 1.4),
+                            color: AppColors.textDark,
+                            height: 1.4,
+                            fontWeight: FontWeight.w600),
                       ),
                     ),
                   ],
@@ -196,54 +284,76 @@ class _JuiceScheduleScreenState extends State<JuiceScheduleScreen> {
               ),
               const SizedBox(height: 24),
 
-              _MealSection(
-                title: 'Desayuno',
-                calories: '2 tomas · 230 kcal',
-                juices: const [
-                  _JuiceTile(
-                      name: 'Jugo de remolacha',
-                      time: '07:00',
-                      isDone: true),
-                  _JuiceTile(
-                      name: 'Jugo de limón y jengibre',
-                      time: '07:30',
-                      isDone: false),
-                ],
-              ),
-              _MealSection(
-                title: 'Almuerzo',
-                calories: '2 tomas · 500 kcal',
-                juices: const [
-                  _JuiceTile(
-                      name: 'Jugo de zanahoria y manzana',
-                      time: '13:00',
-                      isDone: false),
-                  _JuiceTile(
-                      name: 'Jugo verde detox',
-                      time: '13:30',
-                      isDone: false),
-                ],
-              ),
-              _MealSection(
-                title: 'Cena',
-                calories: '1 toma · 150 kcal',
-                juices: const [
-                  _JuiceTile(
-                      name: 'Jugo de manzana natural',
-                      time: '18:00',
-                      isDone: false),
-                ],
-              ),
+              ...meals.map((meal) {
+                final type = meal['type'] ?? '';
+                final color = _mealTypeColor(type);
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.grey.shade200),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: color.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Center(
+                              child: Icon(Icons.local_drink, color: color, size: 26),
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 2),
+                                  margin: const EdgeInsets.only(bottom: 4),
+                                  decoration: BoxDecoration(
+                                    color: color.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    meal['mealType'] ?? 'Comida',
+                                    style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: color),
+                                  ),
+                                ),
+                                Text(
+                                  meal['targetTime'] ?? '',
+                                  style: const TextStyle(
+                                      fontSize: 15, fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (meal['recipeId'] is String && (meal['recipeId'] as String).isNotEmpty)
+                            TextButton(
+                              onPressed: () => context.push('/juice-detail/${meal['recipeId']}'),
+                              child: const Text('Ver receta',
+                                  style: TextStyle(fontSize: 12)),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }),
             ],
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {},
-        backgroundColor: AppColors.primaryGreen,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('Agregar toma',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
       ),
     );
   }
@@ -303,93 +413,3 @@ class _DayWidget extends StatelessWidget {
     );
   }
 }
-
-class _MealSection extends StatelessWidget {
-  final String title;
-  final String calories;
-  final List<Widget> juices;
-
-  const _MealSection(
-      {required this.title,
-      required this.calories,
-      required this.juices});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(title,
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 18)),
-            Text(calories,
-                style: const TextStyle(color: Colors.grey, fontSize: 12)),
-          ],
-        ),
-        const SizedBox(height: 12),
-        ...juices,
-        const SizedBox(height: 24),
-      ],
-    );
-  }
-}
-
-class _JuiceTile extends StatelessWidget {
-  final String name;
-  final String time;
-  final bool isDone;
-
-  const _JuiceTile(
-      {required this.name, required this.time, required this.isDone});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: isDone
-            ? AppColors.primaryGreen.withOpacity(0.05)
-            : Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isDone
-              ? AppColors.primaryGreen.withOpacity(0.3)
-              : Colors.grey.shade200,
-        ),
-      ),
-      child: ListTile(
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-        leading: Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-              color: isDone
-                  ? AppColors.primaryGreen.withOpacity(0.15)
-                  : Colors.orange[50],
-              borderRadius: BorderRadius.circular(12)),
-          child: Icon(Icons.local_drink,
-              color: isDone ? AppColors.primaryGreen : Colors.orange),
-        ),
-        title: Text(name,
-            style: TextStyle(
-                fontWeight: FontWeight.bold,
-                decoration: isDone ? TextDecoration.lineThrough : null,
-                color: isDone ? AppColors.textLight : AppColors.textDark)),
-        subtitle: Text(time,
-            style: const TextStyle(color: Colors.grey, fontSize: 12)),
-        trailing: Icon(
-          isDone ? Icons.check_circle_rounded : Icons.radio_button_unchecked,
-          color: isDone ? AppColors.primaryGreen : Colors.grey[300],
-          size: 26,
-        ),
-      ),
-    );
-  }
-}
-
-/// Notification para que HomeScreen cambie al tab de IMC
-class SelectProtocolNotification extends Notification {}

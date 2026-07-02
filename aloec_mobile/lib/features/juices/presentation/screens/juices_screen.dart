@@ -1,72 +1,42 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../domain/juice_entity.dart';
-import '../../data/recipes_repository.dart';
-import '../../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_colors.dart';
+import '../providers/juices_provider.dart';
 
-class JuicesScreen extends StatefulWidget {
+class JuicesScreen extends ConsumerStatefulWidget {
   const JuicesScreen({super.key});
 
   @override
-  State<JuicesScreen> createState() => _JuicesScreenState();
+  ConsumerState<JuicesScreen> createState() => _JuicesScreenState();
 }
 
-class _JuicesScreenState extends State<JuicesScreen> {
+class _JuicesScreenState extends ConsumerState<JuicesScreen> {
   final _searchCtrl = TextEditingController();
-  final _recipesRepo = RecipesRepository();
-  List<RecipeEntity> _allRecipes = [];
-  List<RecipeEntity> _filteredRecipes = [];
-  bool _isLoading = true;
   String? _selectedCategory;
 
   @override
   void initState() {
     super.initState();
-    _searchCtrl.addListener(_onSearch);
-    _loadRecipes();
-  }
-
-  @override
-  void dispose() {
-    _searchCtrl.removeListener(_onSearch);
-    _searchCtrl.dispose();
-    super.dispose();
-  }
-
-  Future<void> _loadRecipes() async {
-    try {
-      final recipes = await _recipesRepo.getAllRecipes();
-      setState(() {
-        _allRecipes = recipes;
-        _filteredRecipes = recipes;
-        _isLoading = false;
-      });
-    } catch (e) {
-      debugPrint('Error loading recipes: $e');
-      setState(() => _isLoading = false);
-    }
-  }
-
-  void _onSearch() {
-    _applyFilters();
-  }
-
-  void _applyFilters() {
-    final query = _searchCtrl.text.trim().toLowerCase();
-    setState(() {
-      _filteredRecipes = _allRecipes.where((r) {
-        final matchesSearch = query.isEmpty ||
-            r.title.toLowerCase().contains(query) ||
-            r.description.toLowerCase().contains(query) ||
-            r.tags.any((t) => t.toLowerCase().contains(query));
-        final matchesCategory = _selectedCategory == null || r.category == _selectedCategory;
-        return matchesSearch && matchesCategory;
-      }).toList();
+    _searchCtrl.addListener(() {
+      ref.read(recipeSearchQuery.notifier).state = _searchCtrl.text;
     });
   }
 
   @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final recipesAsync = ref.watch(filteredRecipesProvider);
+    final allRecipesAsync = ref.watch(allRecipesProvider);
+
+    List<RecipeEntity> allRecipes = allRecipesAsync.valueOrNull ?? [];
+    List<RecipeEntity> filteredRecipes = recipesAsync.valueOrNull ?? allRecipes;
+
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
@@ -76,11 +46,11 @@ class _JuicesScreenState extends State<JuicesScreen> {
         elevation: 0,
         centerTitle: true,
       ),
-      body: _isLoading
+      body: recipesAsync.isLoading && allRecipes.isEmpty
           ? const Center(child: CircularProgressIndicator(color: AppColors.primaryGreen))
           : RefreshIndicator(
               color: AppColors.primaryGreen,
-              onRefresh: _loadRecipes,
+              onRefresh: () async => ref.invalidate(allRecipesProvider),
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
@@ -95,7 +65,10 @@ class _JuicesScreenState extends State<JuicesScreen> {
                         suffixIcon: _searchCtrl.text.isNotEmpty
                             ? IconButton(
                                 icon: const Icon(Icons.clear, color: Colors.grey, size: 18),
-                                onPressed: () => _searchCtrl.clear(),
+                                onPressed: () {
+                                  _searchCtrl.clear();
+                                  ref.read(recipeSearchQuery.notifier).state = '';
+                                },
                               )
                             : null,
                         filled: true,
@@ -116,8 +89,6 @@ class _JuicesScreenState extends State<JuicesScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-
-                    // Category filter chips
                     SizedBox(
                       height: 36,
                       child: ListView(
@@ -126,36 +97,31 @@ class _JuicesScreenState extends State<JuicesScreen> {
                           _CategoryChip(
                             label: 'Todas',
                             isSelected: _selectedCategory == null,
-                            onTap: () {
-                              setState(() => _selectedCategory = null);
-                              _applyFilters();
-                            },
+                            onTap: () => setState(() => _selectedCategory = null),
                           ),
-                          _CategoryChip(label: 'Jugos', isSelected: _selectedCategory == 'green_juice', onTap: () { setState(() => _selectedCategory = 'green_juice'); _applyFilters(); }),
-                          _CategoryChip(label: 'Ensaladas', isSelected: _selectedCategory == 'salad', onTap: () { setState(() => _selectedCategory = 'salad'); _applyFilters(); }),
-                          _CategoryChip(label: 'Desayunos', isSelected: _selectedCategory == 'breakfast', onTap: () { setState(() => _selectedCategory = 'breakfast'); _applyFilters(); }),
-                          _CategoryChip(label: 'Batidos', isSelected: _selectedCategory == 'smoothie', onTap: () { setState(() => _selectedCategory = 'smoothie'); _applyFilters(); }),
-                          _CategoryChip(label: 'Snacks', isSelected: _selectedCategory == 'snack', onTap: () { setState(() => _selectedCategory = 'snack'); _applyFilters(); }),
-                          _CategoryChip(label: 'Platos', isSelected: _selectedCategory == 'main_dish', onTap: () { setState(() => _selectedCategory = 'main_dish'); _applyFilters(); }),
+                          _CategoryChip(label: 'Jugos', isSelected: _selectedCategory == 'green_juice', onTap: () => setState(() => _selectedCategory = 'green_juice')),
+                          _CategoryChip(label: 'Ensaladas', isSelected: _selectedCategory == 'salad', onTap: () => setState(() => _selectedCategory = 'salad')),
+                          _CategoryChip(label: 'Desayunos', isSelected: _selectedCategory == 'breakfast', onTap: () => setState(() => _selectedCategory = 'breakfast')),
+                          _CategoryChip(label: 'Batidos', isSelected: _selectedCategory == 'smoothie', onTap: () => setState(() => _selectedCategory = 'smoothie')),
+                          _CategoryChip(label: 'Snacks', isSelected: _selectedCategory == 'snack', onTap: () => setState(() => _selectedCategory = 'snack')),
+                          _CategoryChip(label: 'Platos', isSelected: _selectedCategory == 'main_dish', onTap: () => setState(() => _selectedCategory = 'main_dish')),
                         ],
                       ),
                     ),
                     const SizedBox(height: 16),
-
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text('Recetas', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                         Text(
-                          '${_filteredRecipes.length} resultado${_filteredRecipes.length != 1 ? 's' : ''}',
+                          '${filteredRecipes.length} resultado${filteredRecipes.length != 1 ? 's' : ''}',
                           style: const TextStyle(color: Colors.grey, fontSize: 13),
                         ),
                       ],
                     ),
                     const SizedBox(height: 16),
-
                     Expanded(
-                      child: _filteredRecipes.isEmpty
+                      child: filteredRecipes.isEmpty
                           ? Center(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -171,10 +137,10 @@ class _JuicesScreenState extends State<JuicesScreen> {
                               ),
                             )
                           : ListView.separated(
-                              itemCount: _filteredRecipes.length,
+                              itemCount: filteredRecipes.length,
                               separatorBuilder: (_, __) => const SizedBox(height: 12),
                               itemBuilder: (context, index) {
-                                final recipe = _filteredRecipes[index];
+                                final recipe = filteredRecipes[index];
                                 return _RecipeCard(
                                   recipe: recipe,
                                   onTap: () => context.push('/juice-detail/${recipe.id}'),

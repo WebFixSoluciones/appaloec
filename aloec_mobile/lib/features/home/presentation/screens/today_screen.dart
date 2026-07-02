@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../courses/presentation/screens/courses_screen.dart';
 import '../providers/protocol_day_provider.dart';
 import '../widgets/block_card.dart';
@@ -78,11 +78,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
           IconButton(
             icon: const Icon(Icons.notifications_outlined,
                 color: AppColors.textDark),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Proximamente')),
-              );
-            },
+            onPressed: () => context.push('/notifications'),
           ),
           const SizedBox(width: 4),
         ],

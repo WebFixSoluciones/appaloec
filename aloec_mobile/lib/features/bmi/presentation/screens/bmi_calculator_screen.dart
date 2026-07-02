@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/widgets/aloec_button.dart';
 import '../../../../core/widgets/aloec_text_field.dart';
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../domain/bmi_entity.dart';
-import '../../../subscriptions/domain/protocol_model.dart';
+import '../../data/bmi_repository.dart';
 
 class BmiCalculatorScreen extends StatefulWidget {
   const BmiCalculatorScreen({super.key});
@@ -24,6 +25,7 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
   double? _bmi;
   String _statusLabel = '';
   int _statusColor = AppColors.primaryGreen.value;
+  bool _saving = false;
 
   @override
   void dispose() {
@@ -40,7 +42,6 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
     double weight = double.tryParse(_weightCtrl.text.trim()) ?? 0;
 
     if (!_isMetric) {
-      // Convertir de pulgadas/libras a cm/kg
       height = height * 2.54;
       weight = weight * 0.453592;
     }
@@ -48,7 +49,7 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
     if (height <= 0 || weight <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Por favor ingresa valores válidos de altura y peso.'),
+          content: Text('Por favor ingresa valores validos de altura y peso.'),
           backgroundColor: Colors.red,
         ),
       );
@@ -60,9 +61,35 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
 
     setState(() {
       _bmi = calculatedBmi;
-      _statusLabel = ProtocolModel.getCategoryLabel(calculatedBmi);
-      _statusColor = ProtocolModel.getCategoryColorValue(calculatedBmi);
+      _statusLabel = BmiEntity.categoryLabelFromValue(calculatedBmi);
+      _statusColor = BmiEntity.categoryColorValueFromValue(calculatedBmi);
     });
+
+    _saveRecord(calculatedBmi);
+  }
+
+  Future<void> _saveRecord(double bmiValue) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    setState(() => _saving = true);
+
+    try {
+      final record = BmiEntity(
+        uid: user.uid,
+        age: int.tryParse(_ageCtrl.text.trim()) ?? 0,
+        heightCm: double.tryParse(_heightCtrl.text.trim()) ?? 0,
+        weightKg: double.tryParse(_weightCtrl.text.trim()) ?? 0,
+        bmiValue: bmiValue,
+        status: BmiEntity.categoryFromValue(bmiValue),
+        createdAt: DateTime.now(),
+      );
+      await BmiRepository().saveRecord(record);
+    } catch (e) {
+      debugPrint('Error saving BMI record: $e');
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
   }
 
   void _viewProtocol() {
@@ -70,7 +97,6 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
       _showNeedCalculationSnackbar();
       return;
     }
-    // Show premium paywall modal first
     _showPremiumModal();
   }
 
@@ -126,7 +152,6 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ─── Subtitle ────────────────────────────────────────────────
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
@@ -140,7 +165,7 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Calcula tu Índice de Masa Corporal y recibe un protocolo médico personalizado.',
+                        'Calcula tu Indice de Masa Corporal y recibe un protocolo medico personalizado.',
                         style: TextStyle(
                             fontSize: 13,
                             color: AppColors.textLight,
@@ -151,9 +176,7 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-
-              // ─── Género ──────────────────────────────────────────────────
-              const Text('Género',
+              const Text('Genero',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
               const SizedBox(height: 12),
               Row(
@@ -174,8 +197,6 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
                 ],
               ),
               const SizedBox(height: 28),
-
-              // ─── Unidades ────────────────────────────────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -184,7 +205,7 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                   Row(
                     children: [
-                      Text(_isMetric ? 'Métrico' : 'Estándar',
+                      Text(_isMetric ? 'Metrico' : 'Estandar',
                           style: const TextStyle(
                               fontSize: 12, color: AppColors.primaryGreen,
                               fontWeight: FontWeight.bold)),
@@ -198,8 +219,6 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
                 ],
               ),
               const SizedBox(height: 12),
-
-              // ─── Campos ──────────────────────────────────────────────────
               AloecTextField(
                 controller: _ageCtrl,
                 hintText: _isMetric ? 'Edad (años)' : 'Age (years)',
@@ -223,8 +242,6 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
                     const TextInputType.numberWithOptions(decimal: true),
               ),
               const SizedBox(height: 28),
-
-              // ─── Resultado IMC ───────────────────────────────────────────
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 400),
                 child: _bmi != null
@@ -238,16 +255,12 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
                     : _BmiScaleInfo(),
               ),
               const SizedBox(height: 24),
-
-              // ─── Botón Calcular ──────────────────────────────────────────
               AloecButton(
-                text: 'Calcular IMC',
-                onPressed: _calculate,
+                text: _saving ? 'Guardando...' : 'Calcular IMC',
+                onPressed: _saving ? null : _calculate,
               ),
-
               if (_bmi != null) ...[
                 const SizedBox(height: 12),
-                // CTA secundario para ver protocolo
                 GestureDetector(
                   onTap: _viewProtocol,
                   child: Container(
@@ -266,7 +279,7 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
                             color: Colors.white, size: 20),
                         SizedBox(width: 8),
                         Text(
-                          'Ver mi Protocolo Premium 🌟',
+                          'Ver mi Protocolo Premium',
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -287,8 +300,6 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
   }
 }
 
-// ─── Widgets privados ─────────────────────────────────────────────────────────
-
 class _BmiScaleInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -305,10 +316,10 @@ class _BmiScaleInfo extends StatelessWidget {
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
           const SizedBox(height: 10),
           _ScaleRow(color: Colors.blue, label: 'Bajo peso', range: '< 18.5'),
-          _ScaleRow(color: AppColors.primaryGreen, label: 'Peso normal', range: '18.5 – 24.9'),
-          _ScaleRow(color: Colors.orange, label: 'Sobrepeso', range: '25 – 29.9'),
-          _ScaleRow(color: Colors.deepOrange, label: 'Obesidad I', range: '30 – 34.5'),
-          _ScaleRow(color: Colors.red[900]!, label: 'Obesidad Severa', range: '≥ 35'),
+          _ScaleRow(color: AppColors.primaryGreen, label: 'Peso normal', range: '18.5 - 24.9'),
+          _ScaleRow(color: Colors.orange, label: 'Sobrepeso', range: '25 - 29.9'),
+          _ScaleRow(color: Colors.deepOrange, label: 'Obesidad I', range: '30 - 34.5'),
+          _ScaleRow(color: Colors.red[900]!, label: 'Obesidad Severa', range: '>= 35'),
         ],
       ),
     );
@@ -421,7 +432,7 @@ class _BmiResultDisplay extends StatelessWidget {
                 GestureDetector(
                   onTap: onViewProtocol,
                   child: Text(
-                    'Ver protocolo sugerido →',
+                    'Ver protocolo sugerido',
                     style: TextStyle(
                         color: statusColor,
                         fontWeight: FontWeight.bold,
@@ -437,7 +448,6 @@ class _BmiResultDisplay extends StatelessWidget {
   }
 }
 
-/// Modal bottom sheet de upsell premium con protocolo sugerido.
 class _PremiumProtocolModal extends StatelessWidget {
   final double bmi;
   final String statusLabel;
@@ -455,8 +465,8 @@ class _PremiumProtocolModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final protocolTitle = 'Protocolo ${ProtocolModel.getCategoryLabel(bmi)}';
-    final protocolSubtitle = 'IMC ${bmi.toStringAsFixed(1)} – ${statusLabel}';
+    final protocolTitle = 'Protocolo ${BmiEntity.categoryLabelFromValue(bmi)}';
+    final protocolSubtitle = 'IMC ${bmi.toStringAsFixed(1)} $statusLabel';
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -466,7 +476,6 @@ class _PremiumProtocolModal extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Drag handle
           Container(
             width: 40,
             height: 4,
@@ -474,8 +483,6 @@ class _PremiumProtocolModal extends StatelessWidget {
                 color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
           ),
           const SizedBox(height: 20),
-
-          // IMC badge
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
@@ -484,7 +491,7 @@ class _PremiumProtocolModal extends StatelessWidget {
               border: Border.all(color: statusColor.withOpacity(0.3)),
             ),
             child: Text(
-              'Tu IMC: ${bmi.toStringAsFixed(1)} – $statusLabel',
+              'Tu IMC: ${bmi.toStringAsFixed(1)} $statusLabel',
               style: TextStyle(
                   color: statusColor,
                   fontWeight: FontWeight.bold,
@@ -492,7 +499,6 @@ class _PremiumProtocolModal extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-
           Text(
             'Te recomendamos el:',
             style: TextStyle(color: AppColors.textLight, fontSize: 13),
@@ -509,8 +515,6 @@ class _PremiumProtocolModal extends StatelessWidget {
             style: TextStyle(fontSize: 13, color: AppColors.textLight),
           ),
           const SizedBox(height: 20),
-
-          // Premium features list
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -522,7 +526,7 @@ class _PremiumProtocolModal extends StatelessWidget {
             child: Column(
               children: const [
                 _FeatureRow(icon: '🗓️', text: 'Agenda diaria personalizada con horarios exactos'),
-                _FeatureRow(icon: '🔔', text: 'Recordatorios automáticos para cada comida'),
+                _FeatureRow(icon: '🔔', text: 'Recordatorios automaticos para cada comida'),
                 _FeatureRow(icon: '🎓', text: 'Acceso al videocurso de Terapia Gerson'),
                 _FeatureRow(icon: '🥤', text: 'Recetas de jugos verdes exclusivas'),
                 _FeatureRow(icon: '📊', text: 'Seguimiento de progreso semanal'),
@@ -530,8 +534,6 @@ class _PremiumProtocolModal extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-
-          // Buy premium button
           GestureDetector(
             onTap: onBuyPremium,
             child: Container(
@@ -562,12 +564,10 @@ class _PremiumProtocolModal extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-
-          // Preview button (free preview)
           TextButton(
             onPressed: onViewProtocol,
             child: const Text(
-              'Ver vista previa gratuita →',
+              'Ver vista previa gratuita',
               style: TextStyle(color: AppColors.primaryGreen, fontSize: 13),
             ),
           ),

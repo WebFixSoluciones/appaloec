@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../../../core/constants/app_colors.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/aloec_button.dart';
 import '../../data/gateway_repository.dart';
 import '../../data/payphone_service.dart';
@@ -177,6 +178,25 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         });
       }
     });
+  }
+
+  Future<void> _openWhatsApp(MembershipEntity membership) async {
+    const phone = '593999504321';
+    final message =
+        'Hola ALOEC, quiero comprar el plan ${membership.name} (\$${membership.price.toStringAsFixed(2)}) en efectivo. Me pueden ayudar?';
+    final encoded = Uri.encodeComponent(message);
+    final uris = [
+      Uri.parse('whatsapp://send?phone=$phone&text=$encoded'),
+      Uri.parse('https://wa.me/$phone?text=$encoded'),
+    ];
+    for (final uri in uris) {
+      try {
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+          return;
+        }
+      } catch (_) {}
+    }
   }
 
   void _showSuccessDialog() {
@@ -462,6 +482,34 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               text: 'Pagar \$${membership.price.toStringAsFixed(2)} con Payphone',
               isLoading: _isLoading,
               onPressed: _processPayment,
+            ),
+            const SizedBox(height: 12),
+
+            // Boton comprar en efectivo
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: OutlinedButton.icon(
+                onPressed: () => _openWhatsApp(membership),
+                icon: const Icon(Icons.chat, color: Color(0xFF25D366)),
+                label: const Text('Comprar en Efectivo',
+                    style: TextStyle(
+                        color: Color(0xFF25D366),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15)),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Color(0xFF25D366), width: 2),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Center(
+              child: Text(
+                'Un asesor te atendera por WhatsApp',
+                style: TextStyle(fontSize: 11, color: AppColors.textLight),
+              ),
             ),
             const SizedBox(height: 16),
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/constants/app_colors.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../data/memberships_repository.dart';
 
 class UpsellScreen extends StatefulWidget {
@@ -40,7 +41,7 @@ class _UpsellScreenState extends State<UpsellScreen>
       setState(() {
         _memberships = plans;
         _loadingPlans = false;
-        // Seleccionar el plan más caro por defecto (mejor valor)
+        // Seleccionar el plan mas caro por defecto (mejor valor)
         if (plans.length > 1) {
           _selectedPlanIndex = plans.length - 1;
         }
@@ -51,6 +52,29 @@ class _UpsellScreenState extends State<UpsellScreen>
         _loadingPlans = false;
         _loadError = 'Error al cargar planes: $e';
       });
+    }
+  }
+
+  Future<void> _openWhatsApp() async {
+    const phone = '593999504321';
+    final selected = _memberships.isNotEmpty
+        ? _memberships[_selectedPlanIndex]
+        : null;
+    final planName = selected?.name ?? 'Premium';
+    final message =
+        'Hola ALOEC, quiero comprar el plan $planName en efectivo. Me pueden ayudar?';
+    final encoded = Uri.encodeComponent(message);
+    final uris = [
+      Uri.parse('whatsapp://send?phone=$phone&text=$encoded'),
+      Uri.parse('https://wa.me/$phone?text=$encoded'),
+    ];
+    for (final uri in uris) {
+      try {
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+          return;
+        }
+      } catch (_) {}
     }
   }
 
@@ -323,9 +347,89 @@ class _UpsellScreenState extends State<UpsellScreen>
                       ),
                     const SizedBox(height: 12),
 
+                    // ─── Cash / WhatsApp Button ──────────────────────────
+                    if (_memberships.isNotEmpty)
+                      GestureDetector(
+                        onTap: () => _openWhatsApp(),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF25D366),
+                            borderRadius: BorderRadius.circular(18),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF25D366).withOpacity(0.35),
+                                blurRadius: 14,
+                                offset: const Offset(0, 6),
+                              ),
+                            ],
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.chat, color: Colors.white, size: 20),
+                              SizedBox(width: 8),
+                              Text(
+                                'Comprar en Efectivo',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 8),
+                    if (_memberships.isNotEmpty)
+                      const Center(
+                        child: Text(
+                          'Un asesor te atendera por WhatsApp',
+                          style: TextStyle(fontSize: 11, color: AppColors.textLight),
+                        ),
+                      ),
+                    const SizedBox(height: 12),
+
                     Center(
                       child: TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Verificando compras anteriores...'),
+                              backgroundColor: AppColors.primaryGreen,
+                            ),
+                          );
+                          final repo = MembershipsRepository();
+                          repo.restorePurchases().then((restored) {
+                            if (!mounted) return;
+                            if (restored) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Suscripcion restaurada exitosamente'),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                              context.pop();
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('No se encontraron compras anteriores'),
+                                  backgroundColor: Colors.orange,
+                                ),
+                              );
+                            }
+                          }).catchError((e) {
+                            if (!mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Error: $e'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          });
+                        },
                         child: const Text(
                           'Restaurar compra anterior',
                           style: TextStyle(

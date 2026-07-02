@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/constants/app_colors.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../domain/bmi_entity.dart';
 import '../../../subscriptions/domain/protocol_model.dart';
 import '../../../subscriptions/data/protocols_repository.dart';
 import '../../../subscriptions/presentation/screens/protocol_detail_screen.dart';
@@ -55,7 +57,7 @@ class _BmiResultScreenState extends State<BmiResultScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final categoryColor = Color(ProtocolModel.getCategoryColorValue(widget.bmi));
+    final categoryColor = Color(BmiEntity.categoryColorValueFromValue(widget.bmi));
 
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,

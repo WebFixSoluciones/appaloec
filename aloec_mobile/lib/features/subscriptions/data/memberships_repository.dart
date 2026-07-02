@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class MembershipEntity {
   final String id;
@@ -57,5 +58,37 @@ class MembershipsRepository {
         .where((doc) => doc.data()['deletedAt'] == null)
         .map((doc) => MembershipEntity.fromFirestore(doc.id, doc.data()))
         .toList();
+  }
+
+  Future<bool> restorePurchases() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return false;
+
+    final ordersSnapshot = await _firestore
+        .collection('orders')
+        .where('userId', isEqualTo: user.uid)
+        .where('status', isEqualTo: 'paid')
+        .orderBy('createdAt', descending: true)
+        .limit(1)
+        .get();
+
+    if (ordersSnapshot.docs.isEmpty) return false;
+
+    final orderData = ordersSnapshot.docs.first.data();
+    final expiry = orderData['expiresAt'] as dynamic;
+    DateTime? expiryDate;
+    if (expiry != null) expiryDate = (expiry as dynamic).toDate();
+
+    if (expiryDate != null && expiryDate.isBefore(DateTime.now())) {
+      return false;
+    }
+
+    await _firestore.collection('users').doc(user.uid).set({
+      'isPremium': true,
+      'activeMembershipId': orderData['membershipId'] ?? '',
+      'membershipExpiresAt': expiryDate,
+    }, SetOptions(merge: true));
+
+    return true;
   }
 }
