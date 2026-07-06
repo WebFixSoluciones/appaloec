@@ -312,7 +312,7 @@ export default function RecipesPage() {
     if (!videoUploadFile) { toast.error('Selecciona un archivo de video'); return; }
     setVideoUploading(true);
     const safeName = videoUploadFile.name.replace(/[^a-zA-Z0-9._-]/g, '_').replace(/\s+/g, '_');
-    const fileRef = ref(storage, `recipes_videos/${Date.now()}_${safeName}`);
+    const fileRef = ref(storage, `lessons_videos/${Date.now()}_${safeName}`);
     const uploadTask = uploadBytesResumable(fileRef, videoUploadFile);
     uploadTask.on('state_changed',
       (snapshot) => setVideoUploadProgress(Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100)),
@@ -324,7 +324,7 @@ export default function RecipesPage() {
         const url = await getDownloadURL(uploadTask.snapshot.ref);
         setVideoUrl(url);
         setVideoSource('upload');
-        toast.success('Video de receta subido correctamente');
+        toast.success('Video subido correctamente a la biblioteca compartida');
         setVideoUploading(false);
         setVideoUploadFile(null);
         setVideoUploadProgress(0);
@@ -335,18 +335,16 @@ export default function RecipesPage() {
   const loadVideoLibrary = async () => {
     setLoadingVideoLibrary(true);
     try {
-      // Usamos las recetas ya cargadas como fuente de la biblioteca:
-      // extraemos URLs únicas de videoSource === 'upload'
+      // 1. Extraer URLs únicas de videoSource === 'upload' de las recetas ya cargadas en memoria
       const seenUrls = new Set<string>();
       const fromRecipes: StoredVideo[] = recipes
         .filter((r) => r.videoSource === 'upload' && r.videoUrl)
         .reduce<StoredVideo[]>((acc, r) => {
           if (!seenUrls.has(r.videoUrl!)) {
             seenUrls.add(r.videoUrl!);
-            // Extraer nombre del archivo desde la URL
             const urlParts = decodeURIComponent(r.videoUrl!).split('/');
             const rawName = urlParts[urlParts.length - 1].split('?')[0];
-            const displayName = rawName.replace(/^recipes_videos%2F\d+_/, '').replace(/^\d+_/, '');
+            const displayName = rawName.replace(/^lessons_videos%2F\d+_/, '').replace(/^\d+_/, '');
             acc.push({
               name: displayName || rawName,
               fullPath: rawName,
@@ -356,37 +354,36 @@ export default function RecipesPage() {
           return acc;
         }, []);
 
-      // También intentamos listar desde Storage (puede funcionar con las nuevas reglas)
+      // 2. Intentar listar directamente de la carpeta compartida 'lessons_videos' en Firebase Storage
       let fromStorage: StoredVideo[] = [];
       try {
-        const folderRef = ref(storage, 'recipes_videos');
+        const folderRef = ref(storage, 'lessons_videos');
         const result = await listAll(folderRef);
         fromStorage = await Promise.all(
-          result.items
-            .filter((item) => !seenUrls.has(''))
-            .map(async (itemRef) => {
-              const url = await getDownloadURL(itemRef);
-              const displayName = itemRef.name.replace(/^\d+_/, '');
-              return {
-                name: displayName,
-                fullPath: itemRef.fullPath,
-                downloadUrl: url,
-              };
-            })
+          result.items.map(async (itemRef) => {
+            const url = await getDownloadURL(itemRef);
+            const displayName = itemRef.name.replace(/^\d+_/, '');
+            return {
+              name: displayName,
+              fullPath: itemRef.fullPath,
+              downloadUrl: url,
+            };
+          })
         );
-        // Agregar solo los que no están ya en fromRecipes
+        // Filtrar duplicados que ya vimos en fromRecipes
         fromStorage = fromStorage.filter((v) => !seenUrls.has(v.downloadUrl));
-      } catch {
-        // Si falla listAll, usamos solo los de Firestore — no mostrar error
+      } catch (err) {
+        console.warn('Storage listAll fallback to Firestore-only:', err);
       }
 
       const allVideos = [...fromRecipes, ...fromStorage];
+      // Ordenar alfabéticamente
       allVideos.sort((a, b) => a.name.localeCompare(b.name));
       setStoredVideos(allVideos);
       setShowVideoLibrary(true);
 
       if (allVideos.length === 0) {
-        toast('No hay videos de recetas subidos aún. Sube el primero desde este formulario.');
+        toast('No hay videos subidos aún en la biblioteca. Sube el primero desde este formulario.');
       }
     } catch (err) {
       console.error('Video library error:', err);
