@@ -34,6 +34,10 @@ migrate.cfg
 /build/
 build/
 
+# Android build outputs (large files — use Firebase App Distribution or Drive)
+*.apk
+*.aab
+
 # Web/Node/Next.js
 node_modules/
 .next/
