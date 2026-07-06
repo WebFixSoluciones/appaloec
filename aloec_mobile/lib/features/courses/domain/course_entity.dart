@@ -49,7 +49,7 @@ class LessonEntity {
   final String title;
   final String description;
   final String videoUrl;
-  final String videoSource; // 'youtube' | 'vimeo' | 'upload'
+  final String videoSource; // 'youtube' | 'vimeo' | 'onedrive' | 'upload'
   final int duration; // in seconds
   final int order;
 
@@ -64,6 +64,17 @@ class LessonEntity {
     required this.order,
   });
 
+  /// Returns true if the video can be embedded via WebView.
+  bool get isEmbeddable {
+    final src = videoSource.toLowerCase();
+    if (src == 'youtube' || src == 'vimeo') return true;
+    if (src == 'onedrive' &&
+        (videoUrl.contains('embed') || videoUrl.contains('onedrive.live.com'))) {
+      return true;
+    }
+    return false;
+  }
+
   factory LessonEntity.fromFirestore(String id, Map<String, dynamic> data) {
     return LessonEntity(
       id: id,
@@ -77,4 +88,5 @@ class LessonEntity {
     );
   }
 }
+
 

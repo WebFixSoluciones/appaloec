@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/aloec_image.dart';
 import '../../../profile/data/firestore_profile_repository.dart';
 import '../../domain/course_entity.dart';
 import '../providers/courses_provider.dart';
+import 'lesson_player_screen.dart';
 
 class CourseDetailScreen extends ConsumerWidget {
   final String courseId;
@@ -26,33 +26,16 @@ class CourseDetailScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _playVideo(BuildContext context, LessonEntity lesson) async {
-    final url = lesson.videoUrl;
-    if (url.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Este video no tiene una URL configurada.')),
-      );
-      return;
-    }
-
-    final uri = Uri.parse(url);
-    try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('No se pudo abrir el enlace: $url')),
-          );
-        }
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al reproducir video: $e')),
-        );
-      }
-    }
+  /// Abre el reproductor interno de lección (WebView para YouTube/Vimeo/OneDrive).
+  void _playLesson(BuildContext context, LessonEntity lesson, String courseTitle) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => LessonPlayerScreen(
+          lesson: lesson,
+          courseTitle: courseTitle,
+        ),
+      ),
+    );
   }
 
   @override
@@ -390,7 +373,9 @@ class CourseDetailScreen extends ConsumerWidget {
                                           borderRadius: BorderRadius.circular(4),
                                         ),
                                         child: Text(
-                                          lesson.videoSource.toUpperCase(),
+                                          lesson.videoSource == 'onedrive'
+                                              ? 'ONEDRIVE'
+                                              : lesson.videoSource.toUpperCase(),
                                           style: TextStyle(fontSize: 9, color: Colors.grey.shade600, fontWeight: FontWeight.bold),
                                         ),
                                       ),
@@ -401,7 +386,7 @@ class CourseDetailScreen extends ConsumerWidget {
                               trailing: const Icon(Icons.chevron_right, size: 18),
                               onTap: isLocked
                                   ? () => context.push('/premium-upsell')
-                                  : () => _playVideo(context, lesson),
+                                  : () => _playLesson(context, lesson, course.title),
                             ),
                           );
                         },

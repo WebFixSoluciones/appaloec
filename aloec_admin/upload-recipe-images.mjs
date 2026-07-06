@@ -1,7 +1,9 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { readFileSync } from 'fs';
+import { createInterface } from 'readline';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBSBkVK3-0t6kEN8IBE2saW2AuTQPzhGz4",
@@ -15,6 +17,14 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
+const auth = getAuth(app);
+
+const rl = createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+
+const ask = (query) => new Promise((resolve) => rl.question(query, resolve));
 
 const imageMap = [
   {
@@ -65,6 +75,18 @@ const imageMap = [
 ];
 
 async function uploadImages() {
+  const email = process.argv[2] || await ask('Email Administrador: ');
+  const password = process.argv[3] || await ask('Contraseña: ');
+  rl.close();
+
+  try {
+    await signInWithEmailAndPassword(auth, email.trim(), password.trim());
+    console.log('✅ Autenticado correctamente como admin');
+  } catch (e) {
+    console.error('❌ Error de autenticación:', e.message);
+    process.exit(1);
+  }
+
   console.log('Subiendo imágenes de recetas a Firebase Storage y actualizando Firestore...');
   for (const item of imageMap) {
     try {

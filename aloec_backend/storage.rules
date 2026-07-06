@@ -1,8 +1,54 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    match /{allPaths=**} {
-      allow read, write: if true;
+    
+    // Helper: verifica si el usuario está autenticado
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Archivos de perfil de usuario (avatars)
+    match /users/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Catálogo de imágenes de jugos verdes (lectura pública, escritura autenticados)
+    match /juices/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+    match /recipes/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // Catálogo de imágenes de planes y protocolos
+    match /diet_plans/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+    match /protocols/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // Catálogo de cursos (miniaturas, portadas)
+    match /courses/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // Videos de lecciones del curso
+    match /lessons_videos/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // Banners promocionales y de marketing
+    match /marketing_banners/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated();
     }
   }
 }
