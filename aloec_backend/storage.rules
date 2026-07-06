@@ -23,6 +23,12 @@ service firebase.storage {
       allow write: if isAuthenticated();
     }
 
+    // Videos de recetas
+    match /recipes_videos/{allPaths=**} {
+      allow read, list: if true;
+      allow write: if isAuthenticated();
+    }
+
     // Catálogo de imágenes de planes y protocolos
     match /diet_plans/{allPaths=**} {
       allow read: if true;
@@ -41,7 +47,7 @@ service firebase.storage {
 
     // Videos de lecciones del curso
     match /lessons_videos/{allPaths=**} {
-      allow read: if true;
+      allow read, list: if true;
       allow write: if isAuthenticated();
     }
 

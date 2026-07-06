@@ -193,10 +193,7 @@ export default function LessonsPage() {
   const loadStorageLibrary = async () => {
     setLoadingLibrary(true);
     try {
-      const folderRef = ref(storage, 'lessons_videos');
-      const result = await listAll(folderRef);
-
-      // Get all upload-type lessons to map URLs → lesson titles
+      // Fuente primaria: lecciones ya cargadas en estado (Firestore)
       const urlToLessons: Record<string, string[]> = {};
       lessons
         .filter((l) => l.videoSource === 'upload')
@@ -205,22 +202,54 @@ export default function LessonsPage() {
           urlToLessons[l.videoUrl].push(l.title);
         });
 
-      const videos: StoredVideo[] = await Promise.all(
-        result.items.map(async (itemRef) => {
-          const url = await getDownloadURL(itemRef);
-          return {
-            name: itemRef.name,
-            fullPath: itemRef.fullPath,
-            downloadUrl: url,
-            usedBy: urlToLessons[url] ?? [],
-          };
-        })
-      );
+      const seenUrls = new Set<string>();
+      const fromLessons: StoredVideo[] = lessons
+        .filter((l) => l.videoSource === 'upload' && l.videoUrl)
+        .reduce<StoredVideo[]>((acc, l) => {
+          if (!seenUrls.has(l.videoUrl)) {
+            seenUrls.add(l.videoUrl);
+            const urlParts = decodeURIComponent(l.videoUrl).split('/');
+            const rawName = urlParts[urlParts.length - 1].split('?')[0];
+            const displayName = rawName.replace(/^lessons_videos%2F\d+_/, '').replace(/^\d+_/, '');
+            acc.push({
+              name: displayName || rawName,
+              fullPath: rawName,
+              downloadUrl: l.videoUrl,
+              usedBy: urlToLessons[l.videoUrl] ?? [],
+            });
+          }
+          return acc;
+        }, []);
 
-      // Sort: most recently uploaded first (timestamp prefix in name)
-      videos.sort((a, b) => b.name.localeCompare(a.name));
-      setStoredVideos(videos);
+      // Fuente secundaria: intentar listAll desde Storage
+      let fromStorage: StoredVideo[] = [];
+      try {
+        const folderRef = ref(storage, 'lessons_videos');
+        const result = await listAll(folderRef);
+        const storageItems = await Promise.all(
+          result.items.map(async (itemRef) => {
+            const url = await getDownloadURL(itemRef);
+            return {
+              name: itemRef.name.replace(/^\d+_/, ''),
+              fullPath: itemRef.fullPath,
+              downloadUrl: url,
+              usedBy: urlToLessons[url] ?? [],
+            };
+          })
+        );
+        fromStorage = storageItems.filter((v) => !seenUrls.has(v.downloadUrl));
+      } catch {
+        // Si falla listAll, usamos solo los de Firestore — no mostrar error
+      }
+
+      const allVideos = [...fromLessons, ...fromStorage];
+      allVideos.sort((a, b) => b.name.localeCompare(a.name));
+      setStoredVideos(allVideos);
       setShowLibrary(true);
+
+      if (allVideos.length === 0) {
+        toast('No hay videos subidos aún. Sube el primero desde este formulario.');
+      }
     } catch (err) {
       console.error('Error loading storage library:', err);
       toast.error('No se pudo cargar la biblioteca de videos');

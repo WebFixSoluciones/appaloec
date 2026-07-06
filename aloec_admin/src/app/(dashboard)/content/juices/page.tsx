@@ -335,19 +335,61 @@ export default function RecipesPage() {
   const loadVideoLibrary = async () => {
     setLoadingVideoLibrary(true);
     try {
-      const folderRef = ref(storage, 'recipes_videos');
-      const result = await listAll(folderRef);
-      const videos: StoredVideo[] = await Promise.all(
-        result.items.map(async (itemRef) => ({
-          name: itemRef.name,
-          fullPath: itemRef.fullPath,
-          downloadUrl: await getDownloadURL(itemRef),
-        }))
-      );
-      videos.sort((a, b) => b.name.localeCompare(a.name));
-      setStoredVideos(videos);
+      // Usamos las recetas ya cargadas como fuente de la biblioteca:
+      // extraemos URLs únicas de videoSource === 'upload'
+      const seenUrls = new Set<string>();
+      const fromRecipes: StoredVideo[] = recipes
+        .filter((r) => r.videoSource === 'upload' && r.videoUrl)
+        .reduce<StoredVideo[]>((acc, r) => {
+          if (!seenUrls.has(r.videoUrl!)) {
+            seenUrls.add(r.videoUrl!);
+            // Extraer nombre del archivo desde la URL
+            const urlParts = decodeURIComponent(r.videoUrl!).split('/');
+            const rawName = urlParts[urlParts.length - 1].split('?')[0];
+            const displayName = rawName.replace(/^recipes_videos%2F\d+_/, '').replace(/^\d+_/, '');
+            acc.push({
+              name: displayName || rawName,
+              fullPath: rawName,
+              downloadUrl: r.videoUrl!,
+            });
+          }
+          return acc;
+        }, []);
+
+      // También intentamos listar desde Storage (puede funcionar con las nuevas reglas)
+      let fromStorage: StoredVideo[] = [];
+      try {
+        const folderRef = ref(storage, 'recipes_videos');
+        const result = await listAll(folderRef);
+        fromStorage = await Promise.all(
+          result.items
+            .filter((item) => !seenUrls.has(''))
+            .map(async (itemRef) => {
+              const url = await getDownloadURL(itemRef);
+              const displayName = itemRef.name.replace(/^\d+_/, '');
+              return {
+                name: displayName,
+                fullPath: itemRef.fullPath,
+                downloadUrl: url,
+              };
+            })
+        );
+        // Agregar solo los que no están ya en fromRecipes
+        fromStorage = fromStorage.filter((v) => !seenUrls.has(v.downloadUrl));
+      } catch {
+        // Si falla listAll, usamos solo los de Firestore — no mostrar error
+      }
+
+      const allVideos = [...fromRecipes, ...fromStorage];
+      allVideos.sort((a, b) => a.name.localeCompare(b.name));
+      setStoredVideos(allVideos);
       setShowVideoLibrary(true);
-    } catch {
+
+      if (allVideos.length === 0) {
+        toast('No hay videos de recetas subidos aún. Sube el primero desde este formulario.');
+      }
+    } catch (err) {
+      console.error('Video library error:', err);
       toast.error('No se pudo cargar la biblioteca de videos');
     } finally {
       setLoadingVideoLibrary(false);
