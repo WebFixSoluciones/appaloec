@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { db, storage } from '../../../../lib/firebase/config';
 import { logAdminAction } from '../../../../lib/firebase/audit';
 import { collection, getDocs, doc, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytesResumable, getDownloadURL, listAll, getMetadata } from 'firebase/storage';
 import { 
   Play, 
   Plus, 
@@ -17,6 +17,10 @@ import {
   Info,
   ExternalLink,
   CheckCircle2,
+  FolderOpen,
+  AlertTriangle,
+  X,
+  Film,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -86,6 +90,18 @@ export default function LessonsPage() {
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
+
+  // ─── Storage Video Library ───────────────────────────────────────────────
+  interface StoredVideo {
+    name: string;        // filename only
+    fullPath: string;    // Storage path
+    downloadUrl: string; // Public URL
+    usedBy: string[];    // Lesson titles using this video
+  }
+  const [storedVideos, setStoredVideos] = useState<StoredVideo[]>([]);
+  const [loadingLibrary, setLoadingLibrary] = useState(false);
+  const [showLibrary, setShowLibrary] = useState(false);
+  const [duplicateWarning, setDuplicateWarning] = useState<StoredVideo | null>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -173,12 +189,60 @@ export default function LessonsPage() {
     setIsModalOpen(true);
   };
 
+  // ─── Load Storage video library ─────────────────────────────────────────
+  const loadStorageLibrary = async () => {
+    setLoadingLibrary(true);
+    try {
+      const folderRef = ref(storage, 'lessons_videos');
+      const result = await listAll(folderRef);
+
+      // Get all upload-type lessons to map URLs → lesson titles
+      const urlToLessons: Record<string, string[]> = {};
+      lessons
+        .filter((l) => l.videoSource === 'upload')
+        .forEach((l) => {
+          if (!urlToLessons[l.videoUrl]) urlToLessons[l.videoUrl] = [];
+          urlToLessons[l.videoUrl].push(l.title);
+        });
+
+      const videos: StoredVideo[] = await Promise.all(
+        result.items.map(async (itemRef) => {
+          const url = await getDownloadURL(itemRef);
+          return {
+            name: itemRef.name,
+            fullPath: itemRef.fullPath,
+            downloadUrl: url,
+            usedBy: urlToLessons[url] ?? [],
+          };
+        })
+      );
+
+      // Sort: most recently uploaded first (timestamp prefix in name)
+      videos.sort((a, b) => b.name.localeCompare(a.name));
+      setStoredVideos(videos);
+      setShowLibrary(true);
+    } catch (err) {
+      console.error('Error loading storage library:', err);
+      toast.error('No se pudo cargar la biblioteca de videos');
+    } finally {
+      setLoadingLibrary(false);
+    }
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       if (file.size > 200 * 1024 * 1024) {
         toast.error('El video es demasiado grande. Máximo 200 MB permitido.');
         return;
+      }
+      // ── Check for duplicate filename in stored videos ──
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_').replace(/\s+/g, '_');
+      const match = storedVideos.find((v) => v.name.includes(safeName));
+      if (match) {
+        setDuplicateWarning(match);
+      } else {
+        setDuplicateWarning(null);
       }
       setUploadFile(file);
     }
@@ -599,10 +663,99 @@ export default function LessonsPage() {
 
                 {/* ─── Upload Panel ───────────────────────────────────────── */}
                 {videoSource === 'upload' ? (
-                  <div className="border border-ink-200 p-4 bg-ink-50 space-y-3">
-                    <span className="text-xs font-bold text-ink-700 uppercase block">
-                      Carga de Archivo de Video
-                    </span>
+                  <div className="border border-purple-200 bg-purple-50/40 p-4 space-y-3">
+                    {/* Header with library button */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-ink-700 uppercase">
+                        Firebase Storage
+                      </span>
+                      <button
+                        type="button"
+                        onClick={loadStorageLibrary}
+                        disabled={loadingLibrary || uploading || saving}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-purple-300 text-purple-700 text-xs font-bold hover:bg-purple-50 transition-colors rounded-sm disabled:opacity-50"
+                      >
+                        <FolderOpen size={13} />
+                        {loadingLibrary ? 'Cargando...' : 'Usar video existente'}
+                      </button>
+                    </div>
+
+                    {/* ── Library picker ── */}
+                    {showLibrary && storedVideos.length > 0 && (
+                      <div className="border border-purple-200 bg-white rounded-sm overflow-hidden">
+                        <div className="flex items-center justify-between px-3 py-2 bg-purple-50 border-b border-purple-200">
+                          <span className="text-[10px] font-bold text-purple-700 uppercase">
+                            {storedVideos.length} video{storedVideos.length !== 1 ? 's' : ''} en Storage
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setShowLibrary(false)}
+                            className="text-purple-400 hover:text-purple-700"
+                          >
+                            <X size={13} />
+                          </button>
+                        </div>
+                        <div className="max-h-48 overflow-y-auto divide-y divide-purple-50">
+                          {storedVideos.map((v) => {
+                            const isSelected = videoUrl === v.downloadUrl;
+                            const isInUse = v.usedBy.length > 0;
+                            // Strip the timestamp prefix for display
+                            const displayName = v.name.replace(/^\d+_/, '');
+                            return (
+                              <button
+                                key={v.fullPath}
+                                type="button"
+                                onClick={() => {
+                                  setVideoUrl(v.downloadUrl);
+                                  setShowLibrary(false);
+                                  setUploadFile(null);
+                                  setDuplicateWarning(null);
+                                  toast.success(`Video seleccionado: ${displayName}`);
+                                }}
+                                className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors ${
+                                  isSelected
+                                    ? 'bg-purple-100 border-l-2 border-purple-500'
+                                    : 'hover:bg-purple-50/60'
+                                }`}
+                              >
+                                <Film size={16} className="text-purple-400 shrink-0" />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs font-bold text-ink-800 truncate">
+                                    {displayName}
+                                  </p>
+                                  {isInUse ? (
+                                    <p className="text-[10px] text-green-600 flex items-center gap-1 mt-0.5">
+                                      <CheckCircle2 size={9} />
+                                      Usado en: {v.usedBy.join(', ')}
+                                    </p>
+                                  ) : (
+                                    <p className="text-[10px] text-ink-400 mt-0.5">Sin asignar</p>
+                                  )}
+                                </div>
+                                {isSelected && (
+                                  <CheckCircle2 size={14} className="text-purple-600 shrink-0" />
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {showLibrary && storedVideos.length === 0 && !loadingLibrary && (
+                      <p className="text-xs text-ink-400 text-center py-2">
+                        No hay videos subidos en Storage todavía.
+                      </p>
+                    )}
+
+                    {/* ── Divider ── */}
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-px bg-purple-200" />
+                      <span className="text-[10px] text-purple-400 font-bold">O SUBIR NUEVO</span>
+                      <div className="flex-1 h-px bg-purple-200" />
+                    </div>
+
+                    {/* ── File picker + upload button ── */}
                     <div className="flex gap-2">
                       <input
                         type="file"
@@ -630,14 +783,61 @@ export default function LessonsPage() {
                         </button>
                       )}
                     </div>
-                    {videoUrl && (
+
+                    {/* ── Duplicate warning ── */}
+                    {duplicateWarning && (
+                      <div className="border border-amber-300 bg-amber-50 rounded-sm p-3 space-y-2">
+                        <div className="flex items-start gap-2">
+                          <AlertTriangle size={14} className="text-amber-600 shrink-0 mt-0.5" />
+                          <div className="flex-1">
+                            <p className="text-xs font-bold text-amber-800">
+                              ¡Este video ya existe en Storage!
+                            </p>
+                            <p className="text-[10px] text-amber-700 mt-0.5 truncate">
+                              {duplicateWarning.name.replace(/^\d+_/, '')}
+                            </p>
+                            {duplicateWarning.usedBy.length > 0 && (
+                              <p className="text-[10px] text-amber-600 mt-0.5">
+                                Ya usado en: <strong>{duplicateWarning.usedBy.join(', ')}</strong>
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setVideoUrl(duplicateWarning.downloadUrl);
+                              setUploadFile(null);
+                              setDuplicateWarning(null);
+                              toast.success('Usando el video existente de Storage');
+                            }}
+                            className="flex-1 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-sm transition-colors"
+                          >
+                            Usar el existente
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDuplicateWarning(null)}
+                            className="flex-1 py-1.5 border border-amber-300 text-amber-700 text-xs font-bold rounded-sm hover:bg-amber-50 transition-colors"
+                          >
+                            Subir de todas formas
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ── Success indicator ── */}
+                    {videoUrl && !duplicateWarning && (
                       <p className="text-[10px] text-green-700 font-bold flex items-center gap-1">
-                        <CheckCircle2 size={12} /> Video subido correctamente a Firebase Storage
+                        <CheckCircle2 size={12} /> Video listo en Firebase Storage
                       </p>
                     )}
+
                   </div>
                 ) : (
                   /* URL input for YouTube, Vimeo and OneDrive */
+
                   <div>
                     <input
                       type="url"
