@@ -85,6 +85,101 @@ class PayphoneService {
     return input.replaceAll(RegExp(r'[^0-9]'), '');
   }
 
+  Future<PayphoneTransactionResult> createPaymentLink({
+    required int amountCents,
+    required String clientTransactionId,
+    required String email,
+    required String reference,
+  }) async {
+    try {
+      final body = <String, dynamic>{
+        'amount': amountCents,
+        'amountWithoutTax': amountCents,
+        'amountWithTax': 0,
+        'tax': 0,
+        'service': 0,
+        'tip': 0,
+        'clientTransactionId': clientTransactionId,
+        'reference': reference,
+        'storeId': _storeId,
+        'currency': 'USD',
+        'email': email.isNotEmpty ? email : 'cliente@aloec.com',
+      };
+
+      // Endpoint para crear el botón de pagos / link de pago
+      final response = await http
+          .post(
+            Uri.parse('$_baseUrl/Pay'),
+            headers: _headers,
+            body: jsonEncode(body),
+          )
+          .timeout(_timeout);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final paymentId = data['paymentId'] as int?;
+        final payUrl = data['payWithPayPhone'] as String?;
+
+        if (paymentId != null && payUrl != null) {
+          // Reutilizamos transactionId para mapear el paymentId
+          return PayphoneTransactionResult(
+            success: true,
+            transactionId: paymentId,
+          )..paymentUrl = payUrl;
+        }
+
+        return PayphoneTransactionResult(
+          success: false,
+          errorMessage: _parseError(data, 'Respuesta incompleta de Payphone'),
+        );
+      }
+
+      String errorMsg;
+      try {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        errorMsg = _parseError(data, 'Error HTTP ${response.statusCode}');
+      } catch (_) {
+        errorMsg = 'Error del servidor Payphone (${response.statusCode})';
+      }
+
+      return PayphoneTransactionResult(success: false, errorMessage: errorMsg);
+    } on http.ClientException catch (e) {
+      return PayphoneTransactionResult(
+        success: false,
+        errorMessage: 'Error de conexion: ${e.message}',
+      );
+    } on TimeoutException {
+      return PayphoneTransactionResult(
+        success: false,
+        errorMessage: 'Tiempo de espera agotado. Intenta nuevamente.',
+      );
+    } catch (e) {
+      return PayphoneTransactionResult(
+        success: false,
+        errorMessage: 'Error inesperado al generar link: $e',
+      );
+    }
+  }
+
+  Future<PayphoneStatusResult?> checkPaymentStatus(int paymentId) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse('$_baseUrl/Pay/$paymentId'),
+            headers: _headers,
+          )
+          .timeout(_timeout);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        return PayphoneStatusResult.fromPayphoneJson(data);
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   Future<PayphoneTransactionResult> createCardSale({
     required String cardNumber,
     required int expMonth,
@@ -200,3 +295,10 @@ class PayphoneService {
     return fallback;
   }
 }
+
+extension PayphoneTransactionResultExt on PayphoneTransactionResult {
+  private static final _expando = Expando<String>();
+  String? get paymentUrl => _expando[this];
+  set paymentUrl(String? value) => _expando[this] = value;
+}
+
