@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { db, storage } from '../../../../lib/firebase/config';
 import { logAdminAction } from '../../../../lib/firebase/audit';
 import { collection, getDocs, doc, setDoc, updateDoc } from 'firebase/firestore';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytesResumable, getDownloadURL, listAll } from 'firebase/storage';
 import {
   UtensilsCrossed,
   Plus,
@@ -20,7 +20,13 @@ import {
   MinusCircle,
   Tag,
   Eye,
-  EyeOff
+  EyeOff,
+  Film,
+  FolderOpen,
+  AlertTriangle,
+  X,
+  Video,
+  CheckCircle2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -51,6 +57,8 @@ interface Recipe {
   title: string;
   description: string;
   imageUrl: string;
+  videoUrl?: string;
+  videoSource?: 'youtube' | 'vimeo' | 'upload' | 'onedrive' | '';
   nutritionalValues: NutritionalValues;
   prepTime: number;
   difficulty: 'Fácil' | 'Medio' | 'Difícil';
@@ -101,6 +109,18 @@ export default function RecipesPage() {
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
+
+  // Video fields
+  const [videoUrl, setVideoUrl] = useState('');
+  const [videoSource, setVideoSource] = useState<'youtube' | 'vimeo' | 'upload' | 'onedrive' | ''>('');
+  const [videoUploadFile, setVideoUploadFile] = useState<File | null>(null);
+  const [videoUploadProgress, setVideoUploadProgress] = useState(0);
+  const [videoUploading, setVideoUploading] = useState(false);
+  // Library
+  interface StoredVideo { name: string; fullPath: string; downloadUrl: string; }
+  const [storedVideos, setStoredVideos] = useState<StoredVideo[]>([]);
+  const [loadingVideoLibrary, setLoadingVideoLibrary] = useState(false);
+  const [showVideoLibrary, setShowVideoLibrary] = useState(false);
 
   useEffect(() => {
     async function loadRecipes() {
@@ -157,6 +177,11 @@ export default function RecipesPage() {
     setDescription('');
     setPreparation('');
     setImageUrl('');
+    setVideoUrl('');
+    setVideoSource('');
+    setVideoUploadFile(null);
+    setVideoUploadProgress(0);
+    setShowVideoLibrary(false);
     setCalories(0);
     setProteins(0);
     setCarbs(0);
@@ -184,6 +209,11 @@ export default function RecipesPage() {
     setDescription(r.description);
     setPreparation(r.preparation || '');
     setImageUrl(r.imageUrl);
+    setVideoUrl(r.videoUrl || '');
+    setVideoSource(r.videoSource || '');
+    setVideoUploadFile(null);
+    setVideoUploadProgress(0);
+    setShowVideoLibrary(false);
     setCalories(r.nutritionalValues.calories);
     setProteins(r.nutritionalValues.proteins);
     setCarbs(r.nutritionalValues.carbs);
@@ -266,6 +296,64 @@ export default function RecipesPage() {
     );
   };
 
+  // ─── Video upload for recipes ─────────────────────────────────────────────
+  const handleVideoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (file.size > 200 * 1024 * 1024) {
+        toast.error('El video es demasiado grande. Máximo 200 MB permitido.');
+        return;
+      }
+      setVideoUploadFile(file);
+    }
+  };
+
+  const handleUploadVideo = () => {
+    if (!videoUploadFile) { toast.error('Selecciona un archivo de video'); return; }
+    setVideoUploading(true);
+    const safeName = videoUploadFile.name.replace(/[^a-zA-Z0-9._-]/g, '_').replace(/\s+/g, '_');
+    const fileRef = ref(storage, `recipes_videos/${Date.now()}_${safeName}`);
+    const uploadTask = uploadBytesResumable(fileRef, videoUploadFile);
+    uploadTask.on('state_changed',
+      (snapshot) => setVideoUploadProgress(Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100)),
+      (error) => {
+        toast.error(`Error al subir video: ${error.message}`);
+        setVideoUploading(false);
+      },
+      async () => {
+        const url = await getDownloadURL(uploadTask.snapshot.ref);
+        setVideoUrl(url);
+        setVideoSource('upload');
+        toast.success('Video de receta subido correctamente');
+        setVideoUploading(false);
+        setVideoUploadFile(null);
+        setVideoUploadProgress(0);
+      }
+    );
+  };
+
+  const loadVideoLibrary = async () => {
+    setLoadingVideoLibrary(true);
+    try {
+      const folderRef = ref(storage, 'recipes_videos');
+      const result = await listAll(folderRef);
+      const videos: StoredVideo[] = await Promise.all(
+        result.items.map(async (itemRef) => ({
+          name: itemRef.name,
+          fullPath: itemRef.fullPath,
+          downloadUrl: await getDownloadURL(itemRef),
+        }))
+      );
+      videos.sort((a, b) => b.name.localeCompare(a.name));
+      setStoredVideos(videos);
+      setShowVideoLibrary(true);
+    } catch {
+      toast.error('No se pudo cargar la biblioteca de videos');
+    } finally {
+      setLoadingVideoLibrary(false);
+    }
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -285,11 +373,12 @@ export default function RecipesPage() {
       const id = editingId || `recipe_${Date.now()}`;
       const docRef = doc(db, 'recipes', id);
 
-      const recipeData = {
+      const recipeData: Record<string, any> = {
         title: title.trim(),
         description: description.trim(),
         preparation: preparation.trim(),
         imageUrl: imageUrl.trim(),
+        ...(videoUrl.trim() ? { videoUrl: videoUrl.trim(), videoSource } : {}),
         nutritionalValues: {
           calories: Number(calories),
           proteins: Number(proteins),
@@ -328,7 +417,8 @@ export default function RecipesPage() {
           description: `Creó receta: ${title}`,
           newValues: fullData,
         });
-        setRecipes([...recipes, { id, ...fullData }]);
+        setRecipes([...recipes, { id, ...fullData } as unknown as Recipe]);
+
         toast.success('Receta creada', { id: toastId });
       }
       setIsModalOpen(false);
@@ -565,7 +655,127 @@ export default function RecipesPage() {
                 )}
               </div>
 
+              {/* ─── Video Section ─────────────────────────────────────── */}
+              <div className="border border-emerald-200 bg-emerald-50/30 p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-ink-700 uppercase flex items-center gap-1.5">
+                    <Video size={14} className="text-emerald-600" /> Video de la Receta
+                    <span className="text-[10px] font-normal text-ink-400 normal-case">(opcional)</span>
+                  </span>
+                  {videoUrl && (
+                    <button type="button" onClick={() => { setVideoUrl(''); setVideoSource(''); }}
+                      className="text-[10px] text-red-500 hover:text-red-700 font-bold flex items-center gap-1">
+                      <X size={11} /> Quitar video
+                    </button>
+                  )}
+                </div>
+
+                {/* Source selector */}
+                <div className="grid grid-cols-4 gap-1.5">
+                  {([
+                    { value: 'youtube',  label: '▶ YouTube',   active: 'border-red-300 bg-red-50 text-red-700' },
+                    { value: 'vimeo',    label: '◈ Vimeo',     active: 'border-blue-300 bg-blue-50 text-blue-700' },
+                    { value: 'onedrive', label: '☁ OneDrive',  active: 'border-sky-300 bg-sky-50 text-sky-700' },
+                    { value: 'upload',   label: '⬆ Storage',   active: 'border-purple-300 bg-purple-50 text-purple-700' },
+                  ] as const).map((src) => (
+                    <label key={src.value}
+                      className={`flex items-center justify-center p-2 border rounded-sm cursor-pointer text-[10px] font-bold select-none transition-all ${
+                        videoSource === src.value ? src.active + ' border-2' : 'border-ink-200 bg-white text-ink-500 hover:bg-ink-50'
+                      }`}>
+                      <input type="radio" name="videoSource" value={src.value} className="sr-only"
+                        checked={videoSource === src.value}
+                        onChange={() => { setVideoSource(src.value); setVideoUrl(''); }}
+                      />
+                      {src.label}
+                    </label>
+                  ))}
+                </div>
+
+                {/* URL input — YouTube / Vimeo / OneDrive */}
+                {(videoSource === 'youtube' || videoSource === 'vimeo' || videoSource === 'onedrive') && (
+                  <div>
+                    <input type="url" className="w-full p-2.5 bg-white border border-ink-300 outline-none focus:border-ink-900 text-xs font-mono"
+                      placeholder={
+                        videoSource === 'youtube'  ? 'https://www.youtube.com/watch?v=...' :
+                        videoSource === 'vimeo'    ? 'https://vimeo.com/...' :
+                                                    'https://1drv.ms/v/... o embed de OneDrive'
+                      }
+                      value={videoUrl}
+                      onChange={(e) => setVideoUrl(e.target.value)}
+                      disabled={saving}
+                    />
+                    {videoUrl && (
+                      <p className="text-[10px] text-green-700 font-bold flex items-center gap-1 mt-1.5">
+                        <CheckCircle2 size={11} /> URL guardada — el video se reproducirá dentro de la app
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Firebase Storage upload */}
+                {videoSource === 'upload' && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] text-purple-700 font-bold">Firebase Storage</span>
+                      <button type="button" onClick={loadVideoLibrary} disabled={loadingVideoLibrary || videoUploading}
+                        className="flex items-center gap-1 px-2 py-1 bg-white border border-purple-300 text-purple-700 text-[10px] font-bold hover:bg-purple-50 rounded-sm disabled:opacity-50">
+                        <FolderOpen size={11} />{loadingVideoLibrary ? 'Cargando...' : 'Usar existente'}
+                      </button>
+                    </div>
+
+                    {/* Library picker */}
+                    {showVideoLibrary && (
+                      <div className="border border-purple-200 bg-white rounded-sm overflow-hidden">
+                        <div className="flex items-center justify-between px-2 py-1.5 bg-purple-50 border-b border-purple-100">
+                          <span className="text-[10px] font-bold text-purple-700">{storedVideos.length} videos en Storage</span>
+                          <button type="button" onClick={() => setShowVideoLibrary(false)} className="text-purple-400 hover:text-purple-700"><X size={12} /></button>
+                        </div>
+                        <div className="max-h-36 overflow-y-auto divide-y divide-purple-50">
+                          {storedVideos.length === 0 ? (
+                            <p className="text-[10px] text-ink-400 p-2 text-center">No hay videos en Storage</p>
+                          ) : storedVideos.map((v) => (
+                            <button key={v.fullPath} type="button"
+                              onClick={() => { setVideoUrl(v.downloadUrl); setShowVideoLibrary(false); toast.success('Video seleccionado'); }}
+                              className={`w-full flex items-center gap-2 px-2 py-2 text-left hover:bg-purple-50 ${videoUrl === v.downloadUrl ? 'bg-purple-100' : ''}`}>
+                              <Film size={12} className="text-purple-400 shrink-0" />
+                              <span className="text-[10px] text-ink-700 truncate">{v.name.replace(/^\d+_/, '')}</span>
+                              {videoUrl === v.downloadUrl && <CheckCircle2 size={11} className="text-purple-600 ml-auto shrink-0" />}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex gap-2">
+                      <input type="file" accept="video/*" onChange={handleVideoFileChange} className="hidden" id="recipeVideoFile" disabled={videoUploading || saving} />
+                      <label htmlFor="recipeVideoFile"
+                        className="flex-1 p-2 bg-white border border-ink-300 cursor-pointer text-[10px] font-bold text-ink-700 hover:bg-ink-50 flex items-center justify-center gap-1 transition-colors">
+                        <UploadCloud size={13} />{videoUploadFile ? videoUploadFile.name : 'Seleccionar video (.mp4/.mov)'}
+                      </label>
+                      {videoUploadFile && (
+                        <button type="button" onClick={handleUploadVideo}
+                          className="px-3 py-1.5 bg-[#008000] hover:bg-[#006400] text-white font-bold text-[10px] shrink-0" disabled={videoUploading || saving}>
+                          {videoUploading ? `${videoUploadProgress}%` : 'Subir'}
+                        </button>
+                      )}
+                    </div>
+                    {videoUrl && !videoUploadFile && (
+                      <p className="text-[10px] text-green-700 font-bold flex items-center gap-1">
+                        <CheckCircle2 size={11} /> Video listo — se reproducirá dentro de la app
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {!videoSource && (
+                  <p className="text-[10px] text-ink-400 text-center py-1">
+                    Selecciona la fuente del video para agregar uno a esta receta
+                  </p>
+                )}
+              </div>
+
               {/* PrepTime, Difficulty, Order, Active, Premium */}
+
               <div className="grid grid-cols-5 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-ink-700 uppercase mb-2">Tiempo (min)</label>

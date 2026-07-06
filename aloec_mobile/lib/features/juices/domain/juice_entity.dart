@@ -35,6 +35,8 @@ class RecipeEntity {
   final String title;
   final String description;
   final String imageUrl;
+  final String videoUrl;       // URL del video de la receta (opcional)
+  final String videoSource;    // 'youtube' | 'vimeo' | 'upload' | 'onedrive' | ''
   final List<String> ingredients;
   final String preparation;
   final List<String> benefits;
@@ -52,6 +54,8 @@ class RecipeEntity {
     required this.title,
     required this.description,
     required this.imageUrl,
+    this.videoUrl = '',
+    this.videoSource = '',
     required this.ingredients,
     required this.preparation,
     required this.benefits,
@@ -72,6 +76,8 @@ class RecipeEntity {
       title: data['title'] ?? '',
       description: data['description'] ?? '',
       imageUrl: data['imageUrl'] ?? '',
+      videoUrl: data['videoUrl'] ?? '',
+      videoSource: data['videoSource'] ?? '',
       ingredients: List<String>.from(data['ingredients'] ?? []),
       preparation: data['preparation'] ?? '',
       benefits: List<String>.from(data['benefits'] ?? []),
