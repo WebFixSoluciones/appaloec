@@ -49,36 +49,30 @@ class MembershipsRepository {
 
   Future<List<MembershipEntity>> getActiveMemberships() async {
     try {
+      // Fetch all memberships and filter client-side:
+      // — isActive must be true
+      // — deletedAt must NOT exist (soft delete pattern used by admin)
       final snapshot = await _firestore
           .collection('memberships')
-          .where('isActive', isEqualTo: true)
           .orderBy('price')
           .get();
 
       final memberships = snapshot.docs
+          .where((doc) {
+            final data = doc.data();
+            // Exclude soft-deleted documents
+            if (data.containsKey('deletedAt') && data['deletedAt'] != null) {
+              return false;
+            }
+            return data['isActive'] == true;
+          })
           .map((doc) => MembershipEntity.fromFirestore(doc.id, doc.data()))
           .toList();
-
-      if (memberships.isEmpty) {
-        final allSnap = await _firestore
-            .collection('memberships')
-            .get();
-        final allDocs = allSnap.docs
-            .map((doc) => MembershipEntity.fromFirestore(doc.id, doc.data()))
-            .toList();
-        if (allDocs.isNotEmpty) {
-          return allDocs;
-        }
-      }
 
       return memberships;
     } catch (e) {
-      final allSnap = await _firestore
-          .collection('memberships')
-          .get();
-      return allSnap.docs
-          .map((doc) => MembershipEntity.fromFirestore(doc.id, doc.data()))
-          .toList();
+      // On error, return empty list — do NOT show deleted plans as fallback
+      return [];
     }
   }
 
