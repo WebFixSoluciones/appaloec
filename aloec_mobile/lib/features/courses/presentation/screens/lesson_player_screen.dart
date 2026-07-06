@@ -59,7 +59,7 @@ String _vimeoEmbed(String url) {
 
 bool _needsWebView(LessonEntity lesson) {
   final source = lesson.videoSource.toLowerCase();
-  if (source == 'upload') return false;
+  // Solo los enlaces directos de OneDrive sin embed (1drv.ms) abren en navegador.
   if (source == 'onedrive' && lesson.videoUrl.contains('1drv.ms')) return false;
   return true;
 }
@@ -86,7 +86,7 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
   @override
   void initState() {
     super.initState();
-    // Forzar pantalla horizontal durante reproducción
+    // Forzar orientaciones
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
@@ -94,7 +94,6 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
     ]);
 
     if (_needsWebView(widget.lesson)) {
-      final embedUrl = buildEmbedUrl(widget.lesson);
       _webViewController = WebViewController()
         ..setJavaScriptMode(JavaScriptMode.unrestricted)
         ..setNavigationDelegate(
@@ -109,8 +108,34 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
               _hasError = true;
             }),
           ),
-        )
-        ..loadRequest(Uri.parse(embedUrl));
+        );
+
+      final source = widget.lesson.videoSource.toLowerCase();
+      if (source == 'upload') {
+        // Generar plantilla HTML5 inline para videos directos de Firebase Storage
+        final html = '''
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+              <style>
+                body { margin: 0; padding: 0; background: black; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+                video { width: 100%; height: 100%; object-fit: contain; }
+              </style>
+            </head>
+            <body>
+              <video controls autoplay playsinline>
+                <source src="${widget.lesson.videoUrl}" type="video/mp4">
+                Tu dispositivo no soporta este reproductor de video.
+              </video>
+            </body>
+          </html>
+        ''';
+        _webViewController.loadHtmlString(html);
+      } else {
+        final embedUrl = buildEmbedUrl(widget.lesson);
+        _webViewController.loadRequest(Uri.parse(embedUrl));
+      }
     }
   }
 

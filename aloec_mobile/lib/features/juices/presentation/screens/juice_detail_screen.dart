@@ -56,12 +56,9 @@ String _buildEmbedUrl(String videoUrl, String videoSource) {
 
 bool _canEmbed(String videoUrl, String videoSource) {
   final src = videoSource.toLowerCase();
-  if (src == 'youtube' || src == 'vimeo') return true;
-  if (src == 'onedrive' &&
-      (videoUrl.contains('embed') || videoUrl.contains('onedrive.live.com'))) {
-    return true;
-  }
-  return false;
+  // OneDrive short link (1drv.ms) es lo único que requiere navegador
+  if (src == 'onedrive' && videoUrl.contains('1drv.ms')) return false;
+  return true;
 }
 
 // ─── Inline Video Player Widget ───────────────────────────────────────────────
@@ -85,7 +82,6 @@ class _RecipeVideoPlayerState extends State<_RecipeVideoPlayer> {
   void initState() {
     super.initState();
     if (_canEmbed(widget.videoUrl, widget.videoSource)) {
-      final embedUrl = _buildEmbedUrl(widget.videoUrl, widget.videoSource);
       _controller = WebViewController()
         ..setJavaScriptMode(JavaScriptMode.unrestricted)
         ..setNavigationDelegate(NavigationDelegate(
@@ -98,8 +94,33 @@ class _RecipeVideoPlayerState extends State<_RecipeVideoPlayer> {
             _isLoading = false;
             _hasError = true;
           }),
-        ))
-        ..loadRequest(Uri.parse(embedUrl));
+        ));
+
+      final src = widget.videoSource.toLowerCase();
+      if (src == 'upload') {
+        final html = '''
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+              <style>
+                body { margin: 0; padding: 0; background: black; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+                video { width: 100%; height: 100%; object-fit: contain; }
+              </style>
+            </head>
+            <body>
+              <video controls autoplay playsinline>
+                <source src="${widget.videoUrl}" type="video/mp4">
+                Tu dispositivo no soporta este reproductor de video.
+              </video>
+            </body>
+          </html>
+        ''';
+        _controller.loadHtmlString(html);
+      } else {
+        final embedUrl = _buildEmbedUrl(widget.videoUrl, widget.videoSource);
+        _controller.loadRequest(Uri.parse(embedUrl));
+      }
     }
   }
 
@@ -129,7 +150,7 @@ class _RecipeVideoPlayerState extends State<_RecipeVideoPlayer> {
     final canEmbed = _canEmbed(widget.videoUrl, widget.videoSource);
 
     if (!canEmbed) {
-      // Firebase Storage / OneDrive short link → botón de reproducción
+      // OneDrive short link → botón de reproducción
       return Container(
         width: double.infinity,
         height: 200,
@@ -137,10 +158,10 @@ class _RecipeVideoPlayerState extends State<_RecipeVideoPlayer> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.play_circle_fill, color: Colors.white38, size: 56),
+            const Icon(Icons.cloud_queue, color: Colors.white38, size: 56),
             const SizedBox(height: 12),
             const Text(
-              'Video de la receta',
+              'Enlace externo de OneDrive',
               style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
@@ -151,8 +172,8 @@ class _RecipeVideoPlayerState extends State<_RecipeVideoPlayer> {
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              icon: const Icon(Icons.play_arrow, size: 18),
-              label: const Text('Ver video', style: TextStyle(fontWeight: FontWeight.bold)),
+              icon: const Icon(Icons.open_in_new, size: 18),
+              label: const Text('Abrir en OneDrive', style: TextStyle(fontWeight: FontWeight.bold)),
               onPressed: () async {
                 final uri = Uri.parse(widget.videoUrl);
                 if (await canLaunchUrl(uri)) {
