@@ -252,7 +252,7 @@ export default function LessonsPage() {
         title: title.trim(),
         description: description.trim(),
         videoUrl: finalVideoUrl,
-        videoSourceRaw: videoSource === 'onedrive' ? videoUrl.trim() : undefined,
+        ...(videoSource === 'onedrive' ? { videoSourceRaw: videoUrl.trim() } : {}),
         videoSource,
         duration: Number(duration),
         order: Number(order),
