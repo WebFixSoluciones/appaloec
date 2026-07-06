@@ -321,19 +321,37 @@ export default function ProtocolsPage() {
     setImportantNotes(updated);
   };
 
-  // ─── Upload ──────────────────────────────────────────────────────────────────
+  // --- Upload -----------------------------------------------------------
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) setUploadFile(e.target.files[0]);
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const maxSizeMB = 5;
+      if (file.size > maxSizeMB * 1024 * 1024) {
+        toast.error(`La imagen es demasiado grande. Maximo ${maxSizeMB}MB permitido.`);
+        return;
+      }
+      setUploadFile(file);
+    }
   };
 
   const handleUploadImage = () => {
     if (!uploadFile) { toast.error('Selecciona una imagen primero'); return; }
     setUploading(true);
-    const fileRef = ref(storage, `protocols/${Date.now()}_${uploadFile.name}`);
+    const safeName = uploadFile.name
+      .replace(/[^a-zA-Z0-9._-]/g, '_')
+      .replace(/\s+/g, '_');
+    const fileRef = ref(storage, `protocols/${Date.now()}_${safeName}`);
     const uploadTask = uploadBytesResumable(fileRef, uploadFile);
     uploadTask.on('state_changed',
       (snapshot) => setUploadProgress(Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100)),
-      (error) => { console.error(error); toast.error('Error al subir imagen'); setUploading(false); },
+      (error) => {
+        console.error(error);
+        const msg = error.code === 'storage/unauthorized'
+          ? 'Permiso denegado. Verifica las reglas de Storage.'
+          : `Error: ${error.message || 'desconocido'}`;
+        toast.error(`Error al subir imagen: ${msg}`);
+        setUploading(false);
+      },
       async () => {
         const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
         setImageUrl(downloadUrl);

@@ -60,16 +60,11 @@ class PayphoneStatusResult {
 }
 
 class PayphoneService {
-  static const String _prodBaseUrl =
-      'https://pay.payphonetodoesposible.com/api';
-  static const String _sandboxBaseUrl =
-      'https://pay.payphonetodoesposible.com/api';
-
-  static const Duration _timeout = Duration(seconds: 15);
+  static const Duration _timeout = Duration(seconds: 30);
 
   final String _token;
   final String _storeId;
-  final bool _isSandbox;
+  final String _baseUrl;
 
   PayphoneService({
     required String token,
@@ -77,34 +72,33 @@ class PayphoneService {
     bool isSandbox = false,
   })  : _token = token,
         _storeId = storeId,
-        _isSandbox = isSandbox;
-
-  String get _baseUrl => _isSandbox ? _sandboxBaseUrl : _prodBaseUrl;
+        _baseUrl = isSandbox
+            ? 'https://sandbox-api.payphonetodoesposible.com/api'
+            : 'https://pay.payphonetodoesposible.com/api';
 
   Map<String, String> get _headers => {
         'Authorization': 'Bearer $_token',
         'Content-Type': 'application/json',
       };
 
-  String _cleanPhone(String phone) {
-    return phone.replaceAll(RegExp(r'[^0-9]'), '');
+  String _cleanNumber(String input) {
+    return input.replaceAll(RegExp(r'[^0-9]'), '');
   }
 
-  /// Crea una transaccion de venta en Payphone.
-  /// [amountCents] es el monto total en centavos (ej: $9.99 = 999).
-  Future<PayphoneTransactionResult> createSale({
-    required String phoneNumber,
+  Future<PayphoneTransactionResult> createCardSale({
+    required String cardNumber,
+    required int expMonth,
+    required int expYear,
+    required String cvc,
+    required String holderName,
     required int amountCents,
     required String clientTransactionId,
     required String reference,
-    String countryCode = '593',
   }) async {
     try {
-      final cleanPhone = _cleanPhone(phoneNumber);
+      final cleanCard = _cleanNumber(cardNumber);
 
       final body = <String, dynamic>{
-        'phoneNumber': cleanPhone,
-        'countryCode': countryCode,
         'amount': amountCents,
         'amountWithoutTax': amountCents,
         'amountWithTax': 0,
@@ -116,6 +110,13 @@ class PayphoneService {
         'storeId': _storeId,
         'currency': 'USD',
         'timeZone': -5,
+        'card': {
+          'number': cleanCard,
+          'expMonth': expMonth,
+          'expYear': expYear,
+          'cvc': cvc,
+          'holderName': holderName,
+        },
       };
 
       final response = await http
@@ -165,9 +166,7 @@ class PayphoneService {
     }
   }
 
-  /// Consulta el estado de una transaccion por su ID.
-  Future<PayphoneStatusResult?> checkTransactionStatus(
-      int transactionId) async {
+  Future<PayphoneStatusResult?> checkTransactionStatus(int transactionId) async {
     try {
       final response = await http
           .get(

@@ -158,7 +158,17 @@ export default function CoursesPage() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setUploadFile(e.target.files[0]);
+      const file = e.target.files[0];
+      const maxSizeMB = 5;
+      if (file.size > maxSizeMB * 1024 * 1024) {
+        toast.error(`La imagen es demasiado grande. Máximo ${maxSizeMB}MB permitido.`);
+        return;
+      }
+      if (!file.type.startsWith('image/')) {
+        toast.error('Solo se permiten archivos de imagen (JPG, PNG, WEBP).');
+        return;
+      }
+      setUploadFile(file);
     }
   };
 
@@ -168,7 +178,10 @@ export default function CoursesPage() {
       return;
     }
     setUploading(true);
-    const fileRef = ref(storage, `courses/${Date.now()}_${uploadFile.name}`);
+    const safeName = uploadFile.name
+      .replace(/[^a-zA-Z0-9._-]/g, '_')
+      .replace(/\s+/g, '_');
+    const fileRef = ref(storage, `courses/${Date.now()}_${safeName}`);
     const uploadTask = uploadBytesResumable(fileRef, uploadFile);
 
     uploadTask.on('state_changed', 
@@ -178,13 +191,22 @@ export default function CoursesPage() {
       }, 
       (error) => {
         console.error('Course cover upload failed:', error);
-        toast.error('Error al subir imagen a Storage');
+        const msg = error.code === 'storage/unauthorized'
+          ? 'Permiso denegado. Verifica las reglas de Storage (firebase deploy --only storage).'
+          : error.code === 'storage/canceled'
+          ? 'Subida cancelada.'
+          : error.code === 'storage/retry-limit-exceeded'
+          ? 'Tiempo de espera agotado. Revisa tu conexion o el tamano del archivo.'
+          : error.code === 'storage/quota-exceeded'
+          ? 'Cuota de almacenamiento excedida en Firebase.'
+          : error.message || 'Error desconocido al subir a Storage';
+        toast.error(`Error al subir imagen: ${msg}`);
         setUploading(false);
       }, 
       async () => {
         const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
         setFeaturedImageUrl(downloadUrl);
-        toast.success('Imagen de portada subida con éxito');
+        toast.success('Imagen de portada subida con exito');
         setUploading(false);
         setUploadFile(null);
         setUploadProgress(0);

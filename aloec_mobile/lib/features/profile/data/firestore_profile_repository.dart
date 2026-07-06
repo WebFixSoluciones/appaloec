@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -52,13 +53,11 @@ class FirestoreProfileRepository implements ProfileRepository {
   }
 
   @override
-  Future<String> updateProfilePhoto(String uid, String filePath) async {
-    final ref = _storage.ref().child('users/$uid/profile_photo.jpg');
-    await ref.putFile(await _storage.ref().bucket.isEmpty ? throw UnimplementedError() : null);
-    return '';
+  Future<void> updateProfilePhoto(String uid, String filePath) async {
+    throw UnimplementedError('Use uploadProfilePhotoBytes instead');
   }
 
-  Future<String> uploadProfilePhotoBytes(String uid, List<int> bytes) async {
+  Future<String> uploadProfilePhotoBytes(String uid, Uint8List bytes) async {
     final ref = _storage.ref().child('users/$uid/profile_photo.jpg');
     final metadata = SettableMetadata(contentType: 'image/jpeg');
     await ref.putData(bytes, metadata);

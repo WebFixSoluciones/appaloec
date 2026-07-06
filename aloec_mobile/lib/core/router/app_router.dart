@@ -25,6 +25,8 @@ import '../../features/profile/presentation/screens/edit_profile_screen.dart';
 import '../../features/profile/presentation/screens/notifications_screen.dart';
 import '../../features/profile/presentation/screens/help_screen.dart';
 import '../../features/profile/presentation/screens/subscription_screen.dart';
+import '../../features/profile/presentation/screens/terms_screen.dart';
+import '../../features/profile/presentation/screens/privacy_screen.dart';
 
 const _publicRoutes = ['/splash', '/onboarding', '/auth/login', '/auth/register', '/auth/forgot-password', '/force-update'];
 
@@ -138,6 +140,14 @@ final goRouter = GoRouter(
     GoRoute(
       path: '/subscription',
       builder: (context, state) => const SubscriptionScreen(),
+    ),
+    GoRoute(
+      path: '/terms',
+      builder: (context, state) => const TermsScreen(),
+    ),
+    GoRoute(
+      path: '/privacy',
+      builder: (context, state) => const PrivacyScreen(),
     ),
 
     // ─── IMC / Protocolo Medico ─────────────────────────────────────────────

@@ -55,7 +55,6 @@ class MembershipsRepository {
         .get();
 
     return snapshot.docs
-        .where((doc) => doc.data()['deletedAt'] == null)
         .map((doc) => MembershipEntity.fromFirestore(doc.id, doc.data()))
         .toList();
   }

@@ -3,7 +3,7 @@ import '../theme/app_colors.dart';
 
 class AloecButton extends StatelessWidget {
   final String text;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final bool isLoading;
 
   const AloecButton({

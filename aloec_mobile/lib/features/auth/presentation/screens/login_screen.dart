@@ -110,27 +110,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   onPressed: _signIn,
                 ),
                 const SizedBox(height: 24),
-                const Text('O', style: TextStyle(color: Colors.grey)),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.g_mobiledata, size: 40, color: Colors.blue),
-                      onPressed: () {
-                        ref.read(authNotifierProvider.notifier).signInWithGoogle();
-                      },
-                    ),
-                    const SizedBox(width: 16),
-                    IconButton(
-                      icon: const Icon(Icons.facebook, size: 36, color: Colors.blueAccent),
-                      onPressed: () {
-                        ref.read(authNotifierProvider.notifier).signInWithFacebook();
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
                 TextButton(
                   onPressed: () => context.push('/auth/register'),
                   child: RichText(

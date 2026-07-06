@@ -120,11 +120,19 @@ export default function UsersPage() {
 
     try {
       const userRef = doc(db, 'users', selectedUser.uid);
-      const updatedFields = {
+      const updatedFields: Record<string, any> = {
         role: editRole,
         membershipId: editMembership,
-        status: editStatus
+        status: editStatus,
+        membershipUpdatedAt: new Date(),
       };
+
+      if (editMembership === 'free') {
+        updatedFields.isPremium = false;
+        updatedFields.activeProtocolId = null;
+      } else {
+        updatedFields.isPremium = true;
+      }
 
       await updateDoc(userRef, updatedFields);
 

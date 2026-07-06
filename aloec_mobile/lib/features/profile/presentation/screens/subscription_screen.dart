@@ -71,17 +71,27 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     const phone = '593999504321';
     const message = 'Hola ALOEC, quiero informacion sobre los planes.';
     final encoded = Uri.encodeComponent(message);
-    final uris = [
-      Uri.parse('whatsapp://send?phone=$phone&text=$encoded'),
-      Uri.parse('https://wa.me/$phone?text=$encoded'),
-    ];
-    for (final uri in uris) {
-      try {
-        if (await canLaunchUrl(uri)) {
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
-          return;
-        }
-      } catch (_) {}
+
+    final uri = Uri.parse('whatsapp://send?phone=$phone&text=$encoded');
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+        return;
+      }
+    } catch (_) {}
+
+    final webUri = Uri.parse('https://wa.me/$phone?text=$encoded');
+    try {
+      await launchUrl(webUri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No se pudo abrir WhatsApp. Asegurate de tenerlo instalado.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

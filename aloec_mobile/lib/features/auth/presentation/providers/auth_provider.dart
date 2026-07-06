@@ -49,24 +49,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<void> signInWithGoogle() async {
-    state = AuthState.loading();
-    try {
-      await _authRepository.signInWithGoogle();
-    } catch (e) {
-      state = AuthState.error(mapAuthError(e));
-    }
-  }
-
-  Future<void> signInWithFacebook() async {
-    state = AuthState.loading();
-    try {
-      await _authRepository.signInWithFacebook();
-    } catch (e) {
-      state = AuthState.error(mapAuthError(e));
-    }
-  }
-
   Future<void> register(String email, String password, String name) async {
     state = AuthState.loading();
     try {

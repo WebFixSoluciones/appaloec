@@ -82,11 +82,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const AloecLogo(size: 180),
-            const SizedBox(height: 8),
-            const Text(
-              'revitaliza tu vida',
-              style: TextStyle(color: Colors.grey, fontSize: 14),
-            ),
             const SizedBox(height: 48),
             const SizedBox(
               width: 32,

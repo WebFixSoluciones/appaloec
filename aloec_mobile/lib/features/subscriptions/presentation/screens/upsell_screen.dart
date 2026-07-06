@@ -41,10 +41,7 @@ class _UpsellScreenState extends State<UpsellScreen>
       setState(() {
         _memberships = plans;
         _loadingPlans = false;
-        // Seleccionar el plan mas caro por defecto (mejor valor)
-        if (plans.length > 1) {
-          _selectedPlanIndex = plans.length - 1;
-        }
+        _selectedPlanIndex = plans.isEmpty ? 0 : plans.length - 1;
       });
     } catch (e) {
       if (!mounted) return;
@@ -64,17 +61,27 @@ class _UpsellScreenState extends State<UpsellScreen>
     final message =
         'Hola ALOEC, quiero comprar el plan $planName en efectivo. Me pueden ayudar?';
     final encoded = Uri.encodeComponent(message);
-    final uris = [
-      Uri.parse('whatsapp://send?phone=$phone&text=$encoded'),
-      Uri.parse('https://wa.me/$phone?text=$encoded'),
-    ];
-    for (final uri in uris) {
-      try {
-        if (await canLaunchUrl(uri)) {
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
-          return;
-        }
-      } catch (_) {}
+
+    final uri = Uri.parse('whatsapp://send?phone=$phone&text=$encoded');
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+        return;
+      }
+    } catch (_) {}
+
+    final webUri = Uri.parse('https://wa.me/$phone?text=$encoded');
+    try {
+      await launchUrl(webUri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No se pudo abrir WhatsApp. Asegurate de tenerlo instalado.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

@@ -152,7 +152,13 @@ export default function LessonsPage() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setUploadFile(e.target.files[0]);
+      const file = e.target.files[0];
+      const maxSizeMB = 200;
+      if (file.size > maxSizeMB * 1024 * 1024) {
+        toast.error(`El video es demasiado grande. Maximo ${maxSizeMB}MB permitido.`);
+        return;
+      }
+      setUploadFile(file);
     }
   };
 
@@ -162,7 +168,10 @@ export default function LessonsPage() {
       return;
     }
     setUploading(true);
-    const fileRef = ref(storage, `lessons_videos/${Date.now()}_${uploadFile.name}`);
+    const safeName = uploadFile.name
+      .replace(/[^a-zA-Z0-9._-]/g, '_')
+      .replace(/\s+/g, '_');
+    const fileRef = ref(storage, `lessons_videos/${Date.now()}_${safeName}`);
     const uploadTask = uploadBytesResumable(fileRef, uploadFile);
 
     uploadTask.on('state_changed', 
@@ -172,13 +181,16 @@ export default function LessonsPage() {
       }, 
       (error) => {
         console.error('Video upload failed:', error);
-        toast.error('Error al subir video a Storage');
+        const msg = error.code === 'storage/unauthorized'
+          ? 'Permiso denegado. Verifica las reglas de Storage (firebase deploy --only storage).'
+          : `Error: ${error.message || 'desconocido'}`;
+        toast.error(`Error al subir video: ${msg}`);
         setUploading(false);
       }, 
       async () => {
         const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
         setVideoUrl(downloadUrl);
-        toast.success('Video cargado en Storage con éxito');
+        toast.success('Video cargado en Storage con exito');
         setUploading(false);
         setUploadFile(null);
         setUploadProgress(0);

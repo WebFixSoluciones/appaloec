@@ -113,7 +113,13 @@ export default function BannersPage() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setUploadFile(e.target.files[0]);
+      const file = e.target.files[0];
+      const maxSizeMB = 5;
+      if (file.size > maxSizeMB * 1024 * 1024) {
+        toast.error(`La imagen es demasiado grande. Maximo ${maxSizeMB}MB permitido.`);
+        return;
+      }
+      setUploadFile(file);
     }
   };
 
@@ -124,7 +130,10 @@ export default function BannersPage() {
     }
 
     setUploading(true);
-    const fileRef = ref(storage, `marketing_banners/${Date.now()}_${uploadFile.name}`);
+    const safeName = uploadFile.name
+      .replace(/[^a-zA-Z0-9._-]/g, '_')
+      .replace(/\s+/g, '_');
+    const fileRef = ref(storage, `marketing_banners/${Date.now()}_${safeName}`);
     const uploadTask = uploadBytesResumable(fileRef, uploadFile);
 
     uploadTask.on('state_changed', 
@@ -134,13 +143,16 @@ export default function BannersPage() {
       }, 
       (error) => {
         console.error('Upload failed:', error);
-        toast.error('Error al subir imagen a Storage');
+        const msg = error.code === 'storage/unauthorized'
+          ? 'Permiso denegado. Verifica las reglas de Storage (firebase deploy --only storage).'
+          : `Error: ${error.message || 'desconocido'}`;
+        toast.error(`Error al subir imagen: ${msg}`);
         setUploading(false);
       }, 
       async () => {
         const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
         setImageUrl(downloadUrl);
-        toast.success('Imagen subida con éxito');
+        toast.success('Imagen subida con exito');
         setUploading(false);
         setUploadFile(null);
         setUploadProgress(0);
