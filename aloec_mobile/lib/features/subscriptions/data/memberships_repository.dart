@@ -48,15 +48,38 @@ class MembershipsRepository {
       : _firestore = firestore ?? FirebaseFirestore.instance;
 
   Future<List<MembershipEntity>> getActiveMemberships() async {
-    final snapshot = await _firestore
-        .collection('memberships')
-        .where('isActive', isEqualTo: true)
-        .orderBy('price')
-        .get();
+    try {
+      final snapshot = await _firestore
+          .collection('memberships')
+          .where('isActive', isEqualTo: true)
+          .orderBy('price')
+          .get();
 
-    return snapshot.docs
-        .map((doc) => MembershipEntity.fromFirestore(doc.id, doc.data()))
-        .toList();
+      final memberships = snapshot.docs
+          .map((doc) => MembershipEntity.fromFirestore(doc.id, doc.data()))
+          .toList();
+
+      if (memberships.isEmpty) {
+        final allSnap = await _firestore
+            .collection('memberships')
+            .get();
+        final allDocs = allSnap.docs
+            .map((doc) => MembershipEntity.fromFirestore(doc.id, doc.data()))
+            .toList();
+        if (allDocs.isNotEmpty) {
+          return allDocs;
+        }
+      }
+
+      return memberships;
+    } catch (e) {
+      final allSnap = await _firestore
+          .collection('memberships')
+          .get();
+      return allSnap.docs
+          .map((doc) => MembershipEntity.fromFirestore(doc.id, doc.data()))
+          .toList();
+    }
   }
 
   Future<bool> restorePurchases() async {
