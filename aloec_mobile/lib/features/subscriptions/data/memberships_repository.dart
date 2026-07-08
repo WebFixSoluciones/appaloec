@@ -19,11 +19,29 @@ class MembershipEntity {
   });
 
   factory MembershipEntity.fromFirestore(String id, Map<String, dynamic> data) {
+    // Parseo defensivo: el precio puede llegar como num o como String desde Firestore
+    double parsedPrice = 0.0;
+    final rawPrice = data['price'];
+    if (rawPrice is num) {
+      parsedPrice = rawPrice.toDouble();
+    } else if (rawPrice is String) {
+      parsedPrice = double.tryParse(rawPrice) ?? 0.0;
+    }
+
+    // durationDays también puede llegar como String
+    int parsedDays = 30;
+    final rawDays = data['durationDays'];
+    if (rawDays is int) {
+      parsedDays = rawDays;
+    } else if (rawDays is String) {
+      parsedDays = int.tryParse(rawDays) ?? 30;
+    }
+
     return MembershipEntity(
       id: id,
       name: data['name'] ?? '',
-      price: (data['price'] ?? 0).toDouble(),
-      durationDays: data['durationDays'] ?? 30,
+      price: parsedPrice,
+      durationDays: parsedDays,
       features: List<String>.from(data['features'] ?? []),
       isActive: data['isActive'] ?? false,
     );

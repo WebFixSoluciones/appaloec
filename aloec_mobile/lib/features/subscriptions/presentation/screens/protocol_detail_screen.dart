@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/premium_gate.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../domain/protocol_model.dart';
 
@@ -163,7 +164,7 @@ class _ProtocolDetailScreenState extends State<ProtocolDetailScreen>
     final bmiEstimate = protocol.bmiMin ?? (protocol.bmiMax != null ? protocol.bmiMax! - 1 : 22.0);
     final categoryColor = Color(ProtocolModel.getCategoryColorValue(bmiEstimate));
 
-    return Scaffold(
+    final scaffold = Scaffold(
       backgroundColor: AppColors.backgroundLight,
       body: FadeTransition(
         opacity: _fadeAnim,
@@ -324,6 +325,12 @@ class _ProtocolDetailScreenState extends State<ProtocolDetailScreen>
           ],
         ),
       ),
+    );
+
+    return PremiumGate(
+      title: 'Protocolo Premium',
+      description: 'Activa tu membresia para acceder a protocolos personalizados de salud.',
+      child: scaffold,
     );
   }
 }

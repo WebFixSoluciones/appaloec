@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../data/gateway_repository.dart';
@@ -49,7 +50,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final config = await _gatewayRepo.getPayphoneConfig();
     if (config == null) {
       setState(() {
-        _error = 'Payphone no esta configurado en la base de datos';
+        _error = 'Payphone no esta configurado. Contacta al administrador.';
         _loading = false;
       });
       return;
@@ -64,12 +65,23 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       return;
     }
 
+    String? phoneNumber;
+    try {
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      final data = userDoc.data();
+      if (data != null) {
+        phoneNumber = data['phoneNumber'] as String?;
+      }
+    } catch (_) {}
+
     final clientTxId = 'ALOEC-${user.uid.substring(0, 8)}-${DateTime.now().millisecondsSinceEpoch}';
     final orderId = 'order_${DateTime.now().millisecondsSinceEpoch}';
     _orderId = orderId;
 
     try {
-      // 1. Registrar la orden como pendiente en Firestore
       await _ordersRepo.createPendingOrder(
         orderId: orderId,
         userId: user.uid,
@@ -87,13 +99,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         isSandbox: isSandbox,
       );
 
-      // 2. Crear el link de pago oficial (Web Checkout / Boton de pagos)
       final result = await service.createPaymentLink(
         amountCents: membership.priceCents,
         clientTransactionId: clientTxId,
         email: user.email ?? 'cliente@aloec.com',
         reference: 'Suscripcion ${membership.name} - ALOEC',
+        phoneNumber: phoneNumber,
       );
+
+      debugPrint('PayPhone result => success=${result.success}, url=${result.paymentUrl}, error=${result.errorMessage}');
+      debugPrint('priceCents enviado => ${membership.priceCents}');
 
       if (!result.success || result.paymentUrl == null) {
         setState(() {
@@ -106,19 +121,24 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       _paymentId = result.transactionId;
       _payUrl = result.paymentUrl;
 
-      // 3. Inicializar el WebView para cargar la pasarela oficial
       _webViewController = WebViewController()
         ..setJavaScriptMode(JavaScriptMode.unrestricted)
         ..setNavigationDelegate(
           NavigationDelegate(
             onPageStarted: (url) {
-              // Si el usuario llega a las URLs de retorno/cancellation, procesamos
-              if (url.contains('payphone.redirect') || url.contains('payphone.cancel') || url.contains('confirm') || url.contains('Approved')) {
+              if (url.contains('payphone.redirect') ||
+                  url.contains('payphone.cancel') ||
+                  url.contains('confirm') ||
+                  url.contains('Approved')) {
                 _verifyAndFinishPayment();
               }
             },
             onWebResourceError: (error) {
               debugPrint('Error de carga web: ${error.description}');
+            },
+            onNavigationRequest: (request) {
+              debugPrint('Navegando a: ${request.url}');
+              return NavigationDecision.navigate;
             },
           ),
         )
@@ -128,9 +148,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         _loading = false;
       });
 
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('CheckoutScreen error: $e\n$stack');
       setState(() {
-        _error = 'Ocurrio un error al inicializar el pago: $e';
+        _error = 'Ocurrio un error al procesar el pago. Intenta nuevamente.';
         _loading = false;
       });
     }

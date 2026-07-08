@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class PayphoneTransactionResult {
@@ -74,7 +75,7 @@ class PayphoneService {
         _storeId = storeId,
         _baseUrl = isSandbox
             ? 'https://sandbox-api.payphonetodoesposible.com/api'
-            : 'https://pay.payphonetodoesposible.com/api';
+            : 'https://api.payphonetodoesposible.com/api';
 
   Map<String, String> get _headers => {
         'Authorization': 'Bearer $_token',
@@ -90,6 +91,7 @@ class PayphoneService {
     required String clientTransactionId,
     required String email,
     required String reference,
+    String? phoneNumber,
   }) async {
     try {
       final body = <String, dynamic>{
@@ -104,9 +106,10 @@ class PayphoneService {
         'storeId': _storeId,
         'currency': 'USD',
         'email': email.isNotEmpty ? email : 'cliente@aloec.com',
+        if (phoneNumber != null && phoneNumber.isNotEmpty)
+          'phoneNumber': _cleanNumber(phoneNumber),
       };
 
-      // Endpoint para crear el botón de pagos / link de pago
       final response = await http
           .post(
             Uri.parse('$_baseUrl/Pay'),
@@ -115,13 +118,16 @@ class PayphoneService {
           )
           .timeout(_timeout);
 
+      debugPrint('PayPhone /Pay status: ${response.statusCode}');
+      debugPrint('PayPhone /Pay body: ${response.body}');
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
-        final paymentId = data['paymentId'] as int?;
-        final payUrl = data['payWithPayPhone'] as String?;
+        debugPrint('PayPhone /Pay parsed: paymentId=${data['paymentId']}, payWithPayPhone=${data['payWithPayPhone']}, payUrl=${data['payUrl']}, url=${data['url']}');
+        final paymentId = (data['paymentId'] ?? data['id'] ?? data['transactionId']) as int?;
+        final payUrl = (data['payWithPayPhone'] ?? data['payUrl'] ?? data['url'] ?? data['paymentUrl']) as String?;
 
         if (paymentId != null && payUrl != null) {
-          // Reutilizamos transactionId para mapear el paymentId
           return PayphoneTransactionResult(
             success: true,
             transactionId: paymentId,
@@ -139,24 +145,27 @@ class PayphoneService {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
         errorMsg = _parseError(data, 'Error HTTP ${response.statusCode}');
       } catch (_) {
-        errorMsg = 'Error del servidor Payphone (${response.statusCode})';
+        errorMsg = 'Error al conectar con el servidor de pago. Intenta nuevamente.';
       }
 
       return PayphoneTransactionResult(success: false, errorMessage: errorMsg);
     } on http.ClientException catch (e) {
+      debugPrint('PayPhone link creation error: ${e.message} | URL: $_baseUrl');
       return PayphoneTransactionResult(
         success: false,
-        errorMessage: 'Error de conexion: ${e.message}',
+        errorMessage: 'Error de conexion. Verifica tu acceso a internet.',
       );
     } on TimeoutException {
+      debugPrint('PayPhone link creation timeout');
       return PayphoneTransactionResult(
         success: false,
         errorMessage: 'Tiempo de espera agotado. Intenta nuevamente.',
       );
     } catch (e) {
+      debugPrint('PayPhone link creation unexpected: $e');
       return PayphoneTransactionResult(
         success: false,
-        errorMessage: 'Error inesperado al generar link: $e',
+        errorMessage: 'Error al procesar el pago. Intenta nuevamente.',
       );
     }
   }
@@ -239,14 +248,14 @@ class PayphoneService {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
         errorMsg = _parseError(data, 'Error HTTP ${response.statusCode}');
       } catch (_) {
-        errorMsg = 'Error del servidor (${response.statusCode})';
+        errorMsg = 'Error al conectar con el servidor de pago.';
       }
 
       return PayphoneTransactionResult(success: false, errorMessage: errorMsg);
     } on http.ClientException catch (e) {
       return PayphoneTransactionResult(
         success: false,
-        errorMessage: 'Error de conexion: ${e.message}',
+        errorMessage: 'Error de conexion. Verifica tu acceso a internet.',
       );
     } on TimeoutException {
       return PayphoneTransactionResult(
@@ -256,7 +265,7 @@ class PayphoneService {
     } catch (e) {
       return PayphoneTransactionResult(
         success: false,
-        errorMessage: 'Error inesperado: $e',
+        errorMessage: 'Error al procesar la tarjeta. Intenta nuevamente.',
       );
     }
   }
@@ -296,9 +305,10 @@ class PayphoneService {
   }
 }
 
+final _payphoneExpando = Expando<String>();
+
 extension PayphoneTransactionResultExt on PayphoneTransactionResult {
-  private static final _expando = Expando<String>();
-  String? get paymentUrl => _expando[this];
-  set paymentUrl(String? value) => _expando[this] = value;
+  String? get paymentUrl => _payphoneExpando[this];
+  set paymentUrl(String? value) => _payphoneExpando[this] = value;
 }
 

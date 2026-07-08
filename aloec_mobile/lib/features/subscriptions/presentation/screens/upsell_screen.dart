@@ -47,7 +47,7 @@ class _UpsellScreenState extends State<UpsellScreen>
       if (!mounted) return;
       setState(() {
         _loadingPlans = false;
-        _loadError = 'Error al cargar planes: $e';
+        _loadError = 'No se pudieron cargar los planes. Intenta de nuevo.';
       });
     }
   }
@@ -431,7 +431,7 @@ class _UpsellScreenState extends State<UpsellScreen>
                             if (!mounted) return;
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Error: $e'),
+                                content: Text('No se pudo restaurar la compra. Intenta de nuevo.'),
                                 backgroundColor: Colors.red,
                               ),
                             );
