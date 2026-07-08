@@ -126,6 +126,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         ..setNavigationDelegate(
           NavigationDelegate(
             onPageStarted: (url) {
+              debugPrint('Checkout WebView onPageStarted: $url');
+              try {
+                final uri = Uri.parse(url);
+                final idParam = uri.queryParameters['id'] ?? uri.queryParameters['transactionId'];
+                if (idParam != null) {
+                  final parsedId = int.tryParse(idParam);
+                  if (parsedId != null && parsedId != 0) {
+                    _paymentId = parsedId;
+                    debugPrint('Parsed paymentId from redirect URL: $_paymentId');
+                  }
+                }
+              } catch (e) {
+                debugPrint('Error parsing URL query parameters: $e');
+              }
+
               if (url.contains('payphone.redirect') ||
                   url.contains('payphone.cancel') ||
                   url.contains('confirm') ||
@@ -158,7 +173,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   Future<void> _verifyAndFinishPayment() async {
-    if (_checkingPayment || _paymentId == null || _orderId == null) return;
+    if (_checkingPayment || _paymentId == null || _paymentId == 0 || _orderId == null) return;
 
     setState(() {
       _checkingPayment = true;
@@ -180,7 +195,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     PayphoneStatusResult? statusResult;
     // Hacemos 5 reintentos rápidos de consulta en la API de Payphone
     for (int i = 0; i < 5; i++) {
-      statusResult = await service.checkPaymentStatus(_paymentId!);
+      statusResult = await service.checkTransactionStatus(_paymentId!);
       if (statusResult != null && (statusResult.isApproved || statusResult.isCanceled)) {
         break;
       }

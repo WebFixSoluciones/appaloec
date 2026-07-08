@@ -73,9 +73,7 @@ class PayphoneService {
     bool isSandbox = false,
   })  : _token = token,
         _storeId = storeId,
-        _baseUrl = isSandbox
-            ? 'https://sandbox-api.payphonetodoesposible.com/api'
-            : 'https://api.payphonetodoesposible.com/api';
+        _baseUrl = 'https://pay.payphonetodoesposible.com/api';
 
   Map<String, String> get _headers => {
         'Authorization': 'Bearer $_token',
@@ -112,38 +110,50 @@ class PayphoneService {
 
       final response = await http
           .post(
-            Uri.parse('$_baseUrl/Pay'),
+            Uri.parse('$_baseUrl/links'),
             headers: _headers,
             body: jsonEncode(body),
           )
           .timeout(_timeout);
 
-      debugPrint('PayPhone /Pay status: ${response.statusCode}');
-      debugPrint('PayPhone /Pay body: ${response.body}');
+      debugPrint('PayPhone /links status: ${response.statusCode}');
+      debugPrint('PayPhone /links body: ${response.body}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
-        debugPrint('PayPhone /Pay parsed: paymentId=${data['paymentId']}, payWithPayPhone=${data['payWithPayPhone']}, payUrl=${data['payUrl']}, url=${data['url']}');
-        final paymentId = (data['paymentId'] ?? data['id'] ?? data['transactionId']) as int?;
-        final payUrl = (data['payWithPayPhone'] ?? data['payUrl'] ?? data['url'] ?? data['paymentUrl']) as String?;
-
-        if (paymentId != null && payUrl != null) {
+        final decoded = jsonDecode(response.body);
+        if (decoded is String) {
+          debugPrint('PayPhone /links returned link URL directly: $decoded');
           return PayphoneTransactionResult(
             success: true,
-            transactionId: paymentId,
-          )..paymentUrl = payUrl;
+            transactionId: 0,
+          )..paymentUrl = decoded;
+        } else if (decoded is Map<String, dynamic>) {
+          debugPrint('PayPhone /links parsed map: paymentId=${decoded['paymentId']}, payWithPayPhone=${decoded['payWithPayPhone']}, payUrl=${decoded['payUrl']}');
+          final paymentId = (decoded['paymentId'] ?? decoded['id'] ?? decoded['transactionId']) as int?;
+          final payUrl = (decoded['payWithPayPhone'] ?? decoded['payUrl'] ?? decoded['url'] ?? decoded['paymentUrl']) as String?;
+
+          if (payUrl != null) {
+            return PayphoneTransactionResult(
+              success: true,
+              transactionId: paymentId ?? 0,
+            )..paymentUrl = payUrl;
+          }
         }
 
         return PayphoneTransactionResult(
           success: false,
-          errorMessage: _parseError(data, 'Respuesta incompleta de Payphone'),
+          errorMessage: 'Respuesta incompleta de Payphone',
         );
       }
 
       String errorMsg;
       try {
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
-        errorMsg = _parseError(data, 'Error HTTP ${response.statusCode}');
+        final data = jsonDecode(response.body);
+        if (data is Map<String, dynamic>) {
+          errorMsg = _parseError(data, 'Error HTTP ${response.statusCode}');
+        } else {
+          errorMsg = 'Error HTTP ${response.statusCode}';
+        }
       } catch (_) {
         errorMsg = 'Error al conectar con el servidor de pago. Intenta nuevamente.';
       }
