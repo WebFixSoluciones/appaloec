@@ -54,6 +54,8 @@ export async function createPaymentLink(
   const { config, amountCents, clientTransactionId, email, reference, phoneNumber } = params;
   const storeId = parseInt(config.storeId) || config.storeId;
 
+  const responseUrl = `${process.env.NEXT_PUBLIC_BASE_URL ?? 'https://app.alimentacionorganicaec.net'}/api/payphone/confirm`;
+
   const body: Record<string, unknown> = {
     amount: amountCents,
     amountWithoutTax: amountCents,
@@ -66,6 +68,7 @@ export async function createPaymentLink(
     storeId,
     currency: 'USD',
     email: email || 'cliente@aloec.com',
+    responseUrl,
   };
   if (phoneNumber) body.phoneNumber = phoneNumber.replace(/\D/g, '');
 
