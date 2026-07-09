@@ -26,7 +26,7 @@ String mapAuthError(dynamic error) {
       case 'invalid-action-code':
         return 'El enlace de recuperación es inválido o ha expirado.';
       default:
-        return 'Error de autenticación: ${error.message ?? "intenta de nuevo"}';
+        return 'Ocurrio un error de autenticacion. Intenta de nuevo.';
     }
   }
 

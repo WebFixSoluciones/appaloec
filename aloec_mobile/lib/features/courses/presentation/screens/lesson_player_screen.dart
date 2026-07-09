@@ -162,7 +162,7 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
       'youtube': 'YouTube',
       'vimeo': 'Vimeo',
       'onedrive': 'OneDrive',
-      'upload': 'Firebase Storage',
+      'upload': 'Video',
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -385,7 +385,7 @@ class _FallbackPlayerView extends StatelessWidget {
   Widget build(BuildContext context) {
     final isOneDrive = lesson.videoSource.toLowerCase() == 'onedrive';
     final icon = isOneDrive ? Icons.cloud : Icons.video_file;
-    final label = isOneDrive ? 'Video en OneDrive' : 'Video en Firebase Storage';
+    final label = isOneDrive ? 'Video en OneDrive' : 'Reproducir Video';
     final hint = isOneDrive
         ? 'Se abrirá la app de OneDrive o el navegador'
         : 'Se abrirá el reproductor del sistema';

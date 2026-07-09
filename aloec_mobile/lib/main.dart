@@ -42,7 +42,7 @@ Widget _firebaseErrorApp(Object error) {
               const Icon(Icons.cloud_off, size: 72, color: Color(0xFFD32F2F)),
               const SizedBox(height: 24),
               Text(
-                'Firebase no configurado',
+                'Error de inicializacion',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -51,7 +51,7 @@ Widget _firebaseErrorApp(Object error) {
               ),
               const SizedBox(height: 16),
               Text(
-                'El proyecto necesita conectarse a Firebase para funcionar.',
+                'La aplicacion no pudo iniciar correctamente. Verifica tu conexion e intenta de nuevo.',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 15, color: Colors.grey[600]),
               ),
@@ -88,7 +88,7 @@ Widget _firebaseErrorApp(Object error) {
               ),
               const SizedBox(height: 16),
               Text(
-                'Error técnico:\n$error',
+                'Si el problema persiste, contacta a soporte.',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 11, color: Colors.grey[400]),
               ),

@@ -24,6 +24,8 @@ export default function GatewaysPage() {
   const [payphoneSecret, setPayphoneSecret] = useState('');
   const [payphoneActive, setPayphoneActive] = useState(false);
   const [payphoneEnv, setPayphoneEnv] = useState<'sandbox' | 'production'>('sandbox');
+  const [payphoneCheckoutUrl, setPayphoneCheckoutUrl] = useState('');
+  const [payphoneCheckoutSecret, setPayphoneCheckoutSecret] = useState('');
 
   // Stripe Config State (Bonus Gateway for advanced completeness)
   const [stripePublic, setStripePublic] = useState('');
@@ -47,6 +49,8 @@ export default function GatewaysPage() {
           setPayphoneSecret(d.secretKey || '');
           setPayphoneActive(d.isActive || false);
           setPayphoneEnv(d.environment || 'sandbox');
+          setPayphoneCheckoutUrl((d as any).checkoutUrl || '');
+          setPayphoneCheckoutSecret((d as any).checkoutSecret || '');
         }
 
         // Load Stripe
@@ -88,6 +92,8 @@ export default function GatewaysPage() {
         secretKey: payphoneSecret.trim(),
         isActive: payphoneActive,
         environment: payphoneEnv,
+        checkoutUrl: payphoneCheckoutUrl.trim(),
+        checkoutSecret: payphoneCheckoutSecret.trim(),
         updatedAt: new Date()
       };
 
@@ -250,6 +256,36 @@ export default function GatewaysPage() {
                 onChange={(e) => setPayphoneSecret(e.target.value)}
                 disabled={saving}
               />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-ink-700 uppercase mb-1.5 flex items-center gap-1">
+                <Globe size={12} /> URL del Checkout (Vercel)
+              </label>
+              <input
+                type="text"
+                className="w-full p-2.5 bg-white border border-ink-300 outline-none focus:border-ink-900 text-sm font-mono text-ink-900"
+                placeholder="https://app.alimentacionorganicaec.net"
+                value={payphoneCheckoutUrl}
+                onChange={(e) => setPayphoneCheckoutUrl(e.target.value)}
+                disabled={saving}
+              />
+              <p className="text-xs text-ink-400 mt-1">URL base donde está desplegado el admin en Vercel (sin slash final)</p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-ink-700 uppercase mb-1.5 flex items-center gap-1">
+                <Key size={12} /> Secreto del Checkout
+              </label>
+              <input
+                type="password"
+                className="w-full p-2.5 bg-white border border-ink-300 outline-none focus:border-ink-900 text-sm font-mono text-ink-900"
+                placeholder="aloec_checkout_secret_2026"
+                value={payphoneCheckoutSecret}
+                onChange={(e) => setPayphoneCheckoutSecret(e.target.value)}
+                disabled={saving}
+              />
+              <p className="text-xs text-ink-400 mt-1">Debe coincidir exactamente con CHECKOUT_SECRET en Vercel</p>
             </div>
 
             <div className="pt-4">

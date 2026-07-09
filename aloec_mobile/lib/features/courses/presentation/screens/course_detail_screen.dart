@@ -408,7 +408,7 @@ class CourseDetailScreen extends ConsumerWidget {
                     padding: const EdgeInsets.all(24),
                     child: Center(
                       child: Text(
-                        'Error al cargar lecciones: $err',
+                        'No se pudieron cargar las lecciones.',
                         style: const TextStyle(color: Colors.redAccent),
                       ),
                     ),
@@ -424,7 +424,7 @@ class CourseDetailScreen extends ConsumerWidget {
         error: (err, stack) => Scaffold(
           appBar: AppBar(title: const Text('Error')),
           body: Center(
-            child: Text('Error al cargar detalles del curso: $err'),
+            child: Text('No se pudo cargar el curso. Intenta de nuevo.'),
           ),
         ),
       ),

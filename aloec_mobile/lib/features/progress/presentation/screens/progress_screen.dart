@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/premium_gate.dart';
 import '../../../subscriptions/domain/protocol_model.dart';
 import '../providers/progress_provider.dart';
 
@@ -12,7 +13,7 @@ class ProgressScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final progress = ref.watch(progressProvider);
 
-    return Scaffold(
+    final scaffold = Scaffold(
       backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
         title: const Text('Mi Progreso'),
@@ -20,6 +21,12 @@ class ProgressScreen extends ConsumerWidget {
         elevation: 0,
       ),
       body: _buildBody(context, ref, progress),
+    );
+
+    return PremiumGate(
+      title: 'Progreso Premium',
+      description: 'Activa tu membresia para acceder al seguimiento completo de tu progreso.',
+      child: scaffold,
     );
   }
 
@@ -46,7 +53,7 @@ class ProgressScreen extends ConsumerWidget {
                       fontSize: 16,
                       fontWeight: FontWeight.w600)),
               const SizedBox(height: 4),
-              Text(progress.error!,
+              Text('No se pudieron cargar los datos. Intenta de nuevo.',
                   textAlign: TextAlign.center,
                   style:
                       const TextStyle(color: AppColors.textLight, fontSize: 12)),

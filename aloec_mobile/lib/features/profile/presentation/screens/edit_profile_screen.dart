@@ -59,7 +59,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al subir foto: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text('No se pudo subir la foto. Intenta de nuevo.'), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -93,7 +93,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text('No se pudo guardar. Intenta de nuevo.'), backgroundColor: Colors.red),
         );
       }
     } finally {

@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:http/io_client.dart';
 
 class PayphoneTransactionResult {
   final int? transactionId;
@@ -66,6 +68,7 @@ class PayphoneService {
   final String _token;
   final String _storeId;
   final String _baseUrl;
+  late final http.Client _client;
 
   PayphoneService({
     required String token,
@@ -73,7 +76,18 @@ class PayphoneService {
     bool isSandbox = false,
   })  : _token = token,
         _storeId = storeId,
-        _baseUrl = 'https://pay.payphonetodoesposible.com/api';
+        _baseUrl = isSandbox
+            ? 'https://sandbox-api.payphonetodoesposible.com/api'
+            : 'https://api.payphonetodoesposible.com/api' {
+    // IOClient con HttpClient personalizado para resolver HandshakeException
+    // en Android al conectar con la API de Payphone.
+    // Solo permite dominios payphonetodoesposible.com.
+    final httpClient = HttpClient()
+      ..badCertificateCallback = (X509Certificate cert, String host, int port) {
+        return host.endsWith('payphonetodoesposible.com');
+      };
+    _client = IOClient(httpClient);
+  }
 
   Map<String, String> get _headers => {
         'Authorization': 'Bearer $_token',
@@ -101,26 +115,36 @@ class PayphoneService {
         'tip': 0,
         'clientTransactionId': clientTransactionId,
         'reference': reference,
-        'storeId': _storeId,
+        'storeId': int.tryParse(_storeId) ?? _storeId,
         'currency': 'USD',
         'email': email.isNotEmpty ? email : 'cliente@aloec.com',
         if (phoneNumber != null && phoneNumber.isNotEmpty)
           'phoneNumber': _cleanNumber(phoneNumber),
       };
 
-      final response = await http
+      final response = await _client
           .post(
-            Uri.parse('$_baseUrl/links'),
+            Uri.parse('$_baseUrl/Pay'),
             headers: _headers,
             body: jsonEncode(body),
           )
           .timeout(_timeout);
 
-      debugPrint('PayPhone /links status: ${response.statusCode}');
-      debugPrint('PayPhone /links body: ${response.body}');
+      debugPrint('PayPhone /Pay status: ${response.statusCode}');
+      debugPrint('PayPhone /Pay body: ${response.body}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final decoded = jsonDecode(response.body);
+        dynamic decoded;
+        try {
+          decoded = jsonDecode(response.body);
+        } catch (_) {
+          debugPrint('PayPhone /Pay: respuesta no es JSON valido. Body: ${response.body}');
+          return PayphoneTransactionResult(
+            success: false,
+            errorMessage: 'Respuesta invalida del servidor de pago.',
+          );
+        }
+
         if (decoded is String) {
           debugPrint('PayPhone /links returned link URL directly: $decoded');
           return PayphoneTransactionResult(
@@ -129,8 +153,16 @@ class PayphoneService {
           )..paymentUrl = decoded;
         } else if (decoded is Map<String, dynamic>) {
           debugPrint('PayPhone /links parsed map: paymentId=${decoded['paymentId']}, payWithPayPhone=${decoded['payWithPayPhone']}, payUrl=${decoded['payUrl']}');
-          final paymentId = (decoded['paymentId'] ?? decoded['id'] ?? decoded['transactionId']) as int?;
-          final payUrl = (decoded['payWithPayPhone'] ?? decoded['payUrl'] ?? decoded['url'] ?? decoded['paymentUrl']) as String?;
+          // Conversion segura: paymentId puede llegar como int, double o String
+          final dynamic rawId = decoded['paymentId'] ?? decoded['id'] ?? decoded['transactionId'];
+          final int? paymentId = rawId is int
+              ? rawId
+              : (rawId is double
+                  ? rawId.toInt()
+                  : (rawId is String ? int.tryParse(rawId) : null));
+
+          final dynamic rawUrl = decoded['payWithPayPhone'] ?? decoded['payUrl'] ?? decoded['url'] ?? decoded['paymentUrl'];
+          final String? payUrl = rawUrl is String ? rawUrl : null;
 
           if (payUrl != null) {
             return PayphoneTransactionResult(
@@ -138,6 +170,13 @@ class PayphoneService {
               transactionId: paymentId ?? 0,
             )..paymentUrl = payUrl;
           }
+
+          // Si tiene mensaje de error en la respuesta 200
+          final errMsg = _parseError(decoded, 'Respuesta incompleta de Payphone');
+          return PayphoneTransactionResult(
+            success: false,
+            errorMessage: errMsg,
+          );
         }
 
         return PayphoneTransactionResult(
@@ -150,20 +189,24 @@ class PayphoneService {
       try {
         final data = jsonDecode(response.body);
         if (data is Map<String, dynamic>) {
-          errorMsg = _parseError(data, 'Error HTTP ${response.statusCode}');
+          errorMsg = _parseError(data, 'HTTP ${response.statusCode}');
         } else {
-          errorMsg = 'Error HTTP ${response.statusCode}';
+          errorMsg = 'HTTP ${response.statusCode}: ${response.body}';
         }
       } catch (_) {
-        errorMsg = 'Error al conectar con el servidor de pago. Intenta nuevamente.';
+        // Body no es JSON — mostrarlo raw para diagnóstico
+        final bodyPreview = response.body.length > 200
+            ? response.body.substring(0, 200)
+            : response.body;
+        errorMsg = 'HTTP ${response.statusCode}: $bodyPreview';
       }
 
       return PayphoneTransactionResult(success: false, errorMessage: errorMsg);
     } on http.ClientException catch (e) {
-      debugPrint('PayPhone link creation error: ${e.message} | URL: $_baseUrl');
+      debugPrint('PayPhone ClientException: ${e.message} | URL: $_baseUrl');
       return PayphoneTransactionResult(
         success: false,
-        errorMessage: 'Error de conexion. Verifica tu acceso a internet.',
+        errorMessage: 'ClientException: ${e.message}',
       );
     } on TimeoutException {
       debugPrint('PayPhone link creation timeout');
@@ -172,17 +215,17 @@ class PayphoneService {
         errorMessage: 'Tiempo de espera agotado. Intenta nuevamente.',
       );
     } catch (e) {
-      debugPrint('PayPhone link creation unexpected: $e');
+      debugPrint('PayPhone link creation unexpected [${e.runtimeType}]: $e');
       return PayphoneTransactionResult(
         success: false,
-        errorMessage: 'Error al procesar el pago. Intenta nuevamente.',
+        errorMessage: 'Error al procesar el pago (${e.runtimeType}). Intenta nuevamente.',
       );
     }
   }
 
   Future<PayphoneStatusResult?> checkPaymentStatus(int paymentId) async {
     try {
-      final response = await http
+      final response = await _client
           .get(
             Uri.parse('$_baseUrl/Pay/$paymentId'),
             headers: _headers,
@@ -221,7 +264,7 @@ class PayphoneService {
         'tip': 0,
         'clientTransactionId': clientTransactionId,
         'reference': reference,
-        'storeId': _storeId,
+        'storeId': int.tryParse(_storeId) ?? _storeId,
         'currency': 'USD',
         'timeZone': -5,
         'card': {
@@ -233,7 +276,7 @@ class PayphoneService {
         },
       };
 
-      final response = await http
+      final response = await _client
           .post(
             Uri.parse('$_baseUrl/Sale'),
             headers: _headers,
@@ -282,7 +325,7 @@ class PayphoneService {
 
   Future<PayphoneStatusResult?> checkTransactionStatus(int transactionId) async {
     try {
-      final response = await http
+      final response = await _client
           .get(
             Uri.parse('$_baseUrl/Sale/$transactionId'),
             headers: _headers,

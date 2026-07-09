@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/premium_gate.dart';
 import '../providers/juices_provider.dart';
 import '../../domain/juice_entity.dart';
 
@@ -182,11 +183,10 @@ class _RecipeVideoPlayerState extends State<_RecipeVideoPlayer> {
               },
             ),
           ],
-        ),
-      );
-    }
+      ),
+    );
+  }
 
-    // WebView embed
     return Column(
       children: [
         Stack(
@@ -315,7 +315,7 @@ class JuiceDetailScreen extends ConsumerWidget {
     final info = recipe.nutritionalInfo;
     final hasVideo = recipe.videoUrl.isNotEmpty;
 
-    return Scaffold(
+    final scaffold = Scaffold(
       backgroundColor: Colors.white,
       body: CustomScrollView(
         slivers: [
@@ -521,6 +521,15 @@ class JuiceDetailScreen extends ConsumerWidget {
         ],
       ),
     );
+
+    if (recipe.isPremium) {
+      return PremiumGate(
+        title: 'Receta Premium',
+        description: 'Desbloquea todas las recetas premium con videos y guias completas.',
+        child: scaffold,
+      );
+    }
+    return scaffold;
   }
 }
 

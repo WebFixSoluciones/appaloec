@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../banners/presentation/widgets/banner_carousel.dart';
+import '../../../profile/data/firestore_profile_repository.dart';
 import '../../domain/course_entity.dart';
 import '../providers/courses_provider.dart';
 
@@ -26,6 +28,8 @@ class CoursesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = FirebaseAuth.instance.currentUser;
     final coursesAsync = ref.watch(coursesProvider);
+    final profileAsync = ref.watch(userProfileStreamProvider);
+    final isUserPremium = profileAsync.value?.isPremium ?? false;
 
     return Scaffold(
       appBar: AppBar(
@@ -61,6 +65,8 @@ class CoursesScreen extends ConsumerWidget {
               ),
             ),
           const SizedBox(height: 8),
+          const BannerCarousel(position: 'cursos'),
+          const SizedBox(height: 12),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
             child: Text(
@@ -108,6 +114,7 @@ class CoursesScreen extends ConsumerWidget {
                       return _CourseCard(
                         course: course,
                         color: _getDifficultyColor(course.difficulty),
+                        isUserPremium: isUserPremium,
                       );
                     },
                   ),
@@ -125,7 +132,7 @@ class CoursesScreen extends ConsumerWidget {
                       const Icon(Icons.error_outline, size: 48, color: Colors.redAccent),
                       const SizedBox(height: 16),
                       Text(
-                        'Error al cargar cursos: $err',
+                        'No se pudieron cargar los cursos. Intenta de nuevo.',
                         textAlign: TextAlign.center,
                         style: const TextStyle(color: Colors.grey),
                       ),
@@ -149,11 +156,14 @@ class CoursesScreen extends ConsumerWidget {
 class _CourseCard extends StatelessWidget {
   final CourseEntity course;
   final Color color;
+  final bool isUserPremium;
 
-  const _CourseCard({required this.course, required this.color});
+  const _CourseCard({required this.course, required this.color, required this.isUserPremium});
 
   @override
   Widget build(BuildContext context) {
+    final isLocked = course.isPremium && !isUserPremium;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 2,
@@ -161,79 +171,110 @@ class _CourseCard extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: () => context.push('/course-detail/${course.id}'),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(16),
-                  image: course.featuredImageUrl.isNotEmpty
-                      ? DecorationImage(
-                          image: NetworkImage(course.featuredImageUrl),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
-                ),
-                child: course.featuredImageUrl.isEmpty
-                    ? Icon(Icons.play_circle_fill, color: color, size: 40)
-                    : null,
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      course.difficulty,
-                      style: TextStyle(
-                        color: color,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(16),
+                      image: course.featuredImageUrl.isNotEmpty
+                          ? DecorationImage(
+                              image: NetworkImage(course.featuredImageUrl),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      course.title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      course.description,
-                      style: const TextStyle(color: Colors.grey, fontSize: 13),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
+                    child: course.featuredImageUrl.isEmpty
+                        ? Icon(Icons.play_circle_fill, color: color, size: 40)
+                        : null,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.menu_book, size: 14, color: Colors.grey.shade500),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${course.lessonsCount} lecciones',
-                          style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                        Row(
+                          children: [
+                            Text(
+                              course.difficulty,
+                              style: TextStyle(
+                                color: color,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const Spacer(),
+                            if (isLocked)
+                              const Icon(Icons.lock, size: 16, color: Colors.amber),
+                          ],
                         ),
-                        const SizedBox(width: 16),
-                        Icon(Icons.timer_outlined, size: 14, color: Colors.grey.shade500),
-                        const SizedBox(width: 4),
+                        const SizedBox(height: 4),
                         Text(
-                          '${course.totalHours} hrs',
-                          style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                          course.title,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          course.description,
+                          style: const TextStyle(color: Colors.grey, fontSize: 13),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Icon(Icons.menu_book, size: 14, color: Colors.grey.shade500),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${course.lessonsCount} lecciones',
+                              style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                            ),
+                            const SizedBox(width: 16),
+                            Icon(Icons.timer_outlined, size: 14, color: Colors.grey.shade500),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${course.totalHours} hrs',
+                              style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
+                  ),
+                  Icon(Icons.chevron_right, color: Colors.grey.shade400),
+                ],
+              ),
+            ),
+            if (isLocked)
+              Positioned(
+                top: 12,
+                right: 12,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.amber,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    'PREMIUM',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
-              Icon(Icons.chevron_right, color: Colors.grey.shade400),
-            ],
-          ),
+          ],
         ),
       ),
     );

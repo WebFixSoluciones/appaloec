@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/premium_gate.dart';
 import '../../../courses/presentation/screens/courses_screen.dart';
+import '../../../banners/presentation/widgets/banner_carousel.dart';
+import '../../../profile/data/firestore_profile_repository.dart';
 import '../providers/protocol_day_provider.dart';
 import '../widgets/block_card.dart';
 
@@ -34,6 +37,25 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
   @override
   Widget build(BuildContext context) {
     final dayState = ref.watch(protocolDayProvider);
+    final profileAsync = ref.watch(userProfileStreamProvider);
+    final isPremium = profileAsync.value?.isPremium ?? false;
+
+    final bodyContent = dayState.isLoading
+        ? const Center(
+            child: CircularProgressIndicator(color: AppColors.primaryGreen))
+        : dayState.protocol == null
+            ? Column(
+                children: [
+                  const BannerCarousel(position: 'inicio'),
+                  Expanded(child: _buildEmptyState()),
+                ],
+              )
+            : Column(
+                children: [
+                  const BannerCarousel(position: 'inicio'),
+                  Expanded(child: _buildTimeline(dayState)),
+                ],
+              );
 
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
@@ -83,13 +105,13 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
           const SizedBox(width: 4),
         ],
       ),
-      body: dayState.isLoading
-          ? const Center(
-              child:
-                  CircularProgressIndicator(color: AppColors.primaryGreen))
-          : dayState.protocol == null
-              ? _buildEmptyState()
-              : _buildTimeline(dayState),
+      body: dayState.protocol != null && !isPremium
+          ? PremiumGate(
+              title: 'Protocolo Diario Premium',
+              description: 'Activa tu membresia para seguir tu protocolo personalizado dia a dia.',
+              child: bodyContent,
+            )
+          : bodyContent,
     );
   }
 

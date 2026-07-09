@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../banners/presentation/widgets/banner_carousel.dart';
 import '../../domain/juice_entity.dart';
 import '../providers/juices_provider.dart';
 
@@ -57,6 +58,8 @@ class _JuicesScreenState extends ConsumerState<JuicesScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const BannerCarousel(position: 'recetas'),
+                    const SizedBox(height: 8),
                     TextField(
                       controller: _searchCtrl,
                       decoration: InputDecoration(

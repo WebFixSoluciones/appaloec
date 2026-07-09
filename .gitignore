@@ -65,3 +65,8 @@ ui-debug.log
 .env.test.local
 .env.production.local
 .env*.local
+
+# Firebase credentials and keys
+/clave/
+/clave
+app-aloec-firebase-adminsdk-*.json

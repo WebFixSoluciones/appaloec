@@ -2,7 +2,7 @@ name: aloec_mobile
 description: "ALOEC - Aplicación Móvil de Dieta de Jugos Verdes, Planes e IMC"
 publish_to: 'none'
 
-version: 1.2.0+4 # v04
+version: 1.3.0+14 # v14-webcheckout
 
 environment:
   sdk: '>=3.2.0 <4.0.0'
@@ -35,6 +35,7 @@ dependencies:
 
   # HTTP Client
   http: ^1.2.0
+  crypto: ^3.0.3
 
   # Multimedia y Componentes
   cached_network_image: ^3.3.1
