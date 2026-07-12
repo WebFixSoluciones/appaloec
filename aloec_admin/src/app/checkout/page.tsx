@@ -1,6 +1,7 @@
 import { verifyCheckoutToken } from '../../lib/checkout/token';
-import { getPayphoneConfig, createPaymentLink } from '../../lib/payphone/client';
 import { getAdminDb } from '../../lib/firebase/admin';
+import { getPayphoneConfig } from '../../lib/payphone/client';
+import PayphoneBox from './PayphoneBox';
 
 interface CheckoutPageProps {
   searchParams: Promise<{ t?: string }>;
@@ -10,14 +11,10 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   const params = await searchParams;
   const token = params.t;
 
-  if (!token) {
-    return <ErrorView message="Enlace de pago inválido." />;
-  }
+  if (!token) return <ErrorView message="Enlace de pago inválido." />;
 
   const session = verifyCheckoutToken(token);
-  if (!session) {
-    return <ErrorView message="El enlace expiró o es inválido. Vuelve a la app y reintenta." />;
-  }
+  if (!session) return <ErrorView message="El enlace expiró o es inválido. Vuelve a la app y reintenta." />;
 
   const { userId, planId } = session;
 
@@ -31,18 +28,16 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
       db.collection('memberships').doc(planId).get(),
       db.collection('users').doc(userId).get(),
     ]);
-
     if (!planSnap.exists) return <ErrorView message="Plan no encontrado." />;
     const plan = planSnap.data()!;
     planName = plan.name ?? '';
     amountCents = Math.round((plan.price ?? 0) * 100);
     if (userSnap.exists) userEmail = userSnap.data()!.email ?? userEmail;
-  } catch (err) {
-    console.error('[checkout] Firestore error:', err);
+  } catch {
     return <ErrorView message="Error al cargar los datos del plan." />;
   }
 
-  const clientTransactionId = `ALOEC-${userId.slice(0, 8)}-${Date.now()}`;
+  const clientTransactionId = `AL${userId.slice(0, 5)}${Date.now().toString().slice(-8)}`;
   const orderId = `order_${Date.now()}`;
 
   try {
@@ -64,25 +59,18 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
       createdAt: now,
       updatedAt: now,
     });
-  } catch (err) {
-    console.error('[checkout] Order creation error:', err);
+  } catch {
     return <ErrorView message="Error al crear la orden de pago." />;
   }
 
-  let payUrl = '';
+  let ppToken = '';
+  let ppStoreId = '';
   try {
     const config = await getPayphoneConfig();
-    const result = await createPaymentLink({
-      amountCents,
-      clientTransactionId,
-      email: userEmail,
-      reference: `Suscripcion ${planName} - ALOEC`,
-      config,
-    });
-    payUrl = result.payUrl;
+    ppToken = config.token;
+    ppStoreId = config.storeId;
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Error desconocido';
-    console.error('[checkout] Payphone error:', msg);
     return <ErrorView message={`Error al conectar con Payphone: ${msg}`} />;
   }
 
@@ -99,13 +87,16 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
           </p>
         </div>
       </div>
-      <iframe
-        src={payUrl}
-        className="flex-1 w-full border-0"
-        style={{ minHeight: 'calc(100vh - 56px)' }}
-        allow="payment"
-        title="Pasarela de pago Payphone"
-      />
+      <div className="flex-1 w-full">
+        <PayphoneBox
+          token={ppToken}
+          storeId={ppStoreId}
+          amountCents={amountCents}
+          clientTransactionId={clientTransactionId}
+          planName={planName}
+          email={userEmail}
+        />
+      </div>
     </div>
   );
 }

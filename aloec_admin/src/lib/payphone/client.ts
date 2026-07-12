@@ -35,10 +35,14 @@ export async function getPayphoneConfig(): Promise<PayphoneConfig> {
   };
 }
 
-function baseUrl(isSandbox: boolean): string {
+function linksUrl(isSandbox: boolean): string {
   return isSandbox
-    ? 'https://sandbox-api.payphonetodoesposible.com/api'
-    : 'https://api.payphonetodoesposible.com/api';
+    ? 'https://pay.payphonetodoesposible.com/api/Links'
+    : 'https://pay.payphonetodoesposible.com/api/Links';
+}
+
+function confirmUrl(): string {
+  return 'https://paymentbox.payphonetodoesposible.com/api/confirm';
 }
 
 function headers(token: string): Record<string, string> {
@@ -51,28 +55,29 @@ function headers(token: string): Record<string, string> {
 export async function createPaymentLink(
   params: CreateLinkParams
 ): Promise<{ paymentId: number; payUrl: string }> {
-  const { config, amountCents, clientTransactionId, email, reference, phoneNumber } = params;
-  const storeId = parseInt(config.storeId) || config.storeId;
+  const { config, amountCents, clientTransactionId, email, reference } = params;
 
-  const responseUrl = `${process.env.NEXT_PUBLIC_BASE_URL ?? 'https://app.alimentacionorganicaec.net'}/api/payphone/confirm`;
+  // API Links acepta máximo 15 caracteres en clientTransactionId
+  const txId = clientTransactionId.slice(0, 15);
+
+  // Sanitizar reference: Payphone no acepta caracteres especiales/tildes
+  const safeReference = reference.normalize('NFD').replace(/[\u0300-\u036f]/g, '').slice(0, 50);
 
   const body: Record<string, unknown> = {
     amount: amountCents,
     amountWithoutTax: amountCents,
     amountWithTax: 0,
     tax: 0,
-    service: 0,
-    tip: 0,
-    clientTransactionId,
-    reference,
-    storeId,
+    clientTransactionId: txId,
+    reference: safeReference,
     currency: 'USD',
     email: email || 'cliente@aloec.com',
-    responseUrl,
   };
-  if (phoneNumber) body.phoneNumber = phoneNumber.replace(/\D/g, '');
 
-  const res = await fetch(`${baseUrl(config.isSandbox)}/Pay`, {
+  const url = linksUrl(config.isSandbox);
+  console.log('[payphone] POST', url, 'storeId:', config.storeId, 'txId:', txId);
+
+  const res = await fetch(url, {
     method: 'POST',
     headers: headers(config.token),
     body: JSON.stringify(body),
@@ -80,38 +85,41 @@ export async function createPaymentLink(
 
   const text = await res.text();
   if (!res.ok) {
+    console.error('[payphone] error', res.status, text.slice(0, 500));
     throw new Error(`Payphone HTTP ${res.status}: ${text.slice(0, 300)}`);
   }
 
-  let decoded: unknown;
-  try {
-    decoded = JSON.parse(text);
-  } catch {
-    throw new Error('Respuesta inválida de Payphone');
-  }
+  // La API Links devuelve directamente el string de la URL
+  const payUrl = text.replace(/^"|"$/g, '').trim();
+  if (!payUrl.startsWith('http')) throw new Error('Payphone no devolvió URL de pago');
 
-  const map = decoded as Record<string, unknown>;
-  const rawId = map['paymentId'] ?? map['id'] ?? map['transactionId'];
-  const paymentId =
-    typeof rawId === 'number'
-      ? rawId
-      : typeof rawId === 'string'
-      ? parseInt(rawId)
-      : 0;
+  return { paymentId: 0, payUrl };
+}
 
-  const rawUrl =
-    map['payWithPayPhone'] ?? map['payUrl'] ?? map['url'] ?? map['paymentUrl'];
-  const payUrl = typeof rawUrl === 'string' ? rawUrl : undefined;
-
-  if (!payUrl) throw new Error('Payphone no devolvió URL de pago');
-  return { paymentId, payUrl };
+export async function confirmPayment(
+  paymentId: number,
+  clientTxId: string,
+  config: PayphoneConfig
+): Promise<PayphoneStatus> {
+  const res = await fetch(confirmUrl(), {
+    method: 'POST',
+    headers: headers(config.token),
+    body: JSON.stringify({ id: paymentId, clientTxId }),
+  });
+  if (!res.ok) throw new Error(`Payphone confirm HTTP ${res.status}`);
+  return res.json() as Promise<PayphoneStatus>;
 }
 
 export async function getPaymentStatus(
   paymentId: number,
   config: PayphoneConfig
 ): Promise<PayphoneStatus> {
-  const res = await fetch(`${baseUrl(config.isSandbox)}/Pay/${paymentId}`, {
+  const base = config.isSandbox
+    ? 'https://sandbox-api.payphonetodoesposible.com/api'
+    : 'https://api.payphonetodoesposible.com/api';
+
+  const res = await fetch(`${base}/Pay/${paymentId}`, {
+    method: 'GET',
     headers: headers(config.token),
   });
   if (!res.ok) throw new Error(`Payphone status HTTP ${res.status}`);

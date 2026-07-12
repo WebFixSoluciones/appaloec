@@ -27,8 +27,13 @@ class FirebaseAuthRepository implements AuthRepository {
         'email': user.email ?? '',
         'displayName': user.displayName ?? '',
         'isPremium': false,
+        'role': 'user',
+        'status': 'active',
         'createdAt': FieldValue.serverTimestamp(),
         'photoUrl': user.photoURL ?? '',
+        'authProvider': user.providerData.isNotEmpty
+            ? user.providerData.first.providerId
+            : 'password',
       });
     }
   }

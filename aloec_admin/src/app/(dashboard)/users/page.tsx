@@ -14,7 +14,10 @@ import {
   AlertCircle,
   ShieldCheck,
   UserCheck,
-  Slash
+  Slash,
+  Plus,
+  Key,
+  UserPlus
 } from 'lucide-react';
 
 const GoogleIcon = () => (
@@ -60,6 +63,14 @@ export default function UsersPage() {
   const [editMembership, setEditMembership] = useState('free');
   const [editStatus, setEditStatus] = useState<'active' | 'suspended'>('active');
   const [saving, setSaving] = useState(false);
+
+  // Create user form
+  const [isCreating, setIsCreating] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newName, setNewName] = useState('');
+  const [newRole, setNewRole] = useState<'user' | 'admin'>('user');
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -160,6 +171,37 @@ export default function UsersPage() {
     }
   };
 
+  const handleCreateUser = async () => {
+    if (!newEmail.trim() || !newPassword.trim()) {
+      toast.error('Email y contraseña son obligatorios');
+      return;
+    }
+    setCreating(true);
+    const toastId = toast.loading('Creando usuario...');
+    try {
+      const res = await fetch('/api/users/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: newEmail.trim(),
+          password: newPassword,
+          displayName: newName.trim() || newEmail.split('@')[0],
+          role: newRole,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al crear');
+      toast.success('Usuario creado correctamente', { id: toastId });
+      setIsCreating(false);
+      setNewEmail(''); setNewPassword(''); setNewName(''); setNewRole('user');
+      window.location.reload();
+    } catch (err: any) {
+      toast.error('Error: ' + err.message, { id: toastId });
+    } finally {
+      setCreating(false);
+    }
+  };
+
   const filteredUsers = users.filter(user => {
     const term = search.toLowerCase();
     return (
@@ -189,15 +231,24 @@ export default function UsersPage() {
           <h1 className="text-2xl font-bold text-ink-900">Usuarios Registrados</h1>
           <p className="text-sm text-ink-500 mt-1">Administra roles, accesos y suscripciones de los miembros.</p>
         </div>
-        <div className="relative w-full md:w-72">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-ink-400" size={18} />
-          <input
-            type="text"
-            className="w-full pl-10 pr-4 py-2 border border-ink-200 outline-none focus:border-[#008000] text-sm text-ink-900"
-            placeholder="Buscar por nombre, email..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative w-full md:w-72">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-ink-400" size={18} />
+            <input
+              type="text"
+              className="w-full pl-10 pr-4 py-2 border border-ink-200 outline-none focus:border-[#008000] text-sm text-ink-900"
+              placeholder="Buscar por nombre, email..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <button
+            onClick={() => setIsCreating(true)}
+            className="px-4 py-2 bg-[#008000] hover:bg-[#006400] text-white font-bold text-sm transition-colors flex items-center gap-2"
+          >
+            <UserPlus size={16} />
+            Crear Usuario
+          </button>
         </div>
       </div>
 
@@ -352,6 +403,85 @@ export default function UsersPage() {
                 disabled={saving}
               >
                 {saving ? 'Guardando...' : 'Guardar Cambios'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create User Modal */}
+      {isCreating && (
+        <div className="fixed inset-0 bg-ink-900/40 backdrop-blur-xs flex justify-center items-center z-50 p-4">
+          <div className="bg-white border border-ink-300 w-full max-w-md p-6 relative">
+            <h3 className="text-lg font-bold text-ink-900 mb-2">Crear Nuevo Usuario</h3>
+            <p className="text-xs text-ink-500 mb-6">Registra un nuevo usuario con email y contraseña.</p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-ink-700 uppercase mb-2">Nombre Completo</label>
+                <input
+                  type="text"
+                  className="w-full p-2.5 bg-white border border-ink-300 outline-none focus:border-ink-900 text-sm"
+                  placeholder="ej. Juan Perez"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  disabled={creating}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-ink-700 uppercase mb-2">Correo Electrónico</label>
+                <input
+                  type="email"
+                  className="w-full p-2.5 bg-white border border-ink-300 outline-none focus:border-ink-900 text-sm"
+                  placeholder="ej. juan@email.com"
+                  required
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  disabled={creating}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-ink-700 uppercase mb-2">Contraseña</label>
+                <input
+                  type="password"
+                  className="w-full p-2.5 bg-white border border-ink-300 outline-none focus:border-ink-900 text-sm"
+                  placeholder="Mínimo 6 caracteres"
+                  required
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  disabled={creating}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-ink-700 uppercase mb-2">Rol</label>
+                <select
+                  className="w-full p-2.5 bg-white border border-ink-300 outline-none focus:border-ink-900 text-sm"
+                  value={newRole}
+                  onChange={(e) => setNewRole(e.target.value as any)}
+                >
+                  <option value="user">Usuario Estándar</option>
+                  <option value="admin">Administrador</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-8 border-t border-ink-200 pt-4">
+              <button
+                type="button"
+                className="px-4 py-2 border border-ink-300 text-ink-700 font-bold text-sm hover:bg-ink-50 transition-colors"
+                onClick={() => setIsCreating(false)}
+                disabled={creating}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="px-4 py-2 bg-[#008000] hover:bg-[#006400] text-white font-bold text-sm transition-colors flex items-center gap-1.5"
+                onClick={handleCreateUser}
+                disabled={creating}
+              >
+                <UserPlus size={16} />
+                {creating ? 'Creando...' : 'Crear Usuario'}
               </button>
             </div>
           </div>

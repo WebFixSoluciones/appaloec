@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb } from '../../../../lib/firebase/admin';
-import { getPayphoneConfig, getPaymentStatus } from '../../../../lib/payphone/client';
+import { getPayphoneConfig, confirmPayment } from '../../../../lib/payphone/client';
 import { FieldValue } from 'firebase-admin/firestore';
 
 export async function POST(req: NextRequest) {
@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
 
     // Verificar estado real con Payphone (no confiar ciegamente en el body del webhook)
     const config = await getPayphoneConfig();
-    const status = await getPaymentStatus(paymentId, config);
+    const status = await confirmPayment(paymentId, clientTransactionId, config);
 
     const db = getAdminDb();
 
@@ -47,11 +47,16 @@ export async function POST(req: NextRequest) {
       });
 
       const userRef = db.collection('users').doc(orderData.userId);
-      batch.update(userRef, {
+      batch.set(userRef, {
+        email: orderData.userEmail || '',
+        displayName: orderData.userEmail?.split('@')[0] || 'Usuario',
         isPremium: true,
+        role: 'user',
+        status: 'active',
         membershipId: orderData.membershipId,
         membershipUpdatedAt: FieldValue.serverTimestamp(),
-      });
+        createdAt: FieldValue.serverTimestamp(),
+      }, { merge: true });
 
       await batch.commit();
       return NextResponse.json({ ok: true, status: 'paid' });
