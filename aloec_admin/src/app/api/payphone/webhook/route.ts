@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb } from '../../../../lib/firebase/admin';
 import { getPayphoneConfig, confirmPayment } from '../../../../lib/payphone/client';
+import { notifyAdmin } from '../../../../lib/notify/admin';
 import { FieldValue } from 'firebase-admin/firestore';
 
 export async function POST(req: NextRequest) {
@@ -59,6 +60,12 @@ export async function POST(req: NextRequest) {
       }, { merge: true });
 
       await batch.commit();
+
+      notifyAdmin(
+        'Pago confirmado via webhook - ALOEC',
+        `Usuario: ${orderData.userEmail}\nPlan: ${orderData.membershipName}\nMonto: $${orderData.amount}\nID Pago: ${paymentId}`
+      ).catch(() => {});
+
       return NextResponse.json({ ok: true, status: 'paid' });
     }
 

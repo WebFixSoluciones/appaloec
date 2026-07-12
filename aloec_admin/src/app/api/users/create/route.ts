@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, getAdminDb } from '../../../../lib/firebase/admin';
+import { notifyAdmin } from '../../../../lib/notify/admin';
 
 export async function POST(req: NextRequest) {
   try {
@@ -34,6 +35,11 @@ export async function POST(req: NextRequest) {
       createdAt: new Date(),
       authProvider: 'password',
     });
+
+    notifyAdmin(
+      'Nuevo usuario registrado - ALOEC',
+      `Email: ${email}\nNombre: ${displayName || email.split('@')[0]}\nRol: ${role || 'user'}`
+    ).catch(() => {});
 
     return NextResponse.json({ uid: userRecord.uid });
   } catch (err: unknown) {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb } from '../../../../lib/firebase/admin';
 import { getPayphoneConfig, confirmPayment } from '../../../../lib/payphone/client';
+import { notifyAdmin } from '../../../../lib/notify/admin';
 import { FieldValue } from 'firebase-admin/firestore';
 
 export async function GET(req: NextRequest) {
@@ -54,6 +55,12 @@ export async function GET(req: NextRequest) {
       }, { merge: true });
 
       await batch.commit();
+
+      notifyAdmin(
+        'Nuevo pago confirmado - ALOEC',
+        `Usuario: ${orderData.userEmail}\nPlan: ${orderData.membershipName}\nMonto: $${orderData.amount}\nID Pago: ${paymentId}`
+      ).catch(() => {});
+
       return NextResponse.redirect('https://app.alimentacionorganicaec.net/checkout/result?status=paid');
     }
 

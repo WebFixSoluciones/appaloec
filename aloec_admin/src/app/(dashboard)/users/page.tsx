@@ -16,7 +16,7 @@ import {
   UserCheck,
   Slash,
   Plus,
-  Key,
+  RefreshCw,
   UserPlus
 } from 'lucide-react';
 
@@ -73,41 +73,40 @@ export default function UsersPage() {
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
-    async function loadData() {
-      try {
-        setLoading(true);
-        // Load memberships for dropdown selection
-        const memSnap = await getDocs(collection(db, 'memberships'));
-        const mems = memSnap.docs.map(d => ({ id: d.id, name: d.data().name }));
-        setMemberships([{ id: 'free', name: 'Gratuito / Ninguno' }, ...mems]);
-
-        // Load users
-        const usersSnap = await getDocs(collection(db, 'users'));
-        const list: UserItem[] = [];
-        usersSnap.forEach((docSnap) => {
-          const data = docSnap.data();
-          list.push({
-            uid: docSnap.id,
-            email: data.email || '',
-            displayName: data.displayName || 'Usuario sin nombre',
-            photoURL: data.photoURL || '',
-            authProvider: data.authProvider || 'Email',
-            role: data.role || 'user',
-            membershipId: data.membershipId || 'free',
-            status: data.status || 'active',
-            createdAt: data.createdAt
-          });
-        });
-        setUsers(list);
-      } catch (err) {
-        console.error('Error loading users:', err);
-        toast.error('Error al cargar la lista de usuarios');
-      } finally {
-        setLoading(false);
-      }
-    }
     loadData();
   }, []);
+
+  async function loadData() {
+    try {
+      setLoading(true);
+      const memSnap = await getDocs(collection(db, 'memberships'));
+      const mems = memSnap.docs.map(d => ({ id: d.id, name: d.data().name }));
+      setMemberships([{ id: 'free', name: 'Gratuito / Ninguno' }, ...mems]);
+
+      const usersSnap = await getDocs(collection(db, 'users'));
+      const list: UserItem[] = [];
+      usersSnap.forEach((docSnap) => {
+        const data = docSnap.data();
+        list.push({
+          uid: docSnap.id,
+          email: data.email || '',
+          displayName: data.displayName || 'Usuario sin nombre',
+          photoURL: data.photoURL || '',
+          authProvider: data.authProvider || 'Email',
+          role: data.role || 'user',
+          membershipId: data.membershipId || 'free',
+          status: data.status || 'active',
+          createdAt: data.createdAt
+        });
+      });
+      setUsers(list);
+    } catch (err) {
+      console.error('Error loading users:', err);
+      toast.error('Error al cargar la lista de usuarios');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const handleEditClick = (user: UserItem) => {
     setSelectedUser(user);
@@ -242,6 +241,13 @@ export default function UsersPage() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
+          <button
+            onClick={loadData}
+            className="px-3 py-2 border border-ink-300 text-ink-600 hover:text-ink-900 font-bold text-sm transition-colors flex items-center gap-1.5"
+            title="Recargar lista"
+          >
+            <RefreshCw size={15} />
+          </button>
           <button
             onClick={() => setIsCreating(true)}
             className="px-4 py-2 bg-[#008000] hover:bg-[#006400] text-white font-bold text-sm transition-colors flex items-center gap-2"
