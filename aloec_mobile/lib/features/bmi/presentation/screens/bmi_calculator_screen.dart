@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/widgets/aloec_button.dart';
 import '../../../../core/widgets/aloec_text_field.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -92,11 +93,29 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
     }
   }
 
-  void _viewProtocol() {
+  void _viewProtocol() async {
     if (_bmi == null) {
       _showNeedCalculationSnackbar();
       return;
     }
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      final isPremium = doc.data()?['isPremium'] == true;
+      if (isPremium) {
+        context.push('/bmi-result', extra: {
+          'bmi': _bmi,
+          'status': _statusLabel,
+          'protocol': null,
+        });
+        return;
+      }
+    }
+
     _showPremiumModal();
   }
 

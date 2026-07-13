@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/bmi_entity.dart';
 import '../../../subscriptions/domain/protocol_model.dart';
@@ -27,11 +28,27 @@ class _BmiResultScreenState extends State<BmiResultScreen> {
   final _protocolsRepo = ProtocolsRepository();
   ProtocolModel? _resolvedProtocol;
   bool _isLoadingProtocol = true;
+  bool _isPremium = false;
 
   @override
   void initState() {
     super.initState();
+    _checkPremium();
     _loadProtocol();
+  }
+
+  Future<void> _checkPremium() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .get();
+    if (mounted) {
+      setState(() {
+        _isPremium = doc.data()?['isPremium'] == true;
+      });
+    }
   }
 
   Future<void> _loadProtocol() async {
@@ -163,8 +180,9 @@ class _BmiResultScreenState extends State<BmiResultScreen> {
               ),
             const SizedBox(height: 20),
 
-            // Premium CTA
-            GestureDetector(
+            // Premium CTA — only show for non-premium users
+            if (!_isPremium)
+              GestureDetector(
               onTap: () => context.push('/premium-upsell'),
               child: Container(
                 width: double.infinity,
