@@ -173,5 +173,57 @@ service cloud.firestore {
     match /users/{userId}/bmi_records/{recordId} {
       allow read, write: if isOwner(userId) || isAdmin();
     }
+
+    // ============================================================
+    // SISTEMA DE REFERIDOS
+    // ============================================================
+
+    // Mapeo codigo → UID. Lectura publica para resolucion de referentes.
+    match /referral_codes/{code} {
+      allow read: if true;
+      allow create: if isAuthenticated() && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    // Configuracion del programa. Solo admin escribe.
+    match /referral_config/{doc} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Comisiones. Referente y admin leen. Admin modifica estado.
+    match /commissions/{id} {
+      allow read: if isAuthenticated() && (resource.data.referrerUid == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated();
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+
+    // Solicitudes de retiro (payouts).
+    match /payouts/{id} {
+      allow read: if isAuthenticated() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.uid == request.auth.uid;
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+
+    // Metodos de cobro del usuario.
+    match /users/{userId}/payout_methods/{methodId} {
+      allow read, write: if isOwner(userId) || isAdmin();
+    }
+
+    // Bitacora de eventos del sistema de referidos.
+    match /referral_events/{id} {
+      allow read: if isAuthenticated() && (resource.data.referrerUid == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated();
+      allow update, delete: if false;
+    }
+
+    // Auditoria administrativa (inmutable).
+    match /referral_audit/{id} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+      allow update, delete: if false;
+    }
   }
 }

@@ -5,6 +5,7 @@ import '../providers/auth_provider.dart';
 import '../../../../core/widgets/aloec_button.dart';
 import '../../../../core/widgets/aloec_text_field.dart';
 import '../../../../core/widgets/aloec_logo.dart';
+import '../../../../core/services/referral_service.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -18,7 +19,26 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _phoneCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
+  final _referralCtrl = TextEditingController();
   bool _acceptedTerms = false;
+  bool _clipboardChecked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _detectClipboardReferral();
+  }
+
+  Future<void> _detectClipboardReferral() async {
+    final code = await ReferralService.detectClipboardReferralCode();
+    if (code != null && mounted) {
+      setState(() {
+        _referralCtrl.text = code;
+        _clipboardChecked = true;
+      });
+      await ReferralService.clearClipboard();
+    }
+  }
 
   @override
   void dispose() {
@@ -26,6 +46,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     _phoneCtrl.dispose();
     _emailCtrl.dispose();
     _passCtrl.dispose();
+    _referralCtrl.dispose();
     super.dispose();
   }
 
@@ -33,8 +54,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final name = _nameCtrl.text.trim();
     final email = _emailCtrl.text.trim();
     final pass = _passCtrl.text.trim();
-
     final phone = _phoneCtrl.text.trim();
+    final referralCode = ReferralService.sanitizeCode(_referralCtrl.text.trim());
 
     if (name.isEmpty) {
       _showError('Ingresa tu nombre completo.');
@@ -74,7 +95,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       return;
     }
 
-    ref.read(authNotifierProvider.notifier).register(email, pass, name);
+    ref.read(authNotifierProvider.notifier).register(email, pass, name, referralCode: referralCode);
   }
 
   void _showError(String msg) {
@@ -144,6 +165,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   obscureText: true,
                 ),
                 const SizedBox(height: 16),
+                if (_referralCtrl.text.isNotEmpty)
+                  AloecTextField(
+                    controller: _referralCtrl,
+                    hintText: 'Código de referido',
+                    prefixIcon: Icons.card_giftcard,
+                    readOnly: true,
+                  ),
+                if (_referralCtrl.text.isNotEmpty)
+                  const SizedBox(height: 16),
                 Row(
                   children: [
                     Checkbox(

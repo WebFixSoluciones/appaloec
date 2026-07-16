@@ -27,6 +27,12 @@ import '../../features/profile/presentation/screens/help_screen.dart';
 import '../../features/profile/presentation/screens/subscription_screen.dart';
 import '../../features/profile/presentation/screens/terms_screen.dart';
 import '../../features/profile/presentation/screens/privacy_screen.dart';
+import '../../features/referral/presentation/screens/referral_dashboard_screen.dart';
+import '../../features/referral/presentation/screens/referral_share_screen.dart';
+import '../../features/referral/presentation/screens/referred_list_screen.dart';
+import '../../features/referral/presentation/screens/earnings_screen.dart';
+import '../../features/referral/presentation/screens/payout_methods_screen.dart';
+import '../../features/referral/presentation/screens/payout_history_screen.dart';
 
 const _publicRoutes = ['/splash', '/onboarding', '/auth/login', '/auth/register', '/auth/forgot-password', '/force-update'];
 
@@ -173,6 +179,32 @@ final goRouter = GoRouter(
         if (protocol == null) return const Scaffold(body: Center(child: Text('Protocolo no disponible')));
         return ProtocolDetailScreen(protocol: protocol);
       },
+    ),
+
+    // ─── Sistema de Referidos ────────────────────────────────────────────────
+    GoRoute(
+      path: '/referral',
+      builder: (context, state) => const ReferralDashboardScreen(),
+    ),
+    GoRoute(
+      path: '/referral/share',
+      builder: (context, state) => const ReferralShareScreen(),
+    ),
+    GoRoute(
+      path: '/referral/referred',
+      builder: (context, state) => const ReferredListScreen(),
+    ),
+    GoRoute(
+      path: '/referral/earnings',
+      builder: (context, state) => const EarningsScreen(),
+    ),
+    GoRoute(
+      path: '/referral/methods',
+      builder: (context, state) => const PayoutMethodsScreen(),
+    ),
+    GoRoute(
+      path: '/referral/payout-history',
+      builder: (context, state) => const PayoutHistoryScreen(),
     ),
   ],
 );

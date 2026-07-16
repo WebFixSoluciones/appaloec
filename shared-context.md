@@ -151,6 +151,191 @@ Videocursos educativos y promocionales sobre jugos verdes, nutrición y estilo d
 
 ---
 
+---
+
+## 👥 Sistema de Referidos
+
+### Extensión en `/users/{uid}`:
+
+```typescript
+interface UserReferral {
+  code: string;                    // "ALOE-JUAN" — código propio único para compartir
+  codeCreatedAt: timestamp;
+  referredByUid: string | null;    // UID del usuario que lo refirió
+  referredByCode: string | null;   // Código usado al registrarse
+  status: 'none' | 'invited' | 'registered' | 'converted';
+  registeredAt: timestamp | null;
+  convertedAt: timestamp | null;   // fecha de primera compra
+}
+
+interface AffiliateBalance {
+  pendingUSD: number;              // comisiones en hold period
+  approvedUSD: number;             // comisiones disponibles para retiro
+  paidUSD: number;                 // total histórico pagado
+  rejectedUSD: number;             // total rechazado
+  updatedAt: timestamp;
+}
+```
+
+### Colección: `referral_codes`
+Mapeo rápido código → UID. Lectura pública para resolver referentes.
+
+```typescript
+interface ReferralCodeDocument {
+  code: string;           // ID del documento = código
+  uid: string;            // UID del dueño del código
+  displayName: string;    // nombre del dueño
+  createdAt: timestamp;
+  active: boolean;
+}
+```
+
+### Colección: `referral_config`
+Configuración global del programa. Documento único: `/referral_config/production`
+
+```typescript
+interface ReferralConfigDocument {
+  programEnabled: boolean;
+  commissionRules: {
+    registration:    { type: 'fixed' | 'percentage'; value: number; enabled: boolean };
+    firstPurchase:   { type: 'fixed' | 'percentage'; value: number; enabled: boolean };
+    purchase:        { type: 'fixed' | 'percentage'; value: number; enabled: boolean };
+  };
+  purchasePercentageBase: 'net' | 'gross';
+  cookieDurationDays: number;      // default 30
+  holdPeriodDays: number;          // default 7
+  minPayoutUSD: number;            // default 25
+  maxPayoutUSD: number;            // default 1000
+  payoutMethods: {
+    id: string;                    // 'paypal' | 'binance' | 'bank_ec'
+    label: string;
+    enabled: boolean;
+    minAmount: number;
+  }[];
+  termsUrl: string;
+  updatedAt: timestamp;
+  updatedBy: string;
+}
+```
+
+### Colección: `referral_events`
+Bitácora inmutable de todos los eventos del sistema.
+
+```typescript
+type ReferralEventType =
+  | 'invitation_sent' | 'link_clicked' | 'registered'
+  | 'first_purchase' | 'commission_generated' | 'commission_approved'
+  | 'commission_rejected' | 'commission_paid'
+  | 'payout_requested' | 'payout_completed' | 'payout_rejected';
+
+interface ReferralEventDocument {
+  type: ReferralEventType;
+  referrerUid: string | null;
+  referredUid: string | null;
+  referralCode: string | null;
+  metadata: Record<string, unknown>;
+  ipAddress: string | null;
+  userAgent: string | null;
+  createdAt: timestamp;
+}
+```
+
+### Colección: `commissions`
+
+```typescript
+interface CommissionDocument {
+  referrerUid: string;
+  referredUid: string;
+  referralCode: string;
+  triggerType: 'registration' | 'first_purchase' | 'purchase';
+  amountUSD: number;
+  ruleSnapshot: { type: string; value: number; percentageBase?: string };
+  orderId: string | null;
+  orderAmount: number | null;
+  status: 'pending' | 'approved' | 'rejected' | 'paid';
+  statusLog: { status: string; timestamp: timestamp; actorUid: string; reason?: string }[];
+  releasedAt: timestamp;           // holdPeriodDays after createdAt
+  payoutBatchId: string | null;
+  createdAt: timestamp;
+}
+```
+
+### Subcolección: `/users/{uid}/payout_methods`
+
+```typescript
+interface PayoutMethodDocument {
+  type: 'paypal' | 'binance' | 'bank_ec';
+  label: string;                   // "Mi PayPal principal"
+  isDefault: boolean;
+  isVerified: boolean;
+  details: Record<string, string>; // tipo-específico
+  createdAt: timestamp;
+  updatedAt: timestamp;
+}
+```
+
+### Colección: `payouts`
+
+```typescript
+interface PayoutDocument {
+  uid: string;
+  amountUSD: number;
+  commissionIds: string[];
+  methodSnapshot: { type: string; label: string; details: Record<string, string> };
+  status: 'pending' | 'processing' | 'completed' | 'rejected';
+  statusLog: { status: string; timestamp: timestamp; actorUid: string; notes?: string }[];
+  adminNotes: string | null;
+  processedAt: timestamp | null;
+  createdAt: timestamp;
+}
+```
+
+### Colección: `referral_audit`
+Registro inmutable de cambios administrativos.
+
+```typescript
+interface ReferralAuditDocument {
+  action: string;                  // 'config.updated' | 'commission.status_changed' | 'payout.approved' | etc.
+  actorUid: string;
+  actorEmail: string;
+  targetUid: string | null;
+  changes: { field: string; before: unknown; after: unknown };
+  ipAddress: string | null;
+  createdAt: timestamp;
+}
+```
+
+### Reglas de Negocio del Sistema de Referidos
+
+| Regla | Descripción |
+|-------|-------------|
+| Código único | Formato `ALOE-[A-Z0-9]{4,20}`, generado vía Cloud Function |
+| Auto-referido | Bloqueado: `referredByUid !== newUid` |
+| First-touch | Primer código usado gana la atribución; no se sobrescribe |
+| Cookie duration | `cookieDurationDays` (default 30) desde `?ref=` hasta registro |
+| Hold period | Comisiones `pending` por `holdPeriodDays` (default 7) antes de liberarse |
+| Mínimo retiro | `approvedUSD >= minPayoutUSD` (default $25) |
+| Máximo retiro | `amount <= maxPayoutUSD` (default $1000) |
+| Círculo prohibido | Si A refirió a B, B no puede referir a A (validación 1 nivel) |
+| Refund | Si el referido hace reembolso, la comisión se revierte: `approved → rejected` |
+| Rate limit | Máximo 10 generaciones de código por IP/hora |
+
+### Máquina de Estados
+
+```
+COMMISSION:  pending → approved → paid
+                  ↓
+               rejected
+
+PAYOUT:  pending → processing → completed
+              ↓
+           rejected
+
+REFERRAL: none → invited → registered → converted
+```
+
+---
+
 ## 📈 Reglas de Cálculo de Negocio (IMC)
 
 El cálculo del IMC sigue la escala estándar de la Organización Mundial de la Salud (OMS):

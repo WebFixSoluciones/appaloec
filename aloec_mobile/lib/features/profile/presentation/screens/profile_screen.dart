@@ -69,6 +69,12 @@ class ProfileScreen extends ConsumerWidget {
           ],
           const SizedBox(height: 32),
           _buildTile(
+            icon: Icons.card_giftcard,
+            title: 'Programa de Referidos',
+            subtitle: 'Invita amigos y gana comisiones',
+            onTap: () => context.push('/referral'),
+          ),
+          _buildTile(
             icon: Icons.subscriptions,
             title: 'Suscripcion',
             subtitle: 'Gestiona tu plan actual',

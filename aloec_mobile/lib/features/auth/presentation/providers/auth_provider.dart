@@ -49,10 +49,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<void> register(String email, String password, String name) async {
+  Future<void> register(String email, String password, String name, {String? referralCode}) async {
     state = AuthState.loading();
     try {
-      await _authRepository.registerWithEmail(email, password, name);
+      await _authRepository.registerWithEmail(email, password, name, referralCode: referralCode);
     } catch (e) {
       state = AuthState.error(mapAuthError(e));
     }

@@ -1,0 +1,622 @@
+INSTRUCCIONES DE DESARROLLO: IMPLEMENTACIÓN DEL SISTEMA DE REFERIDOS EN ALOEC
+
+Actúa como un Desarrollador Full-Stack Senior e implementa el Sistema de Referidos y Afiliados completo para ALOEC en las plataformas Web (Landing Page), Backend (Firebase/Firestore/Cloud Functions), App Móvil (Flutter) y Panel de Administración (Next.js/Vercel).
+
+Sigue estrictamente las especificaciones de diseño, modelos de base de datos y flujos de trabajo detallados a continuación. No dejes marcadores de posición (placeholders) ni funciones vacías.
+
+---
+
+## 1. ESQUEMAS DE BASE DE DATOS (CLOUD FIRESTORE)
+
+Aplica y extiende las siguientes colecciones en Firestore de acuerdo con el modelo de datos unificado:
+
+### Colección: `users` (Ampliación del documento `/users/{uid}`)
+Añade los siguientes campos al esquema del usuario:
+```typescript
+{
+  referral: {
+    code: string;             // Código de referido generado en el registro, ej: "ALOE-CARLOS123"
+    referredByUid: string | null;  // UID del usuario que lo invitó
+    referredByCode: string | null; // Código utilizado durante el registro
+    status: 'none' | 'referred' | 'converted'; // 'referred': registrado con código; 'converted': ya compró premium
+  },
+  affiliateBalance: {
+    pendingUSD: number;       // Comisiones acumuladas pendientes de cobro (float)
+    withdrawnUSD: number;     // Suma total cobrada históricamente (float)
+  }
+}
+```
+
+### Colección: `commissions` (Nueva colección `/commissions/{commissionId}`)
+* ID del documento: Autogenerado por Firestore.
+* Estructura:
+```typescript
+{
+  id: string,                 // ID autogenerado coincidente con el ID del documento
+  referrerUid: string,        // UID del afiliado que recibe la comisión
+  referredUid: string,        // UID del nuevo usuario que realizó la compra
+  referredEmail: string,      // Correo del usuario referido
+  amountUSD: number,          // Comisión generada en USD (float)
+  percentageApplied: number,  // Porcentaje de comisión utilizado (ej: 20)
+  purchaseId: string,         // ID del documento de la compra/pago
+  status: 'available' | 'withdrawn' | 'cancelled', // Estado de la comisión
+  createdAt: timestamp        // Marca de tiempo del servidor de Firestore
+}
+```
+
+### Colección: `payout_requests` (Nueva colección `/payout_requests/{requestId}`)
+* ID del documento: Autogenerado por Firestore.
+* Estructura:
+```typescript
+{
+  id: string,                 // ID coincidente con el del documento
+  userUid: string,            // UID del afiliado solicitante
+  amountUSD: number,          // Monto solicitado para retiro
+  paymentMethod: 'paypal' | 'binance' | 'bank_transfer_ec',
+  paymentDetails: {
+    paypalEmail: string | null,     // Requerido si paymentMethod == 'paypal'
+    binanceId: string | null,       // Requerido si paymentMethod == 'binance'
+    bankName: string | null,        // Banco de Ecuador, ej: "Banco Pichincha"
+    accountType: 'savings' | 'current' | null, // Ahorros o Corriente
+    accountNumber: string | null,   // Número de cuenta bancaria
+    holderName: string | null,      // Nombre del beneficiario de la cuenta
+    holderId: string | null,        // Cédula o RUC del beneficiario
+    holderEmail: string | null      // Email para confirmación de transferencia
+  },
+  status: 'pending' | 'approved' | 'rejected',
+  rejectionReason: string | null,   // Razón de rechazo en caso de estado 'rejected'
+  createdAt: timestamp,
+  processedAt: timestamp | null     // Fecha en la que el administrador aprobó/rechazó
+}
+```
+
+### Documento de Configuración Global: `/settings/referrals`
+* Documento único para almacenar las políticas del programa.
+* Estructura:
+```typescript
+{
+  commissionPercentage: number,     // Porcentaje de comisión estándar (ej: 20)
+  minimumPayoutAmountUSD: number,   // Mínimo para solicitar retiro (ej: 10.00)
+  referredDiscountPercentage: number, // Descuento otorgado al referido (ej: 15)
+  active: boolean,                  // Interruptor general del sistema
+  updatedAt: timestamp
+}
+```
+
+---
+
+## 2. REGLAS DE SEGURIDAD (FIRESTORE RULES)
+
+Agrega y despliega las siguientes reglas de seguridad en `firestore.rules`:
+```javascript
+match /users/{userId} {
+  allow read, write: if request.auth != null && request.auth.uid == userId;
+}
+
+match /commissions/{commissionId} {
+  allow read: if request.auth != null && resource.data.referrerUid == request.auth.uid;
+  allow write: if false; // Escritura exclusiva desde Firebase Cloud Functions seguros
+}
+
+match /payout_requests/{requestId} {
+  allow read: if request.auth != null && resource.data.userUid == request.auth.uid;
+  allow create: if request.auth != null && request.resource.data.userUid == request.auth.uid 
+                && request.resource.data.amountUSD <= get(/databases/$(database)/documents/users/$(request.auth.uid)).data.affiliateBalance.pendingUSD;
+  allow update, delete: if false; // Solo el administrador puede modificar el estado desde el panel web
+}
+
+match /settings/referrals {
+  allow read: if request.auth != null;
+  allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+}
+```
+
+---
+
+## 3. COMPONENTE 1: WEB LANDING PAGE (ATRIBUCIÓN DE REFERIDOS)
+
+### Archivo: `aloec_landing/index.html` (o script de la Landing)
+Implementa el script JavaScript para capturar el parámetro `ref` de la URL y guardarlo en el almacenamiento del navegador. Al hacer clic en descargar, copia el código al portapapeles y redirige a las tiendas.
+
+```html
+<script>
+    // 1. Capturar código de referido de la URL y persistirlo
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get('ref');
+    if (refCode) {
+        localStorage.setItem('aloec_ref_code', refCode.trim());
+    }
+
+    // 2. Función para los botones de descarga con copiado al portapapeles
+    function handleDownloadClick(storeUrl) {
+        const code = localStorage.getItem('aloec_ref_code');
+        if (code && navigator.clipboard) {
+            // Copiar código al portapapeles para la Estrategia B (Clipboard Fallback)
+            navigator.clipboard.writeText(code)
+                .then(() => {
+                    console.log('Referral code copied to clipboard: ' + code);
+                    // Redirigir a la tienda
+                    window.location.href = storeUrl;
+                })
+                .catch((err) => {
+                    console.error('Failed to copy code to clipboard: ', err);
+                    window.location.href = storeUrl;
+                });
+        } else {
+            window.location.href = storeUrl;
+        }
+    }
+</script>
+```
+
+---
+
+## 4. COMPONENTE 2: BACKEND Y LOGÍSITICA (CLOUD FUNCTIONS)
+
+### Archivo: `aloec_backend/functions/index.js`
+Desarrolla las siguientes Cloud Functions usando Firebase Admin SDK:
+
+```javascript
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
+admin.initializeApp();
+
+const db = admin.firestore();
+
+/**
+ * Trigger que se ejecuta al completarse un pago/suscripción en Firestore.
+ * Detecta si el comprador es un referido y asigna la comisión al patrocinador.
+ */
+exports.processReferralCommission = functions.firestore
+  .document('payments/{paymentId}')
+  .onCreate(async (snap, context) => {
+    const payment = snap.data();
+    
+    // Validar que el pago esté completado y contenga el UID del usuario
+    if (payment.status !== 'completed' || !payment.userUid) {
+      return null;
+    }
+
+    const buyerUid = payment.userUid;
+    const purchaseAmount = payment.amountUSD;
+    const purchaseId = context.params.paymentId;
+
+    try {
+      // 1. Obtener el perfil del comprador
+      const buyerRef = db.collection('users').doc(buyerUid);
+      const buyerDoc = await buyerRef.get();
+      
+      if (!buyerDoc.exists) return null;
+      const buyerData = buyerDoc.data();
+
+      // Verificar si fue referido por alguien y no se ha convertido aún
+      const referral = buyerData.referral;
+      if (!referral || !referral.referredByUid || referral.status !== 'referred') {
+        return null;
+      }
+
+      const referrerUid = referral.referredByUid;
+
+      // 2. Leer configuraciones globales del programa de referidos
+      const settingsRef = db.collection('settings').doc('referrals');
+      const settingsDoc = await settingsRef.get();
+      
+      let commissionPercent = 20; // Porcentaje por defecto
+      if (settingsDoc.exists) {
+        commissionPercent = settingsDoc.data().commissionPercentage || 20;
+      }
+
+      // 3. Calcular monto de comisión
+      const commissionAmount = parseFloat((purchaseAmount * (commissionPercent / 100)).toFixed(2));
+
+      // 4. Iniciar transacción en Firestore para escribir comisión e incrementar balance
+      await db.runTransaction(async (transaction) => {
+        const referrerRef = db.collection('users').doc(referrerUid);
+        const referrerDoc = await transaction.get(referrerRef);
+        
+        if (!referrerDoc.exists) {
+          throw new Error("Referrer user document does not exist");
+        }
+
+        const referrerData = referrerDoc.data();
+        const currentPending = referrerData.affiliateBalance?.pendingUSD || 0;
+
+        // Crear registro en la colección de comisiones
+        const newCommissionRef = db.collection('commissions').doc();
+        transaction.set(newCommissionRef, {
+          id: newCommissionRef.id,
+          referrerUid: referrerUid,
+          referredUid: buyerUid,
+          referredEmail: buyerData.email,
+          amountUSD: commissionAmount,
+          percentageApplied: commissionPercent,
+          purchaseId: purchaseId,
+          status: 'available',
+          createdAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+
+        // Actualizar balance acumulado del patrocinador
+        transaction.update(referrerRef, {
+          'affiliateBalance.pendingUSD': parseFloat((currentPending + commissionAmount).toFixed(2)),
+          'referral.status': 'converted' // Cambiar estado del referido a convertido
+        });
+
+        // Actualizar estado del comprador a convertido
+        transaction.update(buyerRef, {
+          'referral.status': 'converted'
+        });
+      });
+
+      // 5. Enviar notificación push al patrocinador vía FCM
+      const referrerDoc = await db.collection('users').doc(referrerUid).get();
+      const deviceToken = referrerDoc.data().deviceToken;
+
+      if (deviceToken) {
+        const payload = {
+          notification: {
+            title: '¡Comisión recibida! 🍏',
+            body: `Has ganado $${commissionAmount} USD de comisión por la suscripción de tu amigo.`
+          }
+        };
+        await admin.messaging().sendToDevice(deviceToken, payload);
+      }
+
+      console.log(`Referral commission of $${commissionAmount} successfully processed for user ${referrerUid}`);
+      return true;
+
+    } catch (error) {
+      console.error('Error processing referral commission:', error);
+      return null;
+    }
+  });
+```
+
+---
+
+## 5. COMPONENTE 3: CLIENTE MÓVIL (FLUTTER)
+
+### Pantalla de Registro: `aloec_mobile/lib/features/auth/presentation/register_screen.dart`
+Implementa la lectura automática del portapapeles al inicializar el formulario de registro:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({Key? key}) : super(key: key);
+
+  @override
+  _RegisterScreenState createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
+  final TextEditingController _referralController = TextEditingController();
+  
+  @override
+  void initState() {
+    super.initState();
+    // Leer portapapeles al iniciar para detectar código de referido (Estrategia B)
+    _checkClipboardForReferral();
+  }
+
+  Future<void> _checkClipboardForReferral() async {
+    try {
+      ClipboardData? data = await Clipboard.getData(Clipboard.kTextPlain);
+      if (data != null && data.text != null) {
+        final text = data.text!.trim();
+        // Validar formato del código de referido de ALOEC, ej: ALOE-CARLOS123
+        if (RegExp(r'^ALOE-[A-Z0-9]+$').hasMatch(text)) {
+          setState(() {
+            _referralController.text = text;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Código de referido "$text" detectado y auto-rellenado.'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      print('Error al leer el portapapeles: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Registro en ALOEC')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            // ... Otros campos de registro ...
+            TextField(
+              controller: _referralController,
+              decoration: const InputDecoration(
+                labelText: 'Código de Referido (Opcional)',
+                prefixIcon: Icon(Icons.card_giftcard),
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // Proceder con el registro del usuario pasando _referralController.text
+              },
+              child: const Text('Registrarse'),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+### Dashboard de Afiliados: `aloec_mobile/lib/features/referrals/presentation/referral_dashboard_screen.dart`
+Crea la pantalla para visualizar ganancias, código para compartir y solicitar retiros:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:share_plus/share_plus.dart';
+
+class ReferralDashboardScreen extends StatelessWidget {
+  const ReferralDashboardScreen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Programa de Afiliados'),
+        backgroundColor: const Color(0xFF064E3B),
+      ),
+      body: StreamBuilder<DocumentSnapshot>(
+        stream: FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+          
+          final userData = snapshot.data!.data() as Map<String, dynamic>;
+          final referralCode = userData['referral']?['code'] ?? 'Sin Código';
+          final pending = userData['affiliateBalance']?['pendingUSD'] ?? 0.0;
+          final withdrawn = userData['affiliateBalance']?['withdrawnUSD'] ?? 0.0;
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Tarjeta de Balance
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF064E3B), Color(0xFF0A5C46)],
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Column(
+                    children: [
+                      const Text('Saldo Disponible para Retiro', style: TextStyle(color: Colors.white70)),
+                      Text('\$${pending.toStringAsFixed(2)} USD', 
+                        style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 10),
+                      Text('Retirado históricamente: \$${withdrawn.toStringAsFixed(2)} USD', 
+                        style: const TextStyle(color: Colors.white60, fontSize: 13)),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 25),
+
+                // Compartir Código
+                Card(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      children: [
+                        const Text('Comparte tu Código y gana el 20% de sus suscripciones', 
+                          style: TextStyle(fontWeight: FontWeight.w600), textAlign: Center),
+                        const SizedBox(height: 15),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(referralCode, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+                        ),
+                        const SizedBox(height: 15),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            Share.share('¡Únete a ALOEC, mejora tu salud con jugos verdes y obtén un 15% de descuento directo! Regístrate aquí: https://aloec.app/?ref=$referralCode');
+                          },
+                          icon: const Icon(Icons.share),
+                          label: const Text('Compartir Enlace Único'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF10B981),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Botón de Cobro
+                ElevatedButton(
+                  onPressed: pending >= 10.0 // Mínimo configurable de retiro
+                      ? () {
+                          // Navegar a la pantalla de ingreso de datos de cobro (payout_settings_screen.dart)
+                        }
+                      : null, // Deshabilitado si no cumple el mínimo
+                  child: const Text('Solicitar Retiro de Fondos'),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+```
+
+---
+
+## 6. COMPONENTE 4: PANEL ADMINISTRATIVO WEB (NEXT.JS)
+
+### Archivo: `aloec_admin/src/pages/admin/payouts/index.tsx`
+Crea la pantalla para listar y gestionar retiros pendientes de afiliados:
+
+```tsx
+import React, { useEffect, useState } from 'react';
+import { db } from '../../../services/firebase'; // Configuración de Firebase
+import { collection, query, where, getDocs, doc, updateDoc, increment } from 'firebase/firestore';
+
+interface PayoutRequest {
+  id: string;
+  userUid: string;
+  amountUSD: number;
+  paymentMethod: string;
+  status: string;
+  paymentDetails: {
+    paypalEmail?: string;
+    binanceId?: string;
+    bankName?: string;
+    accountNumber?: string;
+    holderName?: string;
+    holderId?: string;
+  };
+}
+
+export default function AdminPayoutRequests() {
+  const [requests, setRequests] = useState<PayoutRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchPendingRequests();
+  }, []);
+
+  const fetchPendingRequests = async () => {
+    try {
+      const q = query(collection(db, 'payout_requests'), where('status', '==', 'pending'));
+      const querySnapshot = await getDocs(q);
+      const data: PayoutRequest[] = [];
+      querySnapshot.forEach((doc) => {
+        data.push({ id: doc.id, ...doc.data() } as PayoutRequest);
+      });
+      setRequests(data);
+    } catch (e) {
+      console.error("Error fetching payouts: ", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleApprove = async (request: PayoutRequest) => {
+    const confirm = window.confirm(`¿Confirmas que ya transferiste \$${request.amountUSD} USD a este afiliado?`);
+    if (!confirm) return;
+
+    try {
+      // 1. Actualizar estado del retiro
+      const requestRef = doc(db, 'payout_requests', request.id);
+      await updateDoc(requestRef, {
+        status: 'approved',
+        processedAt: new Date()
+      });
+
+      // 2. Modificar balance del usuario (reducir pendiente, añadir a histórico pagado)
+      const userRef = doc(db, 'users', request.userUid);
+      await updateDoc(userRef, {
+        'affiliateBalance.pendingUSD': increment(-request.amountUSD),
+        'affiliateBalance.withdrawnUSD': increment(request.amountUSD)
+      });
+
+      alert("Pago aprobado y procesado con éxito.");
+      fetchPendingRequests();
+    } catch (err) {
+      console.error(err);
+      alert("Error al procesar pago.");
+    }
+  };
+
+  const handleReject = async (requestId: string) => {
+    const reason = window.prompt("Ingresa la razón del rechazo de la solicitud:");
+    if (!reason) return;
+
+    try {
+      const requestRef = doc(db, 'payout_requests', requestId);
+      await updateDoc(requestRef, {
+        status: 'rejected',
+        rejectionReason: reason,
+        processedAt: new Date()
+      });
+      alert("Solicitud rechazada con éxito.");
+      fetchPendingRequests();
+    } catch (err) {
+      console.error(err);
+      alert("Error al rechazar solicitud.");
+    }
+  };
+
+  if (loading) return <div className="p-8">Cargando solicitudes de retiro...</div>;
+
+  return (
+    <div className="p-8 max-w-7xl mx-auto">
+      <h1 className="text-2xl font-bold text-emerald-900 mb-6">Solicitudes de Retiro de Afiliados</h1>
+      {requests.length === 0 ? (
+        <p className="text-gray-500">No hay solicitudes de pago pendientes.</p>
+      ) : (
+        <div className="bg-white shadow rounded-lg overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Usuario UID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Monto</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Método</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Detalles de Cobro</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {requests.map((req) => (
+                <tr key={req.id}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{req.userUid}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-emerald-600">${req.amountUSD} USD</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 uppercase">{req.paymentMethod}</td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    {req.paymentMethod === 'paypal' && <p>Paypal Email: {req.paymentDetails.paypalEmail}</p>}
+                    {req.paymentMethod === 'binance' && <p>Binance ID: {req.paymentDetails.binanceId}</p>}
+                    {req.paymentMethod === 'bank_transfer_ec' && (
+                      <div>
+                        <p><strong>{req.paymentDetails.bankName}</strong> ({req.paymentDetails.accountType === 'savings' ? 'Ahorros' : 'Corriente'})</p>
+                        <p>Cuenta: {req.paymentDetails.accountNumber}</p>
+                        <p>Beneficiario: {req.paymentDetails.holderName} (C.I./RUC: {req.paymentDetails.holderId})</p>
+                      </div>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <button onClick={() => handleApprove(req)} className="text-emerald-600 hover:text-emerald-900 mr-4 font-semibold">
+                      Aprobar Pago
+                    </button>
+                    <button onClick={() => handleReject(req.id)} className="text-red-600 hover:text-red-900 font-semibold">
+                      Rechazar
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+```
