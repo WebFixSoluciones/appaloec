@@ -123,13 +123,13 @@ class OrdersRepository {
         .collection('users')
         .doc(userId)
         .collection('bmi_records')
-        .orderBy('date', descending: true)
+        .orderBy('createdAt', descending: true)
         .limit(1)
         .get();
 
     if (bmiSnapshot.docs.isNotEmpty) {
       final bmiData = bmiSnapshot.docs.first.data();
-      final bmi = (bmiData['bmi'] as num?)?.toDouble();
+      final bmi = (bmiData['bmiValue'] as num?)?.toDouble();
       if (bmi != null) {
         String categoryKey;
         if (bmi < 18.5) {

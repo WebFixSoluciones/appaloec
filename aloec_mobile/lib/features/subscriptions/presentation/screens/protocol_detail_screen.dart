@@ -93,66 +93,88 @@ class _ProtocolDetailScreenState extends State<ProtocolDetailScreen>
   }
 
   Future<void> _toggleNotifications() async {
+    if (_isLoadingNotif) return;
     setState(() => _isLoadingNotif = true);
-    final service = NotificationService();
-    final user = FirebaseAuth.instance.currentUser;
 
-    if (_notificationsActive) {
-      // Desactivar recordatorios y remover de Firestore
-      await service.cancelAllNotifications();
-      if (user != null) {
-        try {
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(user.uid)
-              .update({'activeProtocolId': null});
-        } catch (e) {
-          debugPrint('⚠️ [ProtocolDetailScreen] Error al limpiar activeProtocolId: $e');
+    try {
+      final service = NotificationService();
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (_notificationsActive) {
+        // Desactivar recordatorios y remover de Firestore
+        await service.cancelAllNotifications();
+        if (user != null) {
+          try {
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(user.uid)
+                .set({'activeProtocolId': null}, SetOptions(merge: true));
+          } catch (e) {
+            debugPrint('⚠️ [ProtocolDetailScreen] Error al limpiar activeProtocolId: $e');
+          }
+        }
+
+        if (mounted) {
+          setState(() {
+            _notificationsActive = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('🔕 Recordatorios del protocolo desactivados.'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+      } else {
+        // Solicitar permisos en Android 13+ e iOS
+        await service.requestPermission();
+
+        // Activar recordatorios
+        final notifications = widget.protocol.schedule
+            .map((meal) => meal.toNotification())
+            .toList();
+        final scheduledSuccess = await service.scheduleProtocolNotifications(notifications);
+
+        if (user != null) {
+          try {
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(user.uid)
+                .set({'activeProtocolId': widget.protocol.id}, SetOptions(merge: true));
+          } catch (e) {
+            debugPrint('⚠️ [ProtocolDetailScreen] Error al guardar activeProtocolId: $e');
+          }
+        }
+
+        if (mounted) {
+          setState(() {
+            _notificationsActive = true;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(scheduledSuccess
+                  ? '🔔 ¡Protocolo activado! Recibirás ${notifications.length} recordatorios diarios.'
+                  : '✅ ¡Protocolo activado!'),
+              backgroundColor: AppColors.primaryGreen,
+            ),
+          );
         }
       }
-
-      setState(() {
-        _notificationsActive = false;
-        _isLoadingNotif = false;
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('🔕 Recordatorios del protocolo desactivados.'),
-            backgroundColor: Colors.orange,
-          ),
-        );
-      }
-    } else {
-      // Activar recordatorios e Iniciar protocolo en Firestore
-      final notifications = widget.protocol.schedule
-          .map((meal) => meal.toNotification())
-          .toList();
-      await service.scheduleProtocolNotifications(notifications);
-
-      if (user != null) {
-        try {
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(user.uid)
-              .update({'activeProtocolId': widget.protocol.id});
-        } catch (e) {
-          debugPrint('⚠️ [ProtocolDetailScreen] Error al guardar activeProtocolId: $e');
-        }
-      }
-
-      setState(() {
-        _notificationsActive = true;
-        _isLoadingNotif = false;
-      });
+    } catch (e, stack) {
+      debugPrint('❌ [ProtocolDetailScreen] Error en _toggleNotifications: $e\n$stack');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-                '🔔 ¡Protocolo activado! Recibirás ${notifications.length} recordatorios diarios.'),
-            backgroundColor: AppColors.primaryGreen,
+            content: Text('No se pudieron activar las notificaciones: $e'),
+            backgroundColor: Colors.red,
           ),
         );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingNotif = false;
+        });
       }
     }
   }
@@ -239,12 +261,6 @@ class _ProtocolDetailScreenState extends State<ProtocolDetailScreen>
                       ),
                     ),
                     const SizedBox(height: 16),
-
-                    // ─── Premium CTA Banner ──────────────────────────────────
-                    _PremiumCtaBanner(
-                      onTap: () => context.push('/premium-upsell'),
-                    ),
-                    const SizedBox(height: 20),
 
                     // ─── Agenda Diaria ───────────────────────────────────────
                     _SectionTitle(
@@ -463,89 +479,6 @@ class _MealCard extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// Banner de CTA Premium - incita la compra de suscripción.
-class _PremiumCtaBanner extends StatelessWidget {
-  final VoidCallback onTap;
-  const _PremiumCtaBanner({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF1B5E20), Color(0xFF388E3C), Color(0xFF67B539)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primaryGreen.withOpacity(0.35),
-              blurRadius: 16,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.workspace_premium_rounded,
-                  color: Colors.white, size: 28),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    '🌟 ¡Función Premium!',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Desbloquea protocolos completos, videocursos de Terapia Gerson y recordatorios personalizados.',
-                    style: TextStyle(color: Colors.white70, fontSize: 12, height: 1.4),
-                  ),
-                  const SizedBox(height: 10),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    child: const Text(
-                      '¡Obtener Premium ahora! →',
-                      style: TextStyle(
-                        color: AppColors.primaryGreen,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

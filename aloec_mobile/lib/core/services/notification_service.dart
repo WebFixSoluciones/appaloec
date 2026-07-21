@@ -31,7 +31,35 @@ class NotificationService {
 
   /// Cancela TODAS las notificaciones programadas previamente.
   Future<void> cancelAllNotifications() async {
-    await _plugin.cancelAll();
+    try {
+      await _plugin.cancelAll();
+    } catch (e) {
+      debugPrint('⚠️ [NotificationService] Error al cancelar notificaciones: $e');
+    }
+  }
+
+  /// Solicita permisos de notificación al sistema operativo (Android 13+ / iOS).
+  Future<bool> requestPermission() async {
+    try {
+      final androidImplementation =
+          _plugin.resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+      final grantedAndroid = await androidImplementation?.requestNotificationsPermission();
+
+      final iosImplementation =
+          _plugin.resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>();
+      final grantedIos = await iosImplementation?.requestPermissions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+
+      return (grantedAndroid ?? true) && (grantedIos ?? true);
+    } catch (e) {
+      debugPrint('⚠️ [NotificationService] Error al solicitar permisos: $e');
+      return false;
+    }
   }
 
   /// Programa una notificación diaria recurrente a la hora especificada.
@@ -85,23 +113,31 @@ class NotificationService {
   /// Programa todas las notificaciones para un protocolo dado.
   ///
   /// [meals] - Lista de comidas/actividades con su hora y descripción.
-  Future<void> scheduleProtocolNotifications(
+  /// Retorna `true` si se programaron con éxito.
+  Future<bool> scheduleProtocolNotifications(
       List<ProtocolMealNotification> meals) async {
-    await cancelAllNotifications();
+    try {
+      await cancelAllNotifications();
 
-    for (int i = 0; i < meals.length; i++) {
-      final meal = meals[i];
-      await scheduleDailyNotification(
-        id: i,
-        hour: meal.hour,
-        minute: meal.minute,
-        title: meal.title,
-        body: meal.body,
-      );
+      for (int i = 0; i < meals.length; i++) {
+        final meal = meals[i];
+        await scheduleDailyNotification(
+          id: i,
+          hour: meal.hour,
+          minute: meal.minute,
+          title: meal.title,
+          body: meal.body,
+        );
+      }
+
+      debugPrint(
+          '✅ [NotificationService] ${meals.length} recordatorios diarios programados.');
+      return true;
+    } catch (e) {
+      debugPrint(
+          '⚠️ [NotificationService] Error programando notificaciones: $e');
+      return false;
     }
-
-    debugPrint(
-        '✅ [NotificationService] ${meals.length} recordatorios diarios programados.');
   }
 }
 

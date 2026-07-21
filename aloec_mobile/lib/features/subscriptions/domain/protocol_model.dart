@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import '../../../../core/services/notification_service.dart';
 
 enum BmiCategory {
@@ -47,11 +49,25 @@ class ProtocolMealItem {
   }
 
   ProtocolMealNotification toNotification() {
-    final parts = time.replaceAll(' AM', '').replaceAll(' PM', '').split(':');
-    int hour = int.tryParse(parts[0]) ?? 8;
-    final int minute = int.tryParse(parts[1]) ?? 0;
-    if (time.contains('PM') && hour != 12) hour += 12;
-    if (time.contains('AM') && hour == 12) hour = 0;
+    int hour = 8;
+    int minute = 0;
+    try {
+      final cleanTime = time.trim();
+      final timeWithoutAmPm = cleanTime
+          .replaceAll(RegExp(r'\s*(AM|PM)', caseSensitive: false), '')
+          .trim();
+      final parts = timeWithoutAmPm.split(':');
+      hour = int.tryParse(parts[0].trim()) ?? 8;
+      if (parts.length > 1) {
+        minute = int.tryParse(parts[1].trim()) ?? 0;
+      }
+      final isPM = cleanTime.toUpperCase().contains('PM');
+      final isAM = cleanTime.toUpperCase().contains('AM');
+      if (isPM && hour != 12) hour += 12;
+      if (isAM && hour == 12) hour = 0;
+    } catch (e) {
+      debugPrint('⚠️ [ProtocolMealItem] Error parsing time string "$time": $e');
+    }
 
     final body = items.asMap().entries.map((e) => '${e.key + 1}. ${e.value}').join(', ');
 
