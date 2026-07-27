@@ -3,6 +3,8 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { db } from '../lib/firebase/config';
+import { collection, getDocs } from 'firebase/firestore';
 import { 
   Sparkles, 
   ShieldCheck, 
@@ -29,8 +31,18 @@ import {
   ExternalLink,
   ChevronRight,
   UserCheck,
-  Lock
+  Lock,
+  RefreshCw
 } from 'lucide-react';
+
+interface DynamicMembership {
+  id: string;
+  name: string;
+  price: number;
+  durationDays: number;
+  features?: string[];
+  isActive?: boolean;
+}
 
 // Google Play Badge Component
 function GooglePlayButton({ href = "#download" }: { href?: string }) {
@@ -75,15 +87,16 @@ function LandingContent() {
   const searchParams = useSearchParams();
   const [refCode, setRefCode] = useState<string | null>(null);
 
+  // Dynamic Memberships State
+  const [memberships, setMemberships] = useState<DynamicMembership[]>([]);
+  const [loadingMemberships, setLoadingMemberships] = useState<boolean>(true);
+
   // IMC Calculator State
   const [heightCm, setHeightCm] = useState<number>(168);
   const [weightKg, setWeightKg] = useState<number>(72);
   const [calculatedBmi, setCalculatedBmi] = useState<number | null>(null);
   const [bmiCategory, setBmiCategory] = useState<string>('');
   const [recommendedProtocol, setRecommendedProtocol] = useState<string>('');
-
-  // Active showcase tab
-  const [activeTab, setActiveTab] = useState<number>(0);
 
   // FAQ open state
   const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -100,6 +113,38 @@ function LandingContent() {
       if (stored) setRefCode(stored);
     }
   }, [searchParams]);
+
+  // Load memberships dynamically from Firestore
+  useEffect(() => {
+    async function fetchMemberships() {
+      try {
+        setLoadingMemberships(true);
+        const snap = await getDocs(collection(db, 'memberships'));
+        const list: DynamicMembership[] = [];
+        snap.forEach((docSnap) => {
+          const data = docSnap.data();
+          if (!data.deletedAt && data.isActive !== false) {
+            list.push({
+              id: docSnap.id,
+              name: data.name || 'Plan ALOEC',
+              price: Number(data.price) || 0,
+              durationDays: Number(data.durationDays) || 30,
+              features: data.features || [],
+              isActive: data.isActive,
+            });
+          }
+        });
+        // Sort by price ascending
+        list.sort((a, b) => a.price - b.price);
+        setMemberships(list);
+      } catch (err) {
+        console.error('Error loading memberships:', err);
+      } finally {
+        setLoadingMemberships(false);
+      }
+    }
+    fetchMemberships();
+  }, []);
 
   // Handle live BMI calculation
   useEffect(() => {
@@ -133,8 +178,8 @@ function LandingContent() {
       a: 'ALOEC (Alimentación Orgánica Ecuador) es la plataforma móvil de salud holística que te guía paso a paso en la sanación mediante jugoterapia orgánica. Calcula tu IMC, te asigna un protocolo médico natural personalizado y te brinda acceso a recetas curativas, videocursos y alarmas de consumo.'
     },
     {
-      q: '¿Cómo funciona la suscripción del Plan Único de $2.00 USD?',
-      a: 'Por un único pago de $2.00 USD obtienes acceso completo a todas las funcionalidades premium de la app por 30 días: diagnósticos de IMC, protocolos detallados, videocursos HD y recordatorios automáticos sin cobros ocultos.'
+      q: '¿Cómo funciona la suscripción a los Planes de ALOEC?',
+      a: 'Al suscribirte a cualquiera de los planes disponibles en la plataforma obtienes acceso completo a todas las funcionalidades premium de la app: diagnósticos de IMC, protocolos detallados, videocursos HD y recordatorios automáticos sin cobros ocultos.'
     },
     {
       q: '¿Puedo usar la aplicación en mi teléfono Android e iPhone?',
@@ -146,8 +191,17 @@ function LandingContent() {
     },
     {
       q: '¿Cómo funciona el Programa de Referidos?',
-      a: 'Cada usuario registrado obtiene un enlace único como app.alimentacionorganicaec.com/?ref=TU_CODIGO. Al compartirlo con amigos y familiares, acumulas recompensas y meses gratis de suscripción cuando tus referidos se unan.'
+      a: 'Cada usuario registrado obtiene un enlace único como app.alimentacionorganicaec.com/?ref=TU_CODIGO. Al compartirlo con amigos y familiares, acumulas recompensas y beneficios de suscripción cuando tus referidos se unan.'
     }
+  ];
+
+  const defaultFeatures = [
+    'Calculadora Inteligente de IMC y diagnóstico instantáneo.',
+    'Acceso completo a los 9 protocolos médicos de jugoterapia.',
+    'Catálogo HD de más de 50 jugos verdes y batidos curativos.',
+    'Videocursos de la Terapia Gerson y salud integrativa.',
+    'Alarmas y recordatorios diarios automatizados en tu smartphone.',
+    'Enlace de referidos personal para ganar beneficios adicionales.'
   ];
 
   return (
@@ -169,12 +223,10 @@ function LandingContent() {
       {/* ── Navigation Header ───────────────────────────────────────────────── */}
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-sm transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          
+          {/* Logo Only (Title and slogan removed as requested) */}
+          <div className="flex items-center">
             <img src="/logo.png" alt="ALOEC Logo" className="h-10 w-auto object-contain" />
-            <div className="hidden sm:block">
-              <span className="text-lg font-black tracking-tight text-slate-900 block leading-tight">ALOEC</span>
-              <span className="text-[10px] text-emerald-700 font-bold uppercase tracking-wider block">Alimentación Orgánica EC</span>
-            </div>
           </div>
 
           <nav className="hidden lg:flex items-center gap-8 text-sm font-semibold text-slate-700">
@@ -183,7 +235,7 @@ function LandingContent() {
               <Calculator className="w-4 h-4 text-emerald-600" /> Calculadora IMC
             </a>
             <a href="#recetas" className="hover:text-emerald-700 transition-colors">Jugos Verdes</a>
-            <a href="#precios" className="hover:text-emerald-700 transition-colors">Plan Único ($2.00)</a>
+            <a href="#precios" className="hover:text-emerald-700 transition-colors">Planes de Suscripción</a>
             <a href="#faq" className="hover:text-emerald-700 transition-colors">Preguntas</a>
           </nav>
 
@@ -198,7 +250,7 @@ function LandingContent() {
               href="#precios"
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-md hover:shadow-lg hover:shadow-emerald-600/20 transition-all transform active:scale-95"
             >
-              <Zap className="w-4 h-4 text-amber-300 fill-amber-300" /> Empezar por $2.00
+              <Zap className="w-4 h-4 text-amber-300 fill-amber-300" /> Ver Planes
             </a>
           </div>
         </div>
@@ -360,8 +412,8 @@ function LandingContent() {
               <p className="text-xs sm:text-sm text-slate-400 font-medium mt-1">Protocolos según IMC</p>
             </div>
             <div>
-              <p className="text-3xl sm:text-4xl font-black text-amber-400">$2.00</p>
-              <p className="text-xs sm:text-sm text-slate-400 font-medium mt-1">Suscripción Accesible</p>
+              <p className="text-3xl sm:text-4xl font-black text-amber-400">100%</p>
+              <p className="text-xs sm:text-sm text-slate-400 font-medium mt-1">Orgánico y Natural</p>
             </div>
           </div>
         </div>
@@ -522,7 +574,7 @@ function LandingContent() {
               </div>
               <h3 className="text-xl font-bold text-slate-900 mb-3">Programa de Referidos</h3>
               <p className="text-sm text-slate-600 leading-relaxed">
-                Comparte tu enlace personalizado <code className="bg-slate-100 px-1 py-0.5 rounded text-xs text-emerald-700 font-bold">app.alimentacionorganicaec.com</code> y gana meses gratis por cada invitado.
+                Comparte tu enlace personalizado <code className="bg-slate-100 px-1 py-0.5 rounded text-xs text-emerald-700 font-bold">app.alimentacionorganicaec.com</code> y gana beneficios por cada invitado.
               </p>
             </div>
 
@@ -640,78 +692,108 @@ function LandingContent() {
         </div>
       </section>
 
-      {/* ── Pricing Section (Plan Único $2.00 USD) ─────────────────────────── */}
-      <section id="precios" className="py-20 bg-gradient-to-b from-slate-900 to-slate-950 text-white relative">
+      {/* ── Pricing / Memberships Section (Dynamic Firestore Plans) ─────────── */}
+      <section id="precios" className="py-20 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-white relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
             <span className="px-3.5 py-1.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-extrabold rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
-              <Award className="w-4 h-4 text-emerald-400" /> Precio Accesible para Todos
+              <Award className="w-4 h-4 text-emerald-400" /> PLANES DISPONIBLES
             </span>
-            <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white">
-              Invierte en tu salud por solo $2.00 USD
+            {/* Title formatted in a single line as requested */}
+            <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white whitespace-nowrap">
+              Planes de Suscripción ALOEC
             </h2>
             <p className="text-base sm:text-lg text-slate-400">
-              Acceso total e ilimitado a todas las herramientas de la app ALOEC en tu smartphone.
+              Elige el plan ideal para acceder a todas las herramientas de salud y jugoterapia en tu celular.
             </p>
           </div>
 
-          <div className="max-w-lg mx-auto bg-slate-900 border-2 border-emerald-500 rounded-3xl p-8 sm:p-10 shadow-2xl relative overflow-hidden">
-            
-            {/* Ribbon */}
-            <div className="absolute top-0 right-0 bg-emerald-500 text-slate-950 font-black text-[10px] uppercase tracking-wider px-4 py-1 rounded-bl-xl shadow-xs">
-              MÁS POPULAR
-            </div>
-
-            <div className="text-center space-y-4 pb-8 border-b border-slate-800">
-              <h3 className="text-2xl font-extrabold text-white">Plan Único ALOEC</h3>
-              <div className="flex items-baseline justify-center gap-1">
-                <span className="text-6xl font-black text-white font-mono">$2.00</span>
-                <span className="text-sm font-bold text-slate-400">USD / mes</span>
-              </div>
-              <p className="text-xs text-emerald-400 font-medium">Cancelación en cualquier momento · Sin cargos sorpresa</p>
-            </div>
-
-            <div className="py-8 space-y-4 text-sm text-slate-300">
-              <div className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Calculadora Inteligente de IMC y diagnóstico instantáneo.</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Acceso completo a los 9 protocolos médicos de jugoterapia.</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Catálogo HD de más de 50 jugos verdes y batidos curativos.</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Videocursos de la Terapia Gerson y salud integrativa.</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Alarmas y recordatorios diarios automatizados en tu smartphone.</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Enlace de referidos personal para ganar beneficios adicionales.</span>
+          {/* Dynamic Memberships Grid */}
+          {loadingMemberships ? (
+            <div className="flex justify-center items-center py-16">
+              <div className="flex items-center gap-3 text-emerald-400 font-bold text-sm">
+                <RefreshCw className="w-6 h-6 animate-spin" /> Cargando planes desde el sistema...
               </div>
             </div>
+          ) : memberships.length > 0 ? (
+            <div className={`grid grid-cols-1 ${memberships.length === 1 ? 'max-w-md mx-auto' : memberships.length === 2 ? 'md:grid-cols-2 max-w-3xl mx-auto' : 'md:grid-cols-3 max-w-6xl mx-auto'} gap-8 items-stretch`}>
+              {memberships.map((m, idx) => (
+                <div 
+                  key={m.id}
+                  className="bg-slate-900 border-2 border-emerald-500/80 hover:border-emerald-400 rounded-3xl p-8 shadow-2xl flex flex-col justify-between relative overflow-hidden transition-all duration-300 group"
+                >
+                  {idx === 0 && (
+                    <div className="absolute top-0 right-0 bg-emerald-500 text-slate-950 font-black text-[10px] uppercase tracking-wider px-4 py-1 rounded-bl-xl shadow-xs">
+                      MÁS POPULAR
+                    </div>
+                  )}
 
-            <div className="space-y-4 pt-2">
-              <Link
-                href="/checkout?plan=plan-nico"
-                className="block w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-base rounded-xl shadow-lg transition-all text-center transform active:scale-95"
-              >
-                Suscribirme Ahora por $2.00 USD →
-              </Link>
-              <p className="text-center text-[11px] text-slate-500 flex items-center justify-center gap-1.5">
-                <Lock className="w-3.5 h-3.5 text-slate-400" /> Transacción encriptada a través de PayPhone
-              </p>
+                  <div className="space-y-6">
+                    <div className="text-center space-y-3 pb-6 border-b border-slate-800">
+                      <h3 className="text-2xl font-extrabold text-white">{m.name}</h3>
+                      <div className="flex items-baseline justify-center gap-1">
+                        <span className="text-5xl font-black text-white font-mono">${m.price.toFixed(2)}</span>
+                        <span className="text-xs font-bold text-slate-400">USD / {m.durationDays} días</span>
+                      </div>
+                      <p className="text-xs text-emerald-400 font-medium">Acceso completo · Sin cargos ocultos</p>
+                    </div>
+
+                    <div className="space-y-3 text-sm text-slate-300">
+                      {(m.features && m.features.length > 0 ? m.features : defaultFeatures).map((feat, fIdx) => (
+                        <div key={fIdx} className="flex items-start gap-2.5">
+                          <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                          <span className="text-xs sm:text-sm text-slate-300 leading-snug">{feat}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 pt-8 mt-6 border-t border-slate-800">
+                    <Link
+                      href={`/checkout?plan=${m.id}`}
+                      className="block w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-sm rounded-xl shadow-lg transition-all text-center transform active:scale-95"
+                    >
+                      Suscribirme a {m.name} →
+                    </Link>
+                    <p className="text-center text-[10px] text-slate-500 flex items-center justify-center gap-1">
+                      <Lock className="w-3 h-3 text-slate-400" /> Pago seguro con PayPhone
+                    </p>
+                  </div>
+
+                </div>
+              ))}
             </div>
+          ) : (
+            /* Fallback Card if no active membership documents exist yet */
+            <div className="max-w-lg mx-auto bg-slate-900 border-2 border-emerald-500 rounded-3xl p-8 sm:p-10 shadow-2xl relative overflow-hidden">
+              <div className="text-center space-y-4 pb-8 border-b border-slate-800">
+                <h3 className="text-2xl font-extrabold text-white">Plan de Suscripción ALOEC</h3>
+                <p className="text-xs text-emerald-400 font-medium">Acceso total e ilimitado a todas las funciones</p>
+              </div>
 
-          </div>
+              <div className="py-8 space-y-4 text-sm text-slate-300">
+                {defaultFeatures.map((feat, idx) => (
+                  <div key={idx} className="flex items-start gap-3">
+                    <Check className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                    <span>{feat}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="space-y-4 pt-2">
+                <Link
+                  href="/checkout"
+                  className="block w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-base rounded-xl shadow-lg transition-all text-center transform active:scale-95"
+                >
+                  Suscribirme Ahora →
+                </Link>
+                <p className="text-center text-[11px] text-slate-500 flex items-center justify-center gap-1.5">
+                  <Lock className="w-3.5 h-3.5 text-slate-400" /> Transacción encriptada a través de PayPhone
+                </p>
+              </div>
+            </div>
+          )}
 
         </div>
       </section>
@@ -789,9 +871,8 @@ function LandingContent() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             
             <div className="space-y-4">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center">
                 <img src="/logo.png" alt="ALOEC Logo" className="h-8 w-auto brightness-200" />
-                <span className="font-extrabold text-white text-base">ALOEC</span>
               </div>
               <p className="text-slate-500 leading-relaxed">
                 Alimentación Orgánica Ecuador. Promoviendo la salud natural y la jugoterapia científica.
@@ -807,7 +888,7 @@ function LandingContent() {
                 <li><a href="#beneficios" className="hover:text-white transition-colors">Beneficios</a></li>
                 <li><a href="#calculadora" className="hover:text-white transition-colors">Calculadora IMC</a></li>
                 <li><a href="#recetas" className="hover:text-white transition-colors">Jugos Verdes</a></li>
-                <li><a href="#precios" className="hover:text-white transition-colors">Plan Único $2.00</a></li>
+                <li><a href="#precios" className="hover:text-white transition-colors">Planes de Suscripción</a></li>
               </ul>
             </div>
 
