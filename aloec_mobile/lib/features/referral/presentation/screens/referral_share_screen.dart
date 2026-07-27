@@ -17,7 +17,7 @@ class ReferralShareScreen extends StatelessWidget {
       );
     }
 
-    final link = 'https://aloec.app/?ref=$code';
+    final link = 'https://app.alimentacionorganicaec.net/?ref=$code';
     final message = '¡Únete a ALOEC y transforma tu salud con jugos verdes! 🌱\n\n'
         'Usa mi código de referido: $code\n'
         'O regístrate aquí: $link\n\n'

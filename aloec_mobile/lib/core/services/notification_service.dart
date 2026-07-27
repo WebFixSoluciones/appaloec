@@ -100,14 +100,18 @@ class NotificationService {
       iOS: iosDetails,
     );
 
-    await _plugin.periodicallyShow(
-      id,
-      title,
-      body,
-      RepeatInterval.daily,
-      notifDetails,
-      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-    );
+    try {
+      await _plugin.periodicallyShow(
+        id,
+        title,
+        body,
+        RepeatInterval.daily,
+        notifDetails,
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      );
+    } catch (e) {
+      debugPrint('⚠️ [NotificationService] Error programando notificación #$id: $e');
+    }
   }
 
   /// Programa todas las notificaciones para un protocolo dado.

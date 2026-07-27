@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/services/referral_service.dart';
 
 class ReferralDashboardScreen extends StatefulWidget {
@@ -24,8 +23,9 @@ class _ReferralDashboardScreenState extends State<ReferralDashboardScreen> {
   }
 
   Future<void> _loadReferralCode() async {
-    if (_user == null) return;
-    final code = await ReferralService.generateReferralCode(_user!.uid);
+    final user = _user;
+    if (user == null) return;
+    final code = await ReferralService.generateReferralCode(user.uid);
     if (mounted) setState(() => _referralCode = code);
   }
 
@@ -41,7 +41,7 @@ class _ReferralDashboardScreenState extends State<ReferralDashboardScreen> {
 
   Future<void> _copyLink() async {
     if (_referralCode == null) return;
-    final link = 'https://aloec.app/?ref=$_referralCode';
+    final link = 'https://app.alimentacionorganicaec.net/?ref=$_referralCode';
     await Clipboard.setData(ClipboardData(text: link));
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -83,7 +83,7 @@ class _ReferralDashboardScreenState extends State<ReferralDashboardScreen> {
   }
 
   Widget _buildCodeCard() {
-    final link = _referralCode != null ? 'aloec.app/?ref=$_referralCode' : '';
+    final link = _referralCode != null ? 'app.alimentacionorganicaec.net/?ref=$_referralCode' : '';
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(

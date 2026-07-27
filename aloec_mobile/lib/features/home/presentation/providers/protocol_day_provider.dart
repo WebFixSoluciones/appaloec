@@ -100,7 +100,54 @@ class ProtocolDayNotifier extends StateNotifier<ProtocolDayState> {
           .doc(user.uid)
           .get();
 
-      final activeProtocolId = userDoc.data()?['activeProtocolId'] as String?;
+      final userData = userDoc.data();
+      var activeProtocolId = userData?['activeProtocolId'] as String?;
+      final isPremium = userData?['isPremium'] == true;
+
+      // Si es premium pero no tiene protocolo activo, intentar auto-asignar
+      if (activeProtocolId == null && isPremium) {
+        try {
+          final bmiSnap = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .collection('bmi_records')
+              .orderBy('createdAt', descending: true)
+              .limit(1)
+              .get();
+
+          if (bmiSnap.docs.isNotEmpty) {
+            final bmiValue = (bmiSnap.docs.first.data()['bmiValue'] as num?)?.toDouble();
+            String? categoryKey;
+            if (bmiValue != null) {
+              if (bmiValue < 18.5) categoryKey = 'underweight';
+              else if (bmiValue < 25) categoryKey = 'normal';
+              else if (bmiValue < 30) categoryKey = 'overweight';
+              else if (bmiValue < 35) categoryKey = 'obesity1';
+              else if (bmiValue < 40) categoryKey = 'obesity2';
+              else categoryKey = 'obesity3';
+            }
+            if (categoryKey != null) {
+              final protocolQuery = await FirebaseFirestore.instance
+                  .collection('diet_protocols')
+                  .where('bmiCategory', isEqualTo: categoryKey)
+                  .where('isActive', isEqualTo: true)
+                  .limit(1)
+                  .get();
+
+              if (protocolQuery.docs.isNotEmpty) {
+                activeProtocolId = protocolQuery.docs.first.id;
+                await FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(user.uid)
+                    .update({'activeProtocolId': activeProtocolId});
+              }
+            }
+          }
+        } catch (e) {
+          debugPrint('Error auto-asignando protocolo: $e');
+        }
+      }
+
       if (activeProtocolId == null) {
         state = state.copyWith(isLoading: false);
         return;

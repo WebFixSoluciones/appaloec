@@ -116,6 +116,8 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
   }
 
   Widget _buildEmptyState() {
+    final isPremium = (ref.watch(userProfileStreamProvider).value?.isPremium ?? false);
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -133,9 +135,11 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
                   size: 50, color: AppColors.primaryGreen),
             ),
             const SizedBox(height: 20),
-            const Text(
-              'No tienes un protocolo activo',
-              style: TextStyle(
+            Text(
+              isPremium
+                  ? 'Protocolo no asignado'
+                  : 'No tienes un protocolo activo',
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textDark,
@@ -143,9 +147,11 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Calcula tu IMC para recibir un protocolo personalizado.',
-              style: TextStyle(
+            Text(
+              isPremium
+                  ? 'Calcula tu IMC para recibir tu protocolo personalizado.'
+                  : 'Calcula tu IMC para recibir un protocolo personalizado.',
+              style: const TextStyle(
                 fontSize: 14,
                 color: AppColors.textLight,
                 height: 1.5,
@@ -166,7 +172,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
                 ),
                 icon: const Icon(Icons.calculate),
                 label: const Text('Calcular mi IMC',
-                    style: TextStyle(
+                    style: const TextStyle(
                         fontSize: 16, fontWeight: FontWeight.w600)),
                 onPressed: () => context.push('/bmi-calculator'),
               ),

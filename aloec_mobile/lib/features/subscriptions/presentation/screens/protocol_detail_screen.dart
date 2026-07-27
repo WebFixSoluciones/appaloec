@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -101,18 +103,15 @@ class _ProtocolDetailScreenState extends State<ProtocolDetailScreen>
       final user = FirebaseAuth.instance.currentUser;
 
       if (_notificationsActive) {
-        // Desactivar recordatorios y remover de Firestore
-        await service.cancelAllNotifications();
-        if (user != null) {
-          try {
-            await FirebaseFirestore.instance
+        await Future.wait([
+          service.cancelAllNotifications().timeout(const Duration(seconds: 10)),
+          if (user != null)
+            FirebaseFirestore.instance
                 .collection('users')
                 .doc(user.uid)
-                .set({'activeProtocolId': null}, SetOptions(merge: true));
-          } catch (e) {
-            debugPrint('⚠️ [ProtocolDetailScreen] Error al limpiar activeProtocolId: $e');
-          }
-        }
+                .set({'activeProtocolId': null}, SetOptions(merge: true))
+                .timeout(const Duration(seconds: 10)),
+        ]);
 
         if (mounted) {
           setState(() {
@@ -126,24 +125,23 @@ class _ProtocolDetailScreenState extends State<ProtocolDetailScreen>
           );
         }
       } else {
-        // Solicitar permisos en Android 13+ e iOS
-        await service.requestPermission();
+        await service
+            .requestPermission()
+            .timeout(const Duration(seconds: 10));
 
-        // Activar recordatorios
         final notifications = widget.protocol.schedule
             .map((meal) => meal.toNotification())
             .toList();
-        final scheduledSuccess = await service.scheduleProtocolNotifications(notifications);
+        final scheduledSuccess = await service
+            .scheduleProtocolNotifications(notifications)
+            .timeout(const Duration(seconds: 15));
 
         if (user != null) {
-          try {
-            await FirebaseFirestore.instance
-                .collection('users')
-                .doc(user.uid)
-                .set({'activeProtocolId': widget.protocol.id}, SetOptions(merge: true));
-          } catch (e) {
-            debugPrint('⚠️ [ProtocolDetailScreen] Error al guardar activeProtocolId: $e');
-          }
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .set({'activeProtocolId': widget.protocol.id}, SetOptions(merge: true))
+              .timeout(const Duration(seconds: 10));
         }
 
         if (mounted) {
@@ -159,6 +157,16 @@ class _ProtocolDetailScreenState extends State<ProtocolDetailScreen>
             ),
           );
         }
+      }
+    } on TimeoutException {
+      debugPrint('❌ [ProtocolDetailScreen] Timeout al procesar notificaciones');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('La operación tardó demasiado. Revisa los permisos de notificación e intenta de nuevo.'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     } catch (e, stack) {
       debugPrint('❌ [ProtocolDetailScreen] Error en _toggleNotifications: $e\n$stack');

@@ -21,7 +21,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _passCtrl = TextEditingController();
   final _referralCtrl = TextEditingController();
   bool _acceptedTerms = false;
-  bool _clipboardChecked = false;
 
   @override
   void initState() {
@@ -34,7 +33,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (code != null && mounted) {
       setState(() {
         _referralCtrl.text = code;
-        _clipboardChecked = true;
       });
       await ReferralService.clearClipboard();
     }

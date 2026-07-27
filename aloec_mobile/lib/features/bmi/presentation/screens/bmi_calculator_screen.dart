@@ -27,6 +27,27 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
   String _statusLabel = '';
   int _statusColor = AppColors.primaryGreen.value;
   bool _saving = false;
+  bool _isPremium = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkPremium();
+  }
+
+  Future<void> _checkPremium() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .get();
+    if (mounted) {
+      setState(() {
+        _isPremium = doc.data()?['isPremium'] == true;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -93,27 +114,19 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
     }
   }
 
-  void _viewProtocol() async {
+  void _viewProtocol() {
     if (_bmi == null) {
       _showNeedCalculationSnackbar();
       return;
     }
 
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      final doc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get();
-      final isPremium = doc.data()?['isPremium'] == true;
-      if (isPremium) {
-        context.push('/bmi-result', extra: {
-          'bmi': _bmi,
-          'status': _statusLabel,
-          'protocol': null,
-        });
-        return;
-      }
+    if (_isPremium) {
+      context.push('/bmi-result', extra: {
+        'bmi': _bmi,
+        'status': _statusLabel,
+        'protocol': null,
+      });
+      return;
     }
 
     _showPremiumModal();
@@ -291,15 +304,15 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
                       ),
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.workspace_premium_rounded,
+                        Icon(_isPremium ? Icons.visibility_rounded : Icons.workspace_premium_rounded,
                             color: Colors.white, size: 20),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 8),
                         Text(
-                          'Ver mi Protocolo Premium',
-                          style: TextStyle(
+                          _isPremium ? 'Ver mi Protocolo' : 'Ver mi Protocolo Premium',
+                          style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                             fontSize: 15,

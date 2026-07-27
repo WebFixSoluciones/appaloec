@@ -54,6 +54,46 @@ export async function GET(req: NextRequest) {
         createdAt: FieldValue.serverTimestamp(),
       }, { merge: true });
 
+      // Asignar protocolo según último IMC registrado
+      try {
+        const bmiSnap = await db
+          .collection('users')
+          .doc(orderData.userId)
+          .collection('bmi_records')
+          .orderBy('createdAt', 'desc')
+          .limit(1)
+          .get();
+
+        if (!bmiSnap.empty) {
+          const latestBmi = bmiSnap.docs[0].data();
+          const bmiValue = latestBmi.bmiValue as number | undefined;
+          let categoryKey: string | null = null;
+          if (bmiValue != null) {
+            if (bmiValue < 18.5) categoryKey = 'underweight';
+            else if (bmiValue < 25) categoryKey = 'normal';
+            else if (bmiValue < 30) categoryKey = 'overweight';
+            else if (bmiValue < 35) categoryKey = 'obesity1';
+            else if (bmiValue < 40) categoryKey = 'obesity2';
+            else categoryKey = 'obesity3';
+          }
+          if (categoryKey) {
+            const protocolSnap = await db
+              .collection('diet_protocols')
+              .where('bmiCategory', '==', categoryKey)
+              .where('isActive', '==', true)
+              .limit(1)
+              .get();
+            if (!protocolSnap.empty) {
+              batch.update(userRef, {
+                activeProtocolId: protocolSnap.docs[0].id,
+              });
+            }
+          }
+        }
+      } catch (e) {
+        console.error('[confirm] Error al asignar protocolo:', e);
+      }
+
       await batch.commit();
 
       notifyAdmin(

@@ -6,6 +6,7 @@ class AloecTextField extends StatefulWidget {
   final bool obscureText;
   final TextEditingController controller;
   final TextInputType keyboardType;
+  final bool readOnly;
 
   const AloecTextField({
     super.key,
@@ -14,6 +15,7 @@ class AloecTextField extends StatefulWidget {
     required this.controller,
     this.obscureText = false,
     this.keyboardType = TextInputType.text,
+    this.readOnly = false,
   });
 
   @override
@@ -35,6 +37,7 @@ class _AloecTextFieldState extends State<AloecTextField> {
       controller: widget.controller,
       obscureText: _obscureText,
       keyboardType: widget.keyboardType,
+      readOnly: widget.readOnly,
       decoration: InputDecoration(
         hintText: widget.hintText,
         prefixIcon: Icon(widget.prefixIcon, color: Colors.grey),
