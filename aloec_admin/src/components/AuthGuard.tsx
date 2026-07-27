@@ -27,7 +27,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         if (userDoc.exists() && userDoc.data()?.role === 'admin') {
           if (pathname === '/login') {
-            router.push('/');
+            router.push('/admin');
           } else {
             setLoading(false);
           }

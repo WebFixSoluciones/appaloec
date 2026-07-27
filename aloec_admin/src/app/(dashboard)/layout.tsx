@@ -48,7 +48,7 @@ export default function DashboardLayout({
   };
 
   const navItems = [
-    { name: 'Dashboard', href: '/', icon: LayoutDashboard },
+    { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
     { name: 'Usuarios', href: '/users', icon: Users },
     { name: 'Programa de Referidos', href: '/referral', icon: Gift },
     { name: 'Recetas y Jugos', href: '/content/juices', icon: Droplet },

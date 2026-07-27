@@ -36,7 +36,7 @@ function LoginForm() {
       const userDoc = await getDoc(doc(db, 'users', user.uid));
       if (userDoc.exists() && userDoc.data()?.role === 'admin') {
         toast.success('Inicio de sesión exitoso', { id: toastId });
-        router.push('/');
+        router.push('/admin');
       } else {
         await auth.signOut();
         toast.error('Acceso denegado: No tienes permisos de administrador.', { id: toastId, duration: 5000 });

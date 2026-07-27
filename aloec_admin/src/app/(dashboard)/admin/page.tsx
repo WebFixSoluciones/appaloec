@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { db } from '../../lib/firebase/config';
-import { collection, getDocs, limit, query, orderBy } from 'firebase/firestore';
+import { db } from '../../../lib/firebase/config';
+import { collection, getDocs } from 'firebase/firestore';
 import { 
   Users, 
   Crown, 
@@ -41,7 +41,7 @@ interface RecentOrder {
   createdAt: any;
 }
 
-export default function DashboardPage() {
+export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<Stats>({
     totalUsers: 0,

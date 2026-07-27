@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -76,9 +77,27 @@ class ProtocolDayState {
   }
 }
 
+final _activeProtocolIdProvider = StreamProvider<String?>((ref) {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return const Stream.empty();
+  return FirebaseFirestore.instance
+      .collection('users')
+      .doc(user.uid)
+      .snapshots()
+      .map((snap) => snap.data()?['activeProtocolId'] as String?);
+});
+
 final protocolDayProvider =
     StateNotifierProvider<ProtocolDayNotifier, ProtocolDayState>((ref) {
-  return ProtocolDayNotifier();
+  final notifier = ProtocolDayNotifier();
+  ref.listen(_activeProtocolIdProvider, (prev, next) {
+    if (next != null && next != prev) {
+      if (notifier.state.protocol?.id != next) {
+        notifier.loadProtocol();
+      }
+    }
+  });
+  return notifier;
 });
 
 class ProtocolDayNotifier extends StateNotifier<ProtocolDayState> {
