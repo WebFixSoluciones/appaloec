@@ -32,7 +32,10 @@ import {
   ChevronRight,
   UserCheck,
   Lock,
-  RefreshCw
+  RefreshCw,
+  Flame,
+  Calendar,
+  Gift
 } from 'lucide-react';
 
 interface DynamicMembership {
@@ -92,6 +95,7 @@ function LandingContent() {
   const [loadingMemberships, setLoadingMemberships] = useState<boolean>(true);
 
   // IMC Calculator State
+  const [gender, setGender] = useState<'male' | 'female'>('male');
   const [heightCm, setHeightCm] = useState<number>(168);
   const [weightKg, setWeightKg] = useState<number>(72);
   const [calculatedBmi, setCalculatedBmi] = useState<number | null>(null);
@@ -174,34 +178,35 @@ function LandingContent() {
 
   const faqs = [
     {
-      q: '¿Qué es la aplicación ALOEC y cómo me ayuda?',
-      a: 'ALOEC (Alimentación Orgánica Ecuador) es la plataforma móvil de salud holística que te guía paso a paso en la sanación mediante jugoterapia orgánica. Calcula tu IMC, te asigna un protocolo médico natural personalizado y te brinda acceso a recetas curativas, videocursos y alarmas de consumo.'
+      q: '¿Cómo funciona la oferta del Libro + la App ALOEC?',
+      a: 'Al adquirir tu ejemplar del libro "Ama Lo Que Comes — Una Guía Segura al Bienestar" (por José Rengifo), obtienes de forma automatizada acceso completo e ilimitado a la App Móvil ALOEC para Android, iOS y Web con todos sus protocolos y videocursos.'
     },
     {
-      q: '¿Cómo funciona la suscripción a los Planes de ALOEC?',
-      a: 'Al suscribirte a cualquiera de los planes disponibles en la plataforma obtienes acceso completo a todas las funcionalidades premium de la app: diagnósticos de IMC, protocolos detallados, videocursos HD y recordatorios automáticos sin cobros ocultos.'
+      q: '¿Qué contenido encontraré en la App ALOEC?',
+      a: 'La aplicación complementa el libro con herramientas interactivas: Calculadora de IMC, 9 Protocolos Médicos personalizados por tu rango de salud, catálogo HD de más de 50 recetas de jugos verdes curativos, contador de racha/progreso diario y lecciones en video.'
     },
     {
-      q: '¿Puedo usar la aplicación en mi teléfono Android e iPhone?',
-      a: '¡Sí! ALOEC está optimizada para smartphones Android e iOS, y también puedes acceder a tus planes y hacer tu checkout desde cualquier navegador web en app.alimentacionorganicaec.com.'
+      q: '¿Puedo comprar la suscripción a la App desde cualquier país?',
+      a: '¡Sí! ALOEC es una plataforma global accesible desde cualquier lugar del mundo a través de las tiendas Google Play Store, Apple App Store o en la plataforma web app.alimentacionorganicaec.com con pagos seguros internacionalmente en PayPhone.'
     },
     {
-      q: '¿Qué ingredientes se utilizan en las recetas de los jugos?',
-      a: 'Todas las recetas están diseñadas con frutas, verduras y superalimentos 100% naturales y fáciles de conseguir en los mercados y ferias de Ecuador (manzana verde, zanahoria, espinaca, apio, jengibre, aloe vera, etc.).'
+      q: '¿Qué recetas y lecciones incluye el programa?',
+      a: 'Incluye preparaciones paso a paso de jugos alcalinizantes (como el Jugo ZanaFruta y Verde Renovador), batidos proteicos, sopas vegetales y videocursos sobre la Terapia Gerson y desintoxicación hepática.'
     },
     {
       q: '¿Cómo funciona el Programa de Referidos?',
-      a: 'Cada usuario registrado obtiene un enlace único como app.alimentacionorganicaec.com/?ref=TU_CODIGO. Al compartirlo con amigos y familiares, acumulas recompensas y beneficios de suscripción cuando tus referidos se unan.'
+      a: 'Cada usuario registrado obtiene un enlace único como app.alimentacionorganicaec.com/?ref=TU_CODIGO. Al compartirlo con amigos o familiares, ganas beneficios de suscripción y recompensas por cada invitado.'
     }
   ];
 
   const defaultFeatures = [
-    'Calculadora Inteligente de IMC y diagnóstico instantáneo.',
+    'Incluye el libro "Ama Lo Que Comes — Una Guía Segura al Bienestar".',
+    'Acceso completo ilimitado a la Aplicación Móvil ALOEC (iOS/Android/Web).',
+    'Calculadora Inteligente de IMC y diagnóstico biológico instantáneo.',
     'Acceso completo a los 9 protocolos médicos de jugoterapia.',
     'Catálogo HD de más de 50 jugos verdes y batidos curativos.',
-    'Videocursos de la Terapia Gerson y salud integrativa.',
-    'Alarmas y recordatorios diarios automatizados en tu smartphone.',
-    'Enlace de referidos personal para ganar beneficios adicionales.'
+    'Academia de Videocursos en HD (Terapia Gerson, Limpieza Digestiva).',
+    'Recordatorios automáticos en tu smartphone y contador de racha diaria.'
   ];
 
   return (
@@ -210,9 +215,9 @@ function LandingContent() {
       {/* ── Top Announcement Bar ────────────────────────────────────────────── */}
       <div className="bg-gradient-to-r from-emerald-700 via-emerald-600 to-green-600 text-white px-4 py-2.5 text-xs font-semibold text-center flex items-center justify-center gap-2 shadow-sm">
         <span className="inline-flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-[11px] uppercase tracking-wider font-bold">
-          <Sparkles className="w-3.5 h-3.5 text-amber-300" /> Nuevo
+          <Sparkles className="w-3.5 h-3.5 text-amber-300" /> OFERTA EXCLUSIVA
         </span>
-        <span>App ALOEC v1.4 disponible en <strong>app.alimentacionorganicaec.com</strong></span>
+        <span>Adquiere el Libro <strong>"Ama Lo Que Comes"</strong> e incluye acceso total a la <strong>App ALOEC</strong></span>
         {refCode && (
           <span className="hidden md:inline-flex items-center gap-1 bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full font-bold ml-2">
             🎁 Ref: {refCode}
@@ -224,18 +229,19 @@ function LandingContent() {
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-sm transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           
-          {/* Logo Only (Title and slogan removed as requested) */}
+          {/* Logo Only */}
           <div className="flex items-center">
             <img src="/logo.png" alt="ALOEC Logo" className="h-10 w-auto object-contain" />
           </div>
 
           <nav className="hidden lg:flex items-center gap-8 text-sm font-semibold text-slate-700">
+            <a href="#libro-app" className="hover:text-emerald-700 transition-colors">Libro + App</a>
             <a href="#beneficios" className="hover:text-emerald-700 transition-colors">Beneficios</a>
             <a href="#calculadora" className="hover:text-emerald-700 transition-colors flex items-center gap-1">
               <Calculator className="w-4 h-4 text-emerald-600" /> Calculadora IMC
             </a>
             <a href="#recetas" className="hover:text-emerald-700 transition-colors">Jugos Verdes</a>
-            <a href="#precios" className="hover:text-emerald-700 transition-colors">Planes de Suscripción</a>
+            <a href="#precios" className="hover:text-emerald-700 transition-colors">Planes & Ofertas</a>
             <a href="#faq" className="hover:text-emerald-700 transition-colors">Preguntas</a>
           </nav>
 
@@ -250,14 +256,14 @@ function LandingContent() {
               href="#precios"
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-md hover:shadow-lg hover:shadow-emerald-600/20 transition-all transform active:scale-95"
             >
-              <Zap className="w-4 h-4 text-amber-300 fill-amber-300" /> Ver Planes
+              <BookOpen className="w-4 h-4 text-amber-300" /> Comprar Libro + App
             </a>
           </div>
         </div>
       </header>
 
-      {/* ── Hero Section ───────────────────────────────────────────────────── */}
-      <section className="relative pt-12 pb-20 lg:pt-20 lg:pb-32 overflow-hidden bg-gradient-to-b from-emerald-50/50 via-white to-slate-50">
+      {/* ── Hero Section (Book + App Offer) ────────────────────────────────── */}
+      <section id="libro-app" className="relative pt-12 pb-20 lg:pt-20 lg:pb-32 overflow-hidden bg-gradient-to-b from-emerald-50/50 via-white to-slate-50">
         <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-emerald-200/40 rounded-full blur-3xl pointer-events-none"></div>
         <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-96 h-96 bg-green-200/30 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -267,24 +273,34 @@ function LandingContent() {
             {/* Hero Left Content */}
             <div className="lg:col-span-7 space-y-8 text-center lg:text-left">
               
-              {/* Domain & Badge Pill */}
+              {/* Domain & Offer Pill */}
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-100/80 border border-emerald-300/60 rounded-full text-emerald-800 text-xs font-bold shadow-xs">
-                <Globe className="w-4 h-4 text-emerald-700 animate-pulse" />
-                <span>Plataforma Oficial: <strong>app.alimentacionorganicaec.com</strong></span>
+                <BookOpen className="w-4 h-4 text-emerald-700 animate-bounce" />
+                <span>Libro Best-Seller + Acceso Completo a la App ALOEC</span>
               </div>
 
               {/* Main Headline */}
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.15]">
-                Sanación Natural con <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-700 via-green-600 to-emerald-500">Jugoterapia Orgánica</span> en Ecuador.
+                Transforma tu salud con el Libro <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-700 via-green-600 to-emerald-500 font-black">"Ama Lo Que Comes"</span> y la App ALOEC.
               </h1>
 
               {/* Subtitle */}
               <p className="text-lg sm:text-xl text-slate-600 font-normal leading-relaxed max-w-2xl mx-auto lg:mx-0">
-                Calcula tu IMC, recibe un protocolo médico personalizado de desintoxicación y accede a más de 50+ recetas de jugos curativos, videocursos y recordatorios automáticos en tu celular.
+                Al adquirir el libro oficial de medicina integrativa y jugoterapia (por José Rengifo), obtienes de forma automatizada tu cuenta de acceso a la <strong>App ALOEC</strong> para calcular tu IMC, recibir tu protocolo médico personalizado y acceder a videocursos y recetas.
               </p>
 
-              {/* Download Buttons & CTA Row */}
+              {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
+                <a
+                  href="#precios"
+                  className="w-full sm:w-auto px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-base rounded-2xl shadow-xl hover:shadow-emerald-600/30 transition-all flex items-center justify-center gap-3 transform active:scale-95"
+                >
+                  <BookOpen className="w-5 h-5 text-amber-300" /> Adquirir Libro + App Incluida →
+                </a>
+              </div>
+
+              {/* Download Store Badges */}
+              <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-3">
                 <GooglePlayButton href="#download" />
                 <AppStoreButton href="#download" />
               </div>
@@ -293,96 +309,50 @@ function LandingContent() {
               <div className="pt-4 border-t border-slate-200/80 flex flex-wrap items-center justify-center lg:justify-start gap-6 text-xs text-slate-600 font-medium">
                 <div className="flex items-center gap-1.5">
                   <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  <span>Pago 100% Seguro (PayPhone)</span>
+                  <span>Pago Internacional Seguro (PayPhone)</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                  <span>4.9 / 5 Valoración en Ecuador</span>
+                  <span>4.9 / 5 Valoración de Lectores</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  <span>Sin permanencia ni contratos</span>
+                  <span>Acceso Inmediato en Smartphone y Web</span>
                 </div>
               </div>
 
             </div>
 
-            {/* Hero Right Visual Phone Mockup */}
+            {/* Hero Right Visual: Book Cover Photo + App Interactive Mockup */}
             <div className="lg:col-span-5 flex justify-center">
-              <div className="relative w-full max-w-sm">
+              <div className="relative w-full max-w-md">
                 
                 {/* Decorative glow background */}
                 <div className="absolute -inset-4 bg-gradient-to-tr from-emerald-500 to-green-300 rounded-[3rem] blur-2xl opacity-40 animate-pulse"></div>
 
-                {/* Smartphone Mockup */}
-                <div className="relative bg-slate-900 rounded-[2.5rem] p-4 shadow-2xl border-4 border-slate-800">
-                  
-                  {/* Speaker notch */}
-                  <div className="w-28 h-4 bg-slate-800 rounded-full mx-auto mb-3 flex items-center justify-center">
-                    <div className="w-10 h-1 bg-slate-700 rounded-full"></div>
-                  </div>
-
-                  {/* Phone Screen Frame */}
-                  <div className="bg-slate-50 rounded-[1.8rem] overflow-hidden p-4 space-y-4 text-left border border-slate-200">
+                {/* Unified Book Photo Card */}
+                <div className="relative bg-white rounded-3xl p-3 shadow-2xl border border-slate-200 overflow-hidden group">
+                  <div className="relative rounded-2xl overflow-hidden aspect-[4/5] bg-slate-100">
+                    <img 
+                      src="/book_hero.jpg" 
+                      alt="Libro Ama Lo Que Comes y App ALOEC" 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
                     
-                    {/* App Header Mock */}
-                    <div className="flex justify-between items-center bg-emerald-700 text-white p-3.5 rounded-xl shadow-xs">
-                      <div>
-                        <p className="text-[10px] text-emerald-200 uppercase font-bold tracking-wider">PROTOCOLO ACTIVO</p>
-                        <p className="text-xs font-bold">Desintoxicación Hepática</p>
-                      </div>
-                      <span className="px-2 py-0.5 bg-emerald-800 text-emerald-100 text-[10px] font-extrabold rounded-md">
-                        IMC: 26.4
-                      </span>
-                    </div>
-
-                    {/* Today's Juicing Schedule Mock */}
-                    <div className="space-y-2">
-                      <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Horario de Jugos del Día</p>
-                      
-                      <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-xs flex items-center gap-3">
-                        <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center text-emerald-700 shrink-0">
-                          <Droplet className="w-5 h-5" />
+                    {/* Floating Offer Badge */}
+                    <div className="absolute bottom-4 left-4 right-4 bg-slate-900/90 backdrop-blur-md text-white p-3.5 rounded-2xl border border-white/20 shadow-lg flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-emerald-500 text-slate-950 rounded-xl flex items-center justify-center font-black text-lg shrink-0">
+                          📖
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">08:00 AM</span>
-                          <p className="text-xs font-bold text-slate-800 truncate mt-0.5">Jugo Verde Renovador</p>
-                          <p className="text-[10px] text-slate-500 truncate">Manzana verde, apio, espinaca y pepino</p>
-                        </div>
-                        <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-                      </div>
-
-                      <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-xs flex items-center gap-3">
-                        <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center text-amber-700 shrink-0">
-                          <HeartPulse className="w-5 h-5" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded">11:00 AM</span>
-                          <p className="text-xs font-bold text-slate-800 truncate mt-0.5">Batido Quinua Dorada</p>
-                          <p className="text-[10px] text-slate-500 truncate">Cápsula de hígado + pancreatina</p>
-                        </div>
-                        <div className="w-5 h-5 rounded-full border-2 border-slate-300 shrink-0"></div>
-                      </div>
-                    </div>
-
-                    {/* Featured Video Course Card Mock */}
-                    <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-3.5 rounded-xl shadow-xs relative overflow-hidden">
-                      <div className="flex items-center justify-between relative z-10">
                         <div>
-                          <span className="text-[9px] bg-emerald-500 text-slate-950 font-extrabold px-1.5 py-0.5 rounded uppercase">CURSO DESTACADO</span>
-                          <p className="text-xs font-bold mt-1">Terapia Gerson en Ecuador</p>
-                        </div>
-                        <div className="w-8 h-8 bg-emerald-500 text-slate-950 rounded-full flex items-center justify-center shrink-0">
-                          <Play className="w-4 h-4 fill-current ml-0.5" />
+                          <p className="text-xs font-black text-white">Ama Lo Que Comes</p>
+                          <p className="text-[10px] text-emerald-300 font-bold">Por José Rengifo · Incluye App ALOEC</p>
                         </div>
                       </div>
-                    </div>
-
-                    {/* Bottom Floating App CTA */}
-                    <div className="pt-1 text-center">
-                      <a href="#precios" className="block w-full py-2.5 bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-sm hover:bg-emerald-700 transition-colors">
-                        🔔 Activar Recordatorios Diarios
-                      </a>
+                      <span className="bg-emerald-500 text-slate-950 font-black text-[10px] px-2.5 py-1 rounded-full uppercase">
+                        COMBO
+                      </span>
                     </div>
 
                   </div>
@@ -401,11 +371,11 @@ function LandingContent() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
               <p className="text-3xl sm:text-4xl font-black text-emerald-400">+10,000</p>
-              <p className="text-xs sm:text-sm text-slate-400 font-medium mt-1">Pacientes Beneficiados</p>
+              <p className="text-xs sm:text-sm text-slate-400 font-medium mt-1">Lectores y Pacientes</p>
             </div>
             <div>
               <p className="text-3xl sm:text-4xl font-black text-emerald-400">+50</p>
-              <p className="text-xs sm:text-sm text-slate-400 font-medium mt-1">Recetas Terapéuticas</p>
+              <p className="text-xs sm:text-sm text-slate-400 font-medium mt-1">Recetas de Jugoterapia</p>
             </div>
             <div>
               <p className="text-3xl sm:text-4xl font-black text-emerald-400">9</p>
@@ -413,13 +383,128 @@ function LandingContent() {
             </div>
             <div>
               <p className="text-3xl sm:text-4xl font-black text-amber-400">100%</p>
-              <p className="text-xs sm:text-sm text-slate-400 font-medium mt-1">Orgánico y Natural</p>
+              <p className="text-xs sm:text-sm text-slate-400 font-medium mt-1">Orgánico e Internacional</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── Interactive Live IMC Calculator ─────────────────────────────────── */}
+      {/* ── App Interface Showcase (Real Screenshots Mock) ──────────────────── */}
+      <section className="py-20 bg-slate-100 border-b border-slate-200/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
+          
+          <div className="text-center max-w-3xl mx-auto space-y-4">
+            <span className="px-3.5 py-1.5 bg-emerald-100 text-emerald-800 text-xs font-extrabold rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
+              <Smartphone className="w-4 h-4 text-emerald-700" /> Experiencia Móvil de Primera
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900">
+              Conoce la interfaz de la Aplicación Móvil ALOEC
+            </h2>
+            <p className="text-base sm:text-lg text-slate-600">
+              Diseño limpio, minimalista y libre de distracciones para acompañar tu lectura del libro.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            
+            {/* Screen 1: IMC Calculator */}
+            <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-md space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md">
+                  PANTALLA 1
+                </span>
+                <span className="text-xs text-slate-500 font-bold">Calculadora de IMC</span>
+              </div>
+              <div className="bg-slate-50 p-4 rounded-2xl space-y-3 border border-slate-200">
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-3 bg-emerald-700 text-white rounded-xl text-center font-bold text-xs flex items-center justify-center gap-1">
+                    <span>♂ Masculino</span>
+                  </div>
+                  <div className="p-3 bg-slate-200 text-slate-600 rounded-xl text-center font-bold text-xs flex items-center justify-center gap-1">
+                    <span>♀ Femenino</span>
+                  </div>
+                </div>
+                <div className="bg-white p-3 rounded-xl border border-slate-200 space-y-1 text-center">
+                  <span className="text-[10px] text-slate-400 font-bold uppercase">Resultado IMC</span>
+                  <p className="text-3xl font-black text-amber-600 font-mono">26.6</p>
+                  <p className="text-xs font-bold text-amber-700 bg-amber-50 py-0.5 px-2 rounded-full inline-block">Sobrepeso</p>
+                </div>
+              </div>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Ingresa tu género, edad, estatura y peso para determinar al instante tu rango biológico y asignarte tu protocolo médico.
+              </p>
+            </div>
+
+            {/* Screen 2: Progress & Daily Streaks */}
+            <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-md space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md">
+                  PANTALLA 2
+                </span>
+                <span className="text-xs text-slate-500 font-bold">Progreso & Racha</span>
+              </div>
+              <div className="bg-slate-50 p-4 rounded-2xl space-y-3 border border-slate-200">
+                <div className="bg-white p-3 rounded-xl border border-slate-200 flex items-center gap-3">
+                  <div className="w-10 h-10 bg-amber-100 text-amber-700 rounded-xl flex items-center justify-center shrink-0">
+                    <Flame className="w-6 h-6 fill-current" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-black text-slate-800">Días Consecutivos</p>
+                    <p className="text-[10px] text-slate-500">Completa tus jugos para subir tu racha</p>
+                  </div>
+                </div>
+                <div className="bg-white p-3 rounded-xl border border-slate-200">
+                  <div className="flex justify-between items-center text-xs font-bold mb-2">
+                    <span className="text-slate-700">Cumplimiento Semanal</span>
+                    <span className="text-emerald-700 font-mono">100%</span>
+                  </div>
+                  <div className="flex justify-between text-[10px] text-slate-400 font-bold pt-1">
+                    <span className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center">M</span>
+                    <span className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center">X</span>
+                    <span className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center">J</span>
+                    <span className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center">V</span>
+                    <span className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center">S</span>
+                    <span className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center">D</span>
+                    <span className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center">L</span>
+                  </div>
+                </div>
+              </div>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Monitorea tu racha de hábitos saludables, cumplimiento semanal de jugos y evolución corporal día tras día.
+              </p>
+            </div>
+
+            {/* Screen 3: Video Lessons */}
+            <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-md space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md">
+                  PANTALLA 3
+                </span>
+                <span className="text-xs text-slate-500 font-bold">Lecciones en Video</span>
+              </div>
+              <div className="bg-slate-50 p-4 rounded-2xl space-y-3 border border-slate-200">
+                <div className="bg-slate-900 text-white p-3 rounded-xl flex items-center justify-between">
+                  <div>
+                    <span className="text-[9px] bg-emerald-500 text-slate-950 font-black px-1.5 py-0.5 rounded uppercase">CURSO JUGOS</span>
+                    <p className="text-xs font-bold mt-1">Clase 1: Jugo ZanaFruta</p>
+                    <p className="text-[10px] text-slate-400">Jugo de Zanahoria con Manzanas Verdes</p>
+                  </div>
+                  <div className="w-8 h-8 bg-emerald-500 text-slate-950 rounded-full flex items-center justify-center shrink-0">
+                    <Play className="w-4 h-4 fill-current ml-0.5" />
+                  </div>
+                </div>
+              </div>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Aprende la preparación correcta de cada jugo verde con las lecciones dictadas en video por instructores expertos.
+              </p>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* ── Interactive Live IMC Calculator Section ──────────────────────────── */}
       <section id="calculadora" className="py-20 bg-white border-b border-slate-200/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
@@ -439,6 +524,36 @@ function LandingContent() {
             
             {/* Inputs Column */}
             <div className="md:col-span-6 space-y-6">
+              
+              {/* Gender selector */}
+              <div>
+                <label className="text-sm font-bold text-slate-800 block mb-2">Género</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setGender('male')}
+                    className={`py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border transition-all ${
+                      gender === 'male' 
+                        ? 'bg-emerald-700 text-white border-emerald-700 shadow-sm' 
+                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    ♂ Masculino
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGender('female')}
+                    className={`py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border transition-all ${
+                      gender === 'female' 
+                        ? 'bg-emerald-700 text-white border-emerald-700 shadow-sm' 
+                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    ♀ Femenino
+                  </button>
+                </div>
+              </div>
+
               <div>
                 <div className="flex justify-between items-center mb-2">
                   <label className="text-sm font-bold text-slate-800">Estatura (cm)</label>
@@ -511,13 +626,13 @@ function LandingContent() {
           
           <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
             <span className="px-3.5 py-1.5 bg-emerald-100 text-emerald-800 text-xs font-extrabold rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-emerald-700" /> Todo en una sola aplicación
+              <Sparkles className="w-4 h-4 text-emerald-700" /> Libro + App Móvil Unificada
             </span>
             <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900">
               Diseñada para transformar tu alimentación y estilo de vida
             </h2>
             <p className="text-base sm:text-lg text-slate-600">
-              Combina el conocimiento ancestral del naturismo con tecnología móvil avanzada para acompañarte diariamente.
+              Combina la lectura del libro "Ama Lo Que Comes" con tecnología móvil avanzada para acompañarte diariamente.
             </p>
           </div>
 
@@ -526,15 +641,26 @@ function LandingContent() {
             {/* Feature 1 */}
             <div className="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-xl hover:border-emerald-500/50 transition-all group">
               <div className="w-14 h-14 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Droplet className="w-7 h-7" />
+                <BookOpen className="w-7 h-7" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Recetario Terapéutico HD</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">Libro "Ama Lo Que Comes"</h3>
               <p className="text-sm text-slate-600 leading-relaxed">
-                Accede a más de 50 recetas detalladas de jugos verdes curativos, batidos nutricionales y sopas vegetales con ingredientes orgánicos de Ecuador.
+                Guía completa de salud integrativa por José Rengifo para comprender la raíz de las inflamaciones y la sanación por alimentos.
               </p>
             </div>
 
             {/* Feature 2 */}
+            <div className="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-xl hover:border-emerald-500/50 transition-all group">
+              <div className="w-14 h-14 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Droplet className="w-7 h-7" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">Recetario Terapéutico HD</h3>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Accede a más de 50 recetas detalladas de jugos verdes curativos, batidos nutricionales y sopas vegetales en la app.
+              </p>
+            </div>
+
+            {/* Feature 3 */}
             <div className="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-xl hover:border-emerald-500/50 transition-all group">
               <div className="w-14 h-14 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Activity className="w-7 h-7" />
@@ -542,17 +668,6 @@ function LandingContent() {
               <h3 className="text-xl font-bold text-slate-900 mb-3">Protocolos Médicos por IMC</h3>
               <p className="text-sm text-slate-600 leading-relaxed">
                 Recibe guías específicas según tu rango corporal para desintoxicación hepática, control metabólico, enemas de café y terapia Gerson.
-              </p>
-            </div>
-
-            {/* Feature 3 */}
-            <div className="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-xl hover:border-emerald-500/50 transition-all group">
-              <div className="w-14 h-14 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <BookOpen className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Videocursos & Lecciones</h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Academia en video dictada por profesionales para aprender las bases de la medicina integrativa, limpieza digestiva y hábitos saludables.
               </p>
             </div>
 
@@ -644,7 +759,7 @@ function LandingContent() {
                   🥕 ALOEC-J02 · Hepático
                 </span>
                 <div>
-                  <h3 className="text-2xl font-black">Jugo de Zanahoria & Manzana</h3>
+                  <h3 className="text-2xl font-black">Jugo ZanaFruta</h3>
                   <p className="text-xs text-amber-100 mt-0.5">Rico en Betacarotenos y Antioxidantes</p>
                 </div>
               </div>
@@ -705,7 +820,7 @@ function LandingContent() {
               Planes de Suscripción ALOEC
             </h2>
             <p className="text-base sm:text-lg text-slate-400">
-              Elige el plan ideal para acceder a todas las herramientas de salud y jugoterapia en tu celular.
+              Elige el plan ideal para adquirir el libro "Ama Lo Que Comes" y acceder a todas las herramientas de la app ALOEC.
             </p>
           </div>
 
@@ -725,7 +840,7 @@ function LandingContent() {
                 >
                   {idx === 0 && (
                     <div className="absolute top-0 right-0 bg-emerald-500 text-slate-950 font-black text-[10px] uppercase tracking-wider px-4 py-1 rounded-bl-xl shadow-xs">
-                      MÁS POPULAR
+                      OFERTA RECOMENDADA
                     </div>
                   )}
 
@@ -736,7 +851,7 @@ function LandingContent() {
                         <span className="text-5xl font-black text-white font-mono">${m.price.toFixed(2)}</span>
                         <span className="text-xs font-bold text-slate-400">USD / {m.durationDays} días</span>
                       </div>
-                      <p className="text-xs text-emerald-400 font-medium">Acceso completo · Sin cargos ocultos</p>
+                      <p className="text-xs text-emerald-400 font-medium">Incluye Libro + App ALOEC · Sin cargos ocultos</p>
                     </div>
 
                     <div className="space-y-3 text-sm text-slate-300">
@@ -752,12 +867,12 @@ function LandingContent() {
                   <div className="space-y-3 pt-8 mt-6 border-t border-slate-800">
                     <Link
                       href={`/checkout?plan=${m.id}`}
-                      className="block w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-sm rounded-xl shadow-lg transition-all text-center transform active:scale-95"
+                      className="block w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-sm rounded-xl shadow-lg transition-all text-center transform active:scale-95 flex items-center justify-center gap-2"
                     >
-                      Suscribirme a {m.name} →
+                      <BookOpen className="w-4 h-4" /> Comprar Libro + App ALOEC →
                     </Link>
                     <p className="text-center text-[10px] text-slate-500 flex items-center justify-center gap-1">
-                      <Lock className="w-3 h-3 text-slate-400" /> Pago seguro con PayPhone
+                      <Lock className="w-3 h-3 text-slate-400" /> Transacción internacional segura (PayPhone)
                     </p>
                   </div>
 
@@ -768,8 +883,8 @@ function LandingContent() {
             /* Fallback Card if no active membership documents exist yet */
             <div className="max-w-lg mx-auto bg-slate-900 border-2 border-emerald-500 rounded-3xl p-8 sm:p-10 shadow-2xl relative overflow-hidden">
               <div className="text-center space-y-4 pb-8 border-b border-slate-800">
-                <h3 className="text-2xl font-extrabold text-white">Plan de Suscripción ALOEC</h3>
-                <p className="text-xs text-emerald-400 font-medium">Acceso total e ilimitado a todas las funciones</p>
+                <h3 className="text-2xl font-extrabold text-white">Paquete Libro + App ALOEC</h3>
+                <p className="text-xs text-emerald-400 font-medium">Acceso total e ilimitado a todas las herramientas</p>
               </div>
 
               <div className="py-8 space-y-4 text-sm text-slate-300">
@@ -784,9 +899,9 @@ function LandingContent() {
               <div className="space-y-4 pt-2">
                 <Link
                   href="/checkout"
-                  className="block w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-base rounded-xl shadow-lg transition-all text-center transform active:scale-95"
+                  className="block w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-base rounded-xl shadow-lg transition-all text-center transform active:scale-95 flex items-center justify-center gap-2"
                 >
-                  Suscribirme Ahora →
+                  <BookOpen className="w-5 h-5" /> Adquirir Libro + App ALOEC →
                 </Link>
                 <p className="text-center text-[11px] text-slate-500 flex items-center justify-center gap-1.5">
                   <Lock className="w-3.5 h-3.5 text-slate-400" /> Transacción encriptada a través de PayPhone
@@ -807,7 +922,7 @@ function LandingContent() {
               Descarga la App ALOEC en tu smartphone
             </h2>
             <p className="text-lg text-emerald-100">
-              Lleva tu salud al siguiente nivel. Disponible para Android e iOS en Ecuador.
+              Acompaña la lectura del libro "Ama Lo Que Comes" con la app oficial. Disponible globalmente para Android e iOS.
             </p>
           </div>
 
@@ -875,7 +990,7 @@ function LandingContent() {
                 <img src="/logo.png" alt="ALOEC Logo" className="h-8 w-auto brightness-200" />
               </div>
               <p className="text-slate-500 leading-relaxed">
-                Alimentación Orgánica Ecuador. Promoviendo la salud natural y la jugoterapia científica.
+                Alimentación Orgánica & Salud Holística. Promoviendo la salud natural y la jugoterapia científica globalmente.
               </p>
               <p className="text-emerald-400 font-mono font-bold">
                 app.alimentacionorganicaec.com
@@ -885,10 +1000,11 @@ function LandingContent() {
             <div>
               <p className="font-bold text-white uppercase tracking-wider mb-3 text-[11px]">Navegación</p>
               <ul className="space-y-2">
+                <li><a href="#libro-app" className="hover:text-white transition-colors">Libro + App</a></li>
                 <li><a href="#beneficios" className="hover:text-white transition-colors">Beneficios</a></li>
                 <li><a href="#calculadora" className="hover:text-white transition-colors">Calculadora IMC</a></li>
                 <li><a href="#recetas" className="hover:text-white transition-colors">Jugos Verdes</a></li>
-                <li><a href="#precios" className="hover:text-white transition-colors">Planes de Suscripción</a></li>
+                <li><a href="#precios" className="hover:text-white transition-colors">Planes & Ofertas</a></li>
               </ul>
             </div>
 
