@@ -1,0 +1,1668 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ALOEC - Tu guía saludable de jugos verdes, planes de dieta personalizados y videocursos de nutrición. Descarga la app en App Store y Google Play.">
+    <title>ALOEC - Tu bienestar en un sorbo verde</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+    <style>
+        /* CSS Reset & Variables */
+        :root {
+            --primary: #10B981;
+            --primary-dark: #059669;
+            --primary-light: #D1FAE5;
+            --dark-green: #064E3B;
+            --dark: #0F172A;
+            --light-bg: #F8FAFC;
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --border-color: rgba(255, 255, 255, 0.4);
+            --text-dark: #1E293B;
+            --text-muted: #64748B;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --font-title: 'Outfit', sans-serif;
+            --font-body: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--light-bg);
+            color: var(--text-dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Typography */
+        h1, h2, h3, h4 {
+            font-family: var(--font-title);
+            font-weight: 700;
+            color: var(--dark-green);
+        }
+
+        /* Layout & Utilities */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.85rem 1.8rem;
+            border-radius: 9999px;
+            font-family: var(--font-title);
+            font-weight: 600;
+            text-decoration: none;
+            transition: var(--transition);
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px -5px rgba(16, 185, 129, 0.5);
+        }
+
+        /* Background Effects */
+        .bg-gradient {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 900px;
+            background: linear-gradient(135deg, #F0FDF4 0%, #FFFFFF 100%);
+            z-index: -2;
+        }
+
+        .blur-blob {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background-color: rgba(16, 185, 129, 0.08);
+            filter: blur(100px);
+            border-radius: 50%;
+            z-index: -1;
+        }
+
+        .blob-1 { top: 10%; right: -100px; }
+        .blob-2 { top: 40%; left: -150px; background-color: rgba(6, 78, 59, 0.05); }
+
+        /* Navbar */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(248, 250, 252, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+            z-index: 100;
+            transition: var(--transition);
+        }
+
+        header.scrolled {
+            padding: 0.5rem 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 75px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            font-size: 1.6rem;
+            font-family: var(--font-title);
+            font-weight: 800;
+            color: var(--dark-green);
+        }
+
+        .logo svg {
+            width: 32px;
+            height: 32px;
+            fill: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .nav-cta {
+            padding: 0.6rem 1.4rem;
+            font-size: 0.95rem;
+        }
+
+        /* Mobile Nav Toggle */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .mobile-menu-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--dark-green);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 10rem 0 6rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .hero-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: var(--primary-light);
+            color: var(--dark-green);
+            padding: 0.4rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-content h1 {
+            font-size: 3.5rem;
+            line-height: 1.15;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-content h1 span {
+            background: linear-gradient(to right, var(--primary), var(--dark-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-content p {
+            font-size: 1.15rem;
+            color: var(--text-muted);
+            margin-bottom: 2.5rem;
+            max-width: 540px;
+        }
+
+        .store-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .store-btn {
+            display: inline-flex;
+            align-items: center;
+            background-color: var(--dark);
+            color: #ffffff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            gap: 0.8rem;
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .store-btn:hover {
+            background-color: #000000;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .store-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: #ffffff;
+        }
+
+        .store-btn-text {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+        }
+
+        .store-btn-text span:first-child {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .store-btn-text span:last-child {
+            font-size: 0.95rem;
+            font-weight: 700;
+            font-family: var(--font-title);
+        }
+
+        /* Mockup Container with Animation */
+        .hero-visual {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .phone-mockup-wrapper {
+            position: relative;
+            width: 300px;
+            height: 600px;
+            background-color: var(--dark);
+            border-radius: 40px;
+            padding: 11px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: float 6s ease-in-out infinite;
+            border: 4px solid #334155;
+        }
+
+        .phone-screen {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-color: #ffffff;
+            border-radius: 30px;
+            overflow: hidden;
+            border: 1px solid #1e293b;
+        }
+
+        /* App Screen Mockup Content */
+        .app-header {
+            background-color: #F0FDF4;
+            padding: 1.5rem 1rem 1rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #E8F5E9;
+        }
+
+        .app-logo {
+            font-family: var(--font-title);
+            font-weight: 800;
+            color: var(--dark-green);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .app-logo svg {
+            width: 18px;
+            height: 18px;
+            fill: var(--primary);
+        }
+
+        .app-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            border: 2px solid var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--dark-green);
+        }
+
+        .app-content {
+            padding: 1rem;
+            height: calc(100% - 60px);
+            overflow-y: auto;
+            background-color: #F8FAFC;
+        }
+
+        .app-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            border: 1px solid rgba(226,232,240,0.8);
+        }
+
+        .app-plan-card {
+            background: linear-gradient(135deg, var(--dark-green), #0B664C);
+            color: #ffffff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .app-plan-card::after {
+            content: '';
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            background-color: rgba(16, 185, 129, 0.2);
+            border-radius: 50%;
+            top: -30px;
+            right: -30px;
+        }
+
+        .app-juice-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-top: 0.8rem;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 0.6rem;
+            border: 1px solid #f1f5f9;
+        }
+
+        .app-juice-img {
+            width: 44px;
+            height: 44px;
+            background-color: var(--primary-light);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+
+        /* Mockup float keyframes */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* Benefits Section */
+        .benefits {
+            padding: 6rem 0;
+            background-color: #ffffff;
+            position: relative;
+        }
+
+        .section-header {
+            text-align: center;
+            max-width: 650px;
+            margin: 0 auto 4rem auto;
+        }
+
+        .section-header h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .section-header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .benefit-card {
+            background-color: var(--light-bg);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            border-radius: 24px;
+            padding: 2.5rem 2rem;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .benefit-card:hover {
+            transform: translateY(-8px);
+            background-color: #ffffff;
+            box-shadow: 0 20px 40px -15px rgba(6, 78, 59, 0.08);
+            border-color: var(--primary-light);
+        }
+
+        .benefit-icon-wrapper {
+            width: 60px;
+            height: 60px;
+            background-color: var(--primary-light);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            color: var(--primary-dark);
+            transition: var(--transition);
+        }
+
+        .benefit-card:hover .benefit-icon-wrapper {
+            background-color: var(--primary);
+            color: #ffffff;
+        }
+
+        .benefit-icon-wrapper svg {
+            width: 28px;
+            height: 28px;
+            fill: currentColor;
+        }
+
+        .benefit-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+        }
+
+        .benefit-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* App Screens Gallery Section */
+        .gallery {
+            padding: 6rem 0;
+            background-color: var(--light-bg);
+            overflow: hidden;
+        }
+
+        .gallery-slider-container {
+            position: relative;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .gallery-wrapper {
+            display: flex;
+            gap: 2rem;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none; /* Firefox */
+            padding: 1.5rem 0.5rem;
+        }
+
+        .gallery-wrapper::-webkit-scrollbar {
+            display: none; /* Chrome/Safari */
+        }
+
+        .gallery-slide {
+            flex: 0 0 240px;
+            scroll-snap-align: center;
+            background-color: var(--dark);
+            border-radius: 30px;
+            padding: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            border: 3px solid #334155;
+            transition: var(--transition);
+        }
+
+        .gallery-slide:hover {
+            transform: scale(1.03);
+        }
+
+        .gallery-screen {
+            border-radius: 22px;
+            overflow: hidden;
+            background-color: #ffffff;
+            height: 480px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Mockup screen configurations inside slider */
+        .screen-onboarding {
+            background: linear-gradient(180deg, #F0FDF4 0%, #FFFFFF 100%);
+            padding: 2rem 1.2rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+        }
+
+        .screen-onboarding h4 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .screen-onboarding p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .screen-onboarding-graphic {
+            width: 140px;
+            height: 140px;
+            background-color: var(--primary-light);
+            border-radius: 50%;
+            margin: 1.5rem auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+        }
+
+        .screen-list {
+            background-color: #f8fafc;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .screen-list-header {
+            background-color: #ffffff;
+            padding: 1.2rem 1rem 0.8rem 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .screen-list-body {
+            padding: 0.8rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .screen-video-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 0.8rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .screen-video-thumb {
+            height: 100px;
+            background-color: var(--dark-green);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .screen-video-play-btn {
+            width: 32px;
+            height: 32px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-dark);
+        }
+
+        .screen-video-play-btn svg {
+            width: 14px;
+            height: 14px;
+            fill: currentColor;
+            margin-left: 2px;
+        }
+
+        .screen-video-info {
+            padding: 0.6rem;
+        }
+
+        .screen-video-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .screen-video-meta {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-top: 0.15rem;
+        }
+
+        .screen-progress-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 0.8rem;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 0.8rem;
+        }
+
+        .screen-progress-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            font-family: var(--font-title);
+        }
+
+        .screen-progress-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .screen-indicator-green {
+            background-color: #ECFDF5;
+            color: #065F46;
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            display: inline-block;
+            margin-top: 0.4rem;
+        }
+
+        /* Gallery controls */
+        .gallery-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .gallery-ctrl-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background-color: #ffffff;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--dark-green);
+            transition: var(--transition);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+
+        .gallery-ctrl-btn:hover {
+            background-color: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .gallery-ctrl-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        /* Final CTA Section */
+        .cta {
+            padding: 6rem 0;
+            position: relative;
+            background-color: #ffffff;
+        }
+
+        .cta-box {
+            background: linear-gradient(135deg, var(--dark-green) 0%, #057053 100%);
+            border-radius: 32px;
+            padding: 5rem 3rem;
+            text-align: center;
+            color: #ffffff;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 30px 60px -15px rgba(6, 78, 59, 0.3);
+        }
+
+        .cta-box h2 {
+            color: #ffffff;
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .cta-box p {
+            font-size: 1.15rem;
+            max-width: 600px;
+            margin: 0 auto 2.5rem auto;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .cta-box .store-buttons {
+            justify-content: center;
+        }
+
+        .cta-box .store-btn {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(8px);
+        }
+
+        .cta-box .store-btn:hover {
+            background-color: #ffffff;
+            color: var(--dark);
+        }
+
+        .cta-box .store-btn:hover svg {
+            fill: var(--dark);
+        }
+
+        .cta-box .store-btn:hover .store-btn-text span:first-child {
+            color: var(--text-muted);
+        }
+
+        .cta-box .store-btn:hover .store-btn-text span:last-child {
+            color: var(--dark);
+        }
+
+        .cta-decorations {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .cta-circle {
+            position: absolute;
+            border-radius: 50%;
+            background-color: rgba(16, 185, 129, 0.1);
+        }
+
+        .cta-circle-1 {
+            width: 300px;
+            height: 300px;
+            top: -150px;
+            left: -150px;
+        }
+
+        .cta-circle-2 {
+            width: 250px;
+            height: 250px;
+            bottom: -120px;
+            right: -80px;
+        }
+
+        .social-proof {
+            margin-top: 2rem;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--light-bg);
+            border-top: 1px solid rgba(226, 232, 240, 0.8);
+            padding: 3rem 0;
+        }
+
+        .footer-grid {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .copyright {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .legal-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .legal-links a {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .legal-links a:hover {
+            color: var(--primary);
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 1024px) {
+            .hero-content h1 {
+                font-size: 3rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                height: 70px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .nav-cta {
+                display: none;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .hero-grid {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+                text-align: center;
+            }
+
+            .hero-content p {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .store-buttons {
+                justify-content: center;
+            }
+
+            .section-header h2 {
+                font-size: 2rem;
+            }
+
+            .cta-box {
+                padding: 4rem 1.5rem;
+            }
+
+            .cta-box h2 {
+                font-size: 2.2rem;
+            }
+
+            .footer-grid {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        /* ── Registration Modal ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(6px);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-card {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 2.5rem 2rem;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+            position: relative;
+            animation: modalIn 0.3s ease;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: translateY(30px) scale(0.96); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .modal-close {
+            position: absolute;
+            top: 1rem; right: 1.2rem;
+            background: none; border: none;
+            font-size: 1.3rem; cursor: pointer;
+            color: var(--text-muted);
+        }
+        .modal-card h3 {
+            font-family: var(--font-title);
+            font-size: 1.5rem;
+            color: var(--dark-green);
+            margin-bottom: 0.3rem;
+        }
+        .modal-card .modal-sub {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+        .modal-field {
+            margin-bottom: 1rem;
+        }
+        .modal-field label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.3rem;
+        }
+        .modal-field input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-family: var(--font-body);
+            transition: var(--transition);
+            outline: none;
+            background: var(--light-bg);
+        }
+        .modal-field input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(16,185,129,0.12);
+        }
+        .modal-field input.referral-code {
+            background: #F0FDF4;
+            border-color: var(--primary-light);
+            color: var(--dark-green);
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+        .modal-error {
+            background: #FEF2F2;
+            color: #DC2626;
+            padding: 0.6rem 1rem;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        .modal-success {
+            background: #F0FDF4;
+            color: var(--dark-green);
+            padding: 1.5rem;
+            border-radius: 16px;
+            text-align: center;
+            display: none;
+        }
+        .modal-success h4 { margin-bottom: 0.5rem; }
+        .modal-success .store-buttons { justify-content: center; margin-top: 1.2rem; }
+    </style>
+</head>
+<body>
+
+    <!-- Background Gradients -->
+    <div class="bg-gradient"></div>
+    <div class="blur-blob blob-1"></div>
+    <div class="blur-blob blob-2"></div>
+
+    <!-- Header / Navbar -->
+    <header id="header">
+        <div class="container navbar">
+            <a href="#" class="logo">
+                <svg viewBox="0 0 24 24">
+                    <path d="M17,8C8,10 5.9,16.17 3.82,21.34L2.18,20.66C4.26,15.49 6.36,9.33 15.34,7.34C10.74,5.74 8.77,3.13 6.94,0.7L8.56,0.3C10.39,2.73 12.36,5.34 16.96,6.94L17,8M22.5,8C21.8,11.5 19.35,14 16.5,15.5C13.65,17 10.4,17.5 7.5,17.5H6.5V16.5C6.5,13.6 7,10.35 8.5,7.5C10,4.65 12.5,2.2 16,1.5C18.1,2.9 20,5.1 22.5,8Z"/>
+                </svg>
+                <span>ALOEC</span>
+            </a>
+            
+            <ul class="nav-links">
+                <li><a href="#beneficios">Beneficios</a></li>
+                <li><a href="#galeria">Galería</a></li>
+                <li><a href="#descargar">Descargar</a></li>
+            </ul>
+
+            <a href="#" class="btn btn-primary nav-cta" onclick="openModal();return false">Registrarme</a>
+            
+            <button class="mobile-menu-btn" aria-label="Abrir Menú">
+                <svg viewBox="0 0 24 24">
+                    <path d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z"/>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container hero-grid">
+            <div class="hero-content">
+                <div class="hero-tag">
+                    <span role="img" aria-label="sparkles">🌱</span> Tu camino hacia el bienestar
+                </div>
+                <h1>Tu bienestar comienza con un <span>sorbo de salud</span></h1>
+                <p>Recetas personalizadas de jugos verdes, planes de desintoxicación a tu medida y videocursos de nutrición diseñados para revitalizar tu cuerpo y ayudarte a lograr tus metas saludables de forma natural.</p>
+                
+                <div class="store-buttons">
+                    <a href="#" class="btn btn-primary" onclick="openModal();return false" style="font-size:1rem;padding:0.9rem 2rem">Registrarme gratis</a>
+                </div>
+                <p style="color:var(--text-muted);font-size:0.82rem;margin-top:0.8rem">o descarga la app</p>
+                <div class="store-buttons">
+                    <a href="#descargar" class="store-btn">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M18.71,19.5C17.88,20.74 17,21.95 15.66,21.97C14.32,22 13.89,21.18 12.37,21.18C10.84,21.18 10.37,21.95 9.1,22C7.79,22.05 6.8,20.68 5.96,19.47C4.25,17 2.94,12.45 4.7,9.39C5.57,7.87 7.13,6.91 8.82,6.88C10.1,6.86 11.32,7.75 12.11,7.75C12.89,7.75 14.37,6.68 15.92,6.84C16.57,6.87 18.39,7.1 19.56,8.82C19.47,8.88 17.39,10.1 17.41,12.63C17.44,15.65 20.06,16.66 20.1,16.67C20.08,16.74 19.67,18.11 18.71,19.5M15.97,4.17C16.63,3.37 17.07,2.28 16.95,1C16,1.04 14.9,1.6 14.24,2.38C13.68,3.04 13.19,4.14 13.34,5.39C14.39,5.47 15.4,4.88 15.97,4.17Z"/>
+                        </svg>
+                        <div class="store-btn-text">
+                            <span>Consíguelo en el</span>
+                            <span>App Store</span>
+                        </div>
+                    </a>
+                    <a href="#descargar" class="store-btn">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M3,5.27V18.73L16.55,12L3,5.27M17.87,11.33L21,12.9L22.56,12L21,11.1L17.87,12.67V11.33M3.23,4L16.85,10.8L19.23,9.58L5.78,2.78C4.74,2.26 3.65,2.89 3.23,4M3.23,20C3.65,21.11 4.74,21.74 5.78,21.22L19.23,14.42L16.85,13.2L3.23,20Z"/>
+                        </svg>
+                        <div class="store-btn-text">
+                            <span>Disponible en</span>
+                            <span>Google Play</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="hero-visual">
+                <!-- iPhone Mockup with APP view -->
+                <div class="phone-mockup-wrapper">
+                    <div class="phone-screen">
+                        <div class="app-header">
+                            <div class="app-logo">
+                                <svg viewBox="0 0 24 24"><path d="M17,8C8,10 5.9,16.17 3.82,21.34L2.18,20.66C4.26,15.49 6.36,9.33 15.34,7.34C10.74,5.74 8.77,3.13 6.94,0.7L8.56,0.3C10.39,2.73 12.36,5.34 16.96,6.94L17,8M22.5,8C21.8,11.5 19.35,14 16.5,15.5C13.65,17 10.4,17.5 7.5,17.5H6.5V16.5C6.5,13.6 7,10.35 8.5,7.5C10,4.65 12.5,2.2 16,1.5C18.1,2.9 20,5.1 22.5,8Z"/></svg>
+                                <span>ALOEC</span>
+                            </div>
+                            <div class="app-avatar">U</div>
+                        </div>
+                        
+                        <div class="app-content">
+                            <div class="app-card app-plan-card">
+                                <h4 style="font-size: 0.95rem; margin-bottom: 0.2rem;">Plan de Dieta Activo</h4>
+                                <p style="font-size: 0.75rem; color: rgba(255,255,255,0.85); margin-bottom: 0.8rem;">Desintoxicación de 7 Días</p>
+                                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem;">
+                                    <span>Día 3 de 7</span>
+                                    <span>42% Completado</span>
+                                </div>
+                                <div style="width: 100%; height: 6px; background-color: rgba(255,255,255,0.2); border-radius: 3px; margin-top: 0.4rem; overflow: hidden;">
+                                    <div style="width: 42%; height: 100%; background-color: var(--primary); border-radius: 3px;"></div>
+                                </div>
+                            </div>
+                            
+                            <h4 style="font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--dark-green);">Jugos Recomendados</h4>
+                            
+                            <div class="app-juice-item">
+                                <div class="app-juice-img">🍏</div>
+                                <div>
+                                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-dark);">Verde Energizante</div>
+                                    <div style="font-size: 0.65rem; color: var(--text-muted);">Manzana, Pepino, Espinaca</div>
+                                </div>
+                            </div>
+
+                            <div class="app-juice-item">
+                                <div class="app-juice-img">🍍</div>
+                                <div>
+                                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-dark);">Piña Detox Pro</div>
+                                    <div style="font-size: 0.65rem; color: var(--text-muted);">Piña, Apio, Jengibre</div>
+                                </div>
+                            </div>
+
+                            <div class="app-juice-item">
+                                <div class="app-juice-img">🍋</div>
+                                <div>
+                                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-dark);">Jugo de Sábila Cítrico</div>
+                                    <div style="font-size: 0.65rem; color: var(--text-muted);">Aloe Vera, Limón, Menta</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section id="beneficios" class="benefits">
+        <div class="container">
+            <div class="section-header">
+                <h2>¿Por qué elegir ALOEC?</h2>
+                <p>Nuestra aplicación pone a tu disposición todas las herramientas necesarias para transformar tus hábitos alimenticios de forma guiada y saludable.</p>
+            </div>
+            
+            <div class="benefits-grid">
+                <!-- Benefit 1 -->
+                <div class="benefit-card">
+                    <div class="benefit-icon-wrapper">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M19,19H5V8H19M19,3H18V1H16V3H8V1H6V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M16.53,11.06L15.47,10L10.59,14.88L8.53,12.82L7.47,13.88L10.59,17L16.53,11.06Z"/>
+                        </svg>
+                    </div>
+                    <h3>Planes de Dieta</h3>
+                    <p>Encuentra programas de desintoxicación o control de peso estructurados para cumplir objetivos específicos con duraciones controladas y calendarios diarios.</p>
+                </div>
+                
+                <!-- Benefit 2 -->
+                <div class="benefit-card">
+                    <div class="benefit-icon-wrapper">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M22,16A2,2 0 0,1 20,18H8C6.89,18 6,17.1 6,16V4C6,2.89 6.89,2 8,2H20A2,2 0 0,1 22,4V16M16,11L13.5,8L10,12.5H18L16,11M2,6V20A2,2 0 0,0 4,22H18V20H4V6H2Z"/>
+                        </svg>
+                    </div>
+                    <h3>Recetas Detalladas</h3>
+                    <p>Prepara deliciosos jugos con listas de ingredientes precisas, instrucciones de preparación fáciles de seguir, información nutricional y estimación calórica.</p>
+                </div>
+
+                <!-- Benefit 3 -->
+                <div class="benefit-card">
+                    <div class="benefit-icon-wrapper">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M17,10.5V7A1,1 0 0,0 16,6H4A1,1 0 0,0 3,7V17A1,1 0 0,0 4,18H16A1,1 0 0,0 17,17V13.5L21,17.5V6.5L17,10.5M14,13H10V15H8V13H4V11H8V9H10V11H14V13Z"/>
+                        </svg>
+                    </div>
+                    <h3>Cursos en Video</h3>
+                    <p>Aprende las bases de la nutrición, preparación correcta y beneficios terapéuticos del aloe vera y jugos verdes de la mano de profesionales en video.</p>
+                </div>
+
+                <!-- Benefit 4 -->
+                <div class="benefit-card">
+                    <div class="benefit-icon-wrapper">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M6,20A2,2 0 0,0 8,22H16A2,2 0 0,0 18,20V8H6V20M8,10H16V20H8V10M11,1.5V4H13V1.5H11M16.5,4.36L17.91,2.95L19.32,4.36L17.91,5.78L16.5,4.36M7.5,4.36L6.09,2.95L4.68,4.36L6.09,5.78L7.5,4.36Z"/>
+                        </svg>
+                    </div>
+                    <h3>Seguimiento y Alertas</h3>
+                    <p>Mantente al día con recordatorios de horarios de ingesta y registra tu progreso mediante cálculos periódicos de tu Índice de Masa Corporal (IMC).</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- App Screens Gallery Section -->
+    <section id="galeria" class="gallery">
+        <div class="container">
+            <div class="section-header">
+                <h2>Explora la Interfaz de la App</h2>
+                <p>Una interfaz intuitiva, diseñada para darte una experiencia agradable, limpia y de fácil lectura desde tu dispositivo móvil.</p>
+            </div>
+            
+            <div class="gallery-slider-container">
+                <div class="gallery-wrapper" id="galleryWrapper">
+                    
+                    <!-- Slide 1: Welcome -->
+                    <div class="gallery-slide">
+                        <div class="gallery-screen">
+                            <div class="screen-onboarding">
+                                <div>
+                                    <div class="app-logo" style="justify-content: center; margin-bottom: 0.5rem;">
+                                        <svg viewBox="0 0 24 24"><path d="M17,8C8,10 5.9,16.17 3.82,21.34L2.18,20.66C4.26,15.49 6.36,9.33 15.34,7.34C10.74,5.74 8.77,3.13 6.94,0.7L8.56,0.3C10.39,2.73 12.36,5.34 16.96,6.94L17,8M22.5,8C21.8,11.5 19.35,14 16.5,15.5C13.65,17 10.4,17.5 7.5,17.5H6.5V16.5C6.5,13.6 7,10.35 8.5,7.5C10,4.65 12.5,2.2 16,1.5C18.1,2.9 20,5.1 22.5,8Z"/></svg>
+                                        <span>ALOEC</span>
+                                    </div>
+                                    <h4>Comienza hoy</h4>
+                                    <p>Tu coach personal de jugos verdes e ingredientes naturales.</p>
+                                </div>
+                                <div class="screen-onboarding-graphic">🍀</div>
+                                <div style="font-size: 0.7rem; font-weight: 700; color: var(--primary-dark); background-color: var(--primary-light); padding: 0.5rem; border-radius: 10px;">
+                                    ¡Comenzar Reto!
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 2: Diet Plan -->
+                    <div class="gallery-slide">
+                        <div class="gallery-screen">
+                            <div class="screen-list">
+                                <div class="screen-list-header">Planes de Dieta</div>
+                                <div class="screen-list-body">
+                                    <div class="app-card" style="border-left: 4px solid var(--primary);">
+                                        <div style="font-weight: 700; font-size: 0.8rem; color: var(--dark-green);">Desintoxicación 7 días</div>
+                                        <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 0.2rem;">Objetivo: Limpieza de toxinas</div>
+                                        <div class="screen-indicator-green">Activo</div>
+                                    </div>
+                                    <div class="app-card">
+                                        <div style="font-weight: 700; font-size: 0.8rem; color: var(--text-dark);">Pérdida de Peso 14 días</div>
+                                        <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 0.2rem;">Objetivo: Quema calórica guiada</div>
+                                        <div style="background-color: #f1f5f9; color: #475569; padding: 0.2rem 0.5rem; border-radius: 6px; font-size: 0.65rem; font-weight: 700; display: inline-block; margin-top: 0.4rem;">Disponible</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 3: Video Courses -->
+                    <div class="gallery-slide">
+                        <div class="gallery-screen">
+                            <div class="screen-list">
+                                <div class="screen-list-header">Cursos y Videos</div>
+                                <div class="screen-list-body">
+                                    <div class="screen-video-card">
+                                        <div class="screen-video-thumb">
+                                            <div class="screen-video-play-btn">
+                                                <svg viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z"/></svg>
+                                            </div>
+                                        </div>
+                                        <div class="screen-video-info">
+                                            <div class="screen-video-title">Introducción a los Jugos</div>
+                                            <div class="screen-video-meta">Lección 1 • 8 minutos</div>
+                                        </div>
+                                    </div>
+                                    <div class="screen-video-card">
+                                        <div class="screen-video-thumb" style="background-color: #0d9488;">
+                                            <div class="screen-video-play-btn">
+                                                <svg viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z"/></svg>
+                                            </div>
+                                        </div>
+                                        <div class="screen-video-info">
+                                            <div class="screen-video-title">Propiedades del Aloe Vera</div>
+                                            <div class="screen-video-meta">Lección 2 • 12 minutos</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 4: BMI and Progress -->
+                    <div class="gallery-slide">
+                        <div class="gallery-screen">
+                            <div class="screen-list">
+                                <div class="screen-list-header">Tu Historial de IMC</div>
+                                <div class="screen-list-body">
+                                    <div class="screen-progress-card">
+                                        <div class="screen-progress-label">Tu Último Cálculo</div>
+                                        <div class="screen-progress-value">22.4</div>
+                                        <div class="screen-indicator-green">Saludable (Normal)</div>
+                                    </div>
+                                    <div class="app-card">
+                                        <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-dark); display: flex; justify-content: space-between;">
+                                            <span>Medición Actual</span>
+                                            <span>68 kg</span>
+                                        </div>
+                                        <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 0.2rem;">Registrado el 13 de Julio</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Slide Navigation Buttons -->
+                <div class="gallery-controls">
+                    <button class="gallery-ctrl-btn" id="prevBtn" aria-label="Anterior">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"/>
+                        </svg>
+                    </button>
+                    <button class="gallery-ctrl-btn" id="nextBtn" aria-label="Siguiente">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action Section (Download Area) -->
+    <section id="descargar" class="cta">
+        <div class="container">
+            <div class="cta-box">
+                <div class="cta-decorations">
+                    <div class="cta-circle cta-circle-1"></div>
+                    <div class="cta-circle cta-circle-2"></div>
+                </div>
+                <h2>¿Listo para transformar tu salud?</h2>
+                <p>Descarga la app de ALOEC de forma gratuita y da hoy el primer paso para incorporar hábitos de desintoxicación saludables a tu rutina diaria con jugos verdes naturales.</p>
+                
+                <div class="store-buttons">
+                    <a href="#" class="store-btn">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M18.71,19.5C17.88,20.74 17,21.95 15.66,21.97C14.32,22 13.89,21.18 12.37,21.18C10.84,21.18 10.37,21.95 9.1,22C7.79,22.05 6.8,20.68 5.96,19.47C4.25,17 2.94,12.45 4.7,9.39C5.57,7.87 7.13,6.91 8.82,6.88C10.1,6.86 11.32,7.75 12.11,7.75C12.89,7.75 14.37,6.68 15.92,6.84C16.57,6.87 18.39,7.1 19.56,8.82C19.47,8.88 17.39,10.1 17.41,12.63C17.44,15.65 20.06,16.66 20.1,16.67C20.08,16.74 19.67,18.11 18.71,19.5M15.97,4.17C16.63,3.37 17.07,2.28 16.95,1C16,1.04 14.9,1.6 14.24,2.38C13.68,3.04 13.19,4.14 13.34,5.39C14.39,5.47 15.4,4.88 15.97,4.17Z"/>
+                        </svg>
+                        <div class="store-btn-text">
+                            <span>Consíguelo en el</span>
+                            <span>App Store</span>
+                        </div>
+                    </a>
+                    <a href="#" class="store-btn">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M3,5.27V18.73L16.55,12L3,5.27M17.87,11.33L21,12.9L22.56,12L21,11.1L17.87,12.67V11.33M3.23,4L16.85,10.8L19.23,9.58L5.78,2.78C4.74,2.26 3.65,2.89 3.23,4M3.23,20C3.65,21.11 4.74,21.74 5.78,21.22L19.23,14.42L16.85,13.2L3.23,20Z"/>
+                        </svg>
+                        <div class="store-btn-text">
+                            <span>Disponible en</span>
+                            <span>Google Play</span>
+                        </div>
+                    </a>
+                </div>
+                
+                <div class="social-proof">
+                    ⭐ Calificación promedio de 4.8 estrellas en tiendas • Más de 10,000 descargas activas
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-grid">
+            <div class="copyright">
+                &copy; 2026 ALOEC. Todos los derechos reservados.
+            </div>
+            <ul class="legal-links">
+                <li><a href="#">Términos de Servicio</a></li>
+                <li><a href="#">Política de Privacidad</a></li>
+                <li><a href="#">Contacto</a></li>
+            </ul>
+        </div>
+    </footer>
+
+    <!-- ============================================================ -->
+    <!-- MODAL DE REGISTRO                                             -->
+    <!-- ============================================================ -->
+    <div class="modal-overlay" id="registerModal">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <h3>Crear cuenta gratis</h3>
+            <p class="modal-sub" id="modalReferralHint"></p>
+
+            <div class="modal-error" id="modalError"></div>
+
+            <form id="registerForm" onsubmit="handleRegister(event)">
+                <div class="modal-field">
+                    <label>Nombre completo</label>
+                    <input type="text" id="regName" placeholder="Tu nombre y apellido" required minlength="2" autocomplete="name">
+                </div>
+                <div class="modal-field">
+                    <label>Correo electrónico</label>
+                    <input type="email" id="regEmail" placeholder="tu@correo.com" required autocomplete="email">
+                </div>
+                <div class="modal-field">
+                    <label>Contraseña</label>
+                    <input type="password" id="regPassword" placeholder="Mínimo 6 caracteres" required minlength="6" autocomplete="new-password">
+                </div>
+                <div class="modal-field" id="referralFieldWrapper">
+                    <label>Código de referido</label>
+                    <input type="text" id="regReferralCode" class="referral-code" placeholder="ALOE-XXXX" readonly>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%" id="regSubmitBtn">
+                    Crear cuenta y empezar
+                </button>
+                <p style="text-align:center; margin-top:1rem; font-size:0.78rem; color:var(--text-muted)">
+                    Al registrarte aceptas nuestros
+                    <a href="#" style="color:var(--primary)">Términos</a> y
+                    <a href="#" style="color:var(--primary)">Privacidad</a>
+                </p>
+            </form>
+
+            <div class="modal-success" id="modalSuccess">
+                <h4>¡Cuenta creada!</h4>
+                <p>Descarga la app para comenzar tu viaje saludable.</p>
+                <div class="store-buttons">
+                    <a href="#" class="store-btn">
+                        <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:#fff"><path d="M18.71,19.5C17.88,20.74 17,21.95 15.66,21.97C14.32,22 13.89,21.18 12.37,21.18C10.84,21.18 10.37,21.95 9.1,22C7.79,22.05 6.8,20.68 5.96,19.47C4.25,17 2.94,12.45 4.7,9.39C5.57,7.87 7.13,6.91 8.82,6.88C10.1,6.86 11.32,7.75 12.11,7.75C12.89,7.75 14.37,6.68 15.92,6.84C16.57,6.87 18.39,7.1 19.56,8.82C19.47,8.88 17.39,10.1 17.41,12.63C17.44,15.65 20.06,16.66 20.1,16.67C20.08,16.74 19.67,18.11 18.71,19.5M15.97,4.17C16.63,3.37 17.07,2.28 16.95,1C16,1.04 14.9,1.6 14.24,2.38C13.68,3.04 13.19,4.14 13.34,5.39C14.39,5.47 15.4,4.88 15.97,4.17Z"/></svg>
+                        <div class="store-btn-text"><span>Consíguelo en el</span><span>App Store</span></div>
+                    </a>
+                    <a href="#" class="store-btn">
+                        <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:#fff"><path d="M3,5.27V18.73L16.55,12L3,5.27M17.87,11.33L21,12.9L22.56,12L21,11.1L17.87,12.67V11.33M3.23,4L16.85,10.8L19.23,9.58L5.78,2.78C4.74,2.26 3.65,2.89 3.23,4M3.23,20C3.65,21.11 4.74,21.74 5.78,21.22L19.23,14.42L16.85,13.2L3.23,20Z"/></svg>
+                        <div class="store-btn-text"><span>Disponible en</span><span>Google Play</span></div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- FIREBASE + REFERRAL LOGIC                                     -->
+    <!-- ============================================================ -->
+    <script>
+        // ── Firebase Init ──
+        const firebaseConfig = {
+            apiKey: "AIzaSyBSBkVK3-0t6kEN8IBE2saW2AuTQPzhGz4",
+            authDomain: "app-aloec.firebaseapp.com",
+            projectId: "app-aloec",
+            storageBucket: "app-aloec.firebasestorage.app",
+            messagingSenderId: "75165578833",
+            appId: "1:75165578833:web:db63c434d7c68e848e6a70",
+            measurementId: "G-7DW1EXHVQM"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // ── Referral Capture ──
+        const URL_PARAMS = new URLSearchParams(window.location.search);
+        const REF_CODE = URL_PARAMS.get('ref');
+        const STORAGE_KEY = 'aloec_ref_code';
+        const STORAGE_TS_KEY = 'aloec_ref_ts';
+        const COOKIE_DAYS = 30;
+
+        if (REF_CODE && /^ALOE-[A-Z0-9]{4,20}$/.test(REF_CODE)) {
+            localStorage.setItem(STORAGE_KEY, REF_CODE);
+            localStorage.setItem(STORAGE_TS_KEY, Date.now().toString());
+        }
+
+        function getStoredReferralCode() {
+            const code = localStorage.getItem(STORAGE_KEY);
+            const ts = parseInt(localStorage.getItem(STORAGE_TS_KEY) || '0');
+            if (!code || !ts) return null;
+            const ageDays = (Date.now() - ts) / (1000 * 60 * 60 * 24);
+            if (ageDays > COOKIE_DAYS) {
+                localStorage.removeItem(STORAGE_KEY);
+                localStorage.removeItem(STORAGE_TS_KEY);
+                return null;
+            }
+            return code;
+        }
+
+        // ── Clipboard copy on Download buttons ──
+        const storedCode = getStoredReferralCode();
+        document.querySelectorAll('a[href="#descargar"]').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                if (storedCode) {
+                    e.preventDefault();
+                    copyToClipboard(storedCode).then(function() {
+                        var el = document.getElementById('descargar');
+                        if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    });
+                }
+            });
+        });
+
+        function copyToClipboard(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                return navigator.clipboard.writeText(text).then(function() { return true; });
+            }
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            return Promise.resolve(true);
+        }
+
+        // ── Modal ──
+        var modal = document.getElementById('registerModal');
+        var modalError = document.getElementById('modalError');
+        var modalSuccess = document.getElementById('modalSuccess');
+        var registerForm = document.getElementById('registerForm');
+        var referralFieldWrapper = document.getElementById('referralFieldWrapper');
+        var regReferralCode = document.getElementById('regReferralCode');
+        var modalReferralHint = document.getElementById('modalReferralHint');
+
+        function openModal() {
+            modal.classList.add('active');
+            modalError.style.display = 'none';
+            modalSuccess.style.display = 'none';
+            registerForm.style.display = 'block';
+            var code = getStoredReferralCode();
+            if (code) {
+                regReferralCode.value = code;
+                referralFieldWrapper.style.display = 'block';
+                modalReferralHint.textContent = '¡Fuiste invitado! Código: ' + code;
+            } else {
+                referralFieldWrapper.style.display = 'none';
+                modalReferralHint.textContent = 'Regístrate gratis en ALOEC';
+            }
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+        }
+
+        window.addEventListener('click', function(e) {
+            if (e.target === modal) closeModal();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
+        });
+
+        // ── Registration Handler ──
+        function handleRegister(e) {
+            e.preventDefault();
+            var name = document.getElementById('regName').value.trim();
+            var email = document.getElementById('regEmail').value.trim();
+            var password = document.getElementById('regPassword').value;
+            var refCode = regReferralCode.value.trim();
+            var submitBtn = document.getElementById('regSubmitBtn');
+
+            if (name.split(' ').length < 2) {
+                showError('Ingresa tu nombre y apellido.');
+                return;
+            }
+            if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+                showError('Ingresa un correo electrónico válido.');
+                return;
+            }
+            if (password.length < 6) {
+                showError('La contraseña debe tener al menos 6 caracteres.');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creando cuenta...';
+            modalError.style.display = 'none';
+
+            auth.createUserWithEmailAndPassword(email, password)
+                .then(function(cred) {
+                    return cred.user.updateProfile({ displayName: name }).then(function() {
+                        return cred.user;
+                    });
+                })
+                .then(function(user) {
+                    var userDoc = {
+                        email: email,
+                        displayName: name,
+                        role: 'user',
+                        status: 'active',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        referral: {
+                            code: '',
+                            referredByUid: null,
+                            referredByCode: refCode || null,
+                            status: refCode ? 'referred' : 'none',
+                            registeredAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            convertedAt: null
+                        },
+                        affiliateBalance: {
+                            pendingUSD: 0,
+                            approvedUSD: 0,
+                            paidUSD: 0,
+                            rejectedUSD: 0,
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        }
+                    };
+                    return db.collection('users').doc(user.uid).set(userDoc);
+                })
+                .then(function() {
+                    if (refCode) {
+                        return db.collection('referral_events').add({
+                            type: 'registered',
+                            referrerUid: null,
+                            referredUid: auth.currentUser.uid,
+                            referralCode: refCode,
+                            metadata: {},
+                            ipAddress: null,
+                            userAgent: navigator.userAgent,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+                })
+                .then(function() {
+                    registerForm.style.display = 'none';
+                    modalSuccess.style.display = 'block';
+                    localStorage.removeItem('aloec_ref_code');
+                    localStorage.removeItem('aloec_ref_ts');
+                })
+                .catch(function(err) {
+                    showError(mapFirebaseError(err.code));
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Crear cuenta y empezar';
+                });
+        }
+
+        function showError(msg) {
+            modalError.textContent = msg;
+            modalError.style.display = 'block';
+        }
+
+        function mapFirebaseError(code) {
+            switch (code) {
+                case 'auth/email-already-in-use': return 'Este correo ya está registrado. Inicia sesión.';
+                case 'auth/weak-password': return 'La contraseña debe tener al menos 6 caracteres.';
+                case 'auth/invalid-email': return 'El formato del correo no es válido.';
+                default: return 'Error al crear la cuenta. Intenta de nuevo.';
+            }
+        }
+
+        // ── Existing interactions (scroll header, gallery) ──
+        const header = document.getElementById('header');
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 50) { header.classList.add('scrolled'); }
+            else { header.classList.remove('scrolled'); }
+        });
+
+        const galleryWrapper = document.getElementById('galleryWrapper');
+        document.getElementById('prevBtn').addEventListener('click', function() {
+            galleryWrapper.scrollBy({ left: -260, behavior: 'smooth' });
+        });
+        document.getElementById('nextBtn').addEventListener('click', function() {
+            galleryWrapper.scrollBy({ left: 260, behavior: 'smooth' });
+        });
+
+        const sections = document.querySelectorAll('section');
+        const navLi = document.querySelectorAll('.nav-links a');
+        window.addEventListener('scroll', function() {
+            var current = '';
+            sections.forEach(function(s) {
+                if (window.pageYOffset >= (s.offsetTop - 150)) current = s.getAttribute('id');
+            });
+            navLi.forEach(function(a) {
+                if (a.getAttribute('href') === '#' + current) a.style.color = 'var(--primary)';
+                else a.style.color = '';
+            });
+        });
+    </script>
+</body>
+</html>
