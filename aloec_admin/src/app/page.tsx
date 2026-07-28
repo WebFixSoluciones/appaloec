@@ -47,22 +47,18 @@ interface DynamicMembership {
   isActive?: boolean;
 }
 
-// Google Play Badge Component
-function GooglePlayButton({ href = "#download" }: { href?: string }) {
+// Android APK Download Button Component
+function AndroidAPKButton() {
   return (
     <a
-      href={href}
-      className="inline-flex items-center gap-3 px-5 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl border border-slate-800 shadow-md hover:shadow-lg transition-all duration-200 group"
+      href="/appaloecv16.apk"
+      download="appaloecv16.apk"
+      className="inline-flex items-center gap-3 px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl border border-emerald-500/50 shadow-md hover:shadow-lg transition-all duration-200 group"
     >
-      <svg className="w-7 h-7 shrink-0 transition-transform group-hover:scale-105" viewBox="0 0 512 512">
-        <path fill="#410593" d="M325.8 244.6L79.7 490.7c-7.9-5-12.7-13.7-12.7-23.7V45c0-10 4.8-18.7 12.7-23.7l246.1 223.3z"/>
-        <path fill="#00E676" d="M386.4 300.2l-60.6-55.6 60.6-55.6 68.3 38.9c19.5 11.1 19.5 29.2 0 40.3l-68.3 32z"/>
-        <path fill="#FF3D00" d="M79.7 21.3L325.8 244.6l60.6-55.6-267.8-152.6c-12-6.8-26.3-5-38.9 4.9z"/>
-        <path fill="#FFC107" d="M79.7 490.7l246.1-223.3 60.6 55.6-267.8 152.6c-12 6.8-26.3 5-38.9-4.9z"/>
-      </svg>
+      <Download className="w-6 h-6 text-emerald-100 transition-transform group-hover:translate-y-0.5 shrink-0" />
       <div className="text-left leading-none">
-        <span className="block text-[10px] uppercase tracking-wider font-semibold text-slate-400">DISPONIBLE EN</span>
-        <span className="block text-base font-bold tracking-tight text-white mt-0.5">Google Play</span>
+        <span className="block text-[10px] uppercase tracking-wider font-semibold text-emerald-200">DESCARGA DIRECTA</span>
+        <span className="block text-base font-bold tracking-tight text-white mt-0.5">Android APK (v16)</span>
       </div>
     </a>
   );
@@ -301,7 +297,7 @@ function LandingContent() {
 
               {/* Download Store Badges */}
               <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-3">
-                <GooglePlayButton href="#download" />
+                <AndroidAPKButton />
                 <AppStoreButton href="#download" />
               </div>
 
@@ -927,7 +923,7 @@ function LandingContent() {
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <GooglePlayButton href="#download" />
+            <AndroidAPKButton />
             <AppStoreButton href="#download" />
           </div>
 
