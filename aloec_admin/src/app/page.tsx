@@ -878,18 +878,40 @@ function LandingContent() {
           ) : (
             /* Fallback Card if no active membership documents exist yet */
             <div className="max-w-lg mx-auto bg-slate-900 border-2 border-emerald-500 rounded-3xl p-8 sm:p-10 shadow-2xl relative overflow-hidden">
-              <div className="text-center space-y-4 pb-8 border-b border-slate-800">
-                <h3 className="text-2xl font-extrabold text-white">Paquete Libro + App ALOEC</h3>
-                <p className="text-xs text-emerald-400 font-medium">Acceso total e ilimitado a todas las herramientas</p>
+              <div className="absolute top-0 right-0 bg-emerald-500 text-slate-950 font-black text-[10px] uppercase tracking-wider px-4 py-1 rounded-bl-xl shadow-xs">
+                OFERTA RECOMENDADA
+              </div>
+              
+              <div className="text-center space-y-3 pb-6 border-b border-slate-800">
+                <h3 className="text-2xl font-extrabold text-white">Plan único</h3>
+                <div className="flex items-baseline justify-center gap-1">
+                  <span className="text-5xl font-black text-white font-mono">$49.99</span>
+                  <span className="text-xs font-bold text-slate-400">USD / 3000 días</span>
+                </div>
+                <p className="text-xs text-emerald-400 font-medium">Incluye Libro + App ALOEC · Sin cargos ocultos</p>
               </div>
 
-              <div className="py-8 space-y-4 text-sm text-slate-300">
-                {defaultFeatures.map((feat, idx) => (
-                  <div key={idx} className="flex items-start gap-3">
-                    <Check className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                    <span>{feat}</span>
-                  </div>
-                ))}
+              <div className="py-8 space-y-3 text-sm text-slate-300">
+                <div className="flex items-start gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <span className="text-xs sm:text-sm text-slate-300 leading-snug">Acceso ilimitado a jugos y recetas</span>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <span className="text-xs sm:text-sm text-slate-300 leading-snug">Todos los protocolos de salud</span>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <span className="text-xs sm:text-sm text-slate-300 leading-snug">Notificaciones de horarios</span>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <span className="text-xs sm:text-sm text-slate-300 leading-snug">Manual de Jugos Verdes</span>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <span className="text-xs sm:text-sm text-slate-300 leading-snug">Video Tutoriales</span>
+                </div>
               </div>
 
               <div className="space-y-4 pt-2">
