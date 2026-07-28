@@ -916,7 +916,7 @@ function LandingContent() {
 
               <div className="space-y-4 pt-2">
                 <Link
-                  href="/checkout"
+                  href="/checkout?plan=plan-nico"
                   className="block w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-base rounded-xl shadow-lg transition-all text-center transform active:scale-95 flex items-center justify-center gap-2"
                 >
                   <BookOpen className="w-5 h-5" /> Adquirir Libro + App ALOEC →
