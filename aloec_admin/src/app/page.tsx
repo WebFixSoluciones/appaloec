@@ -332,7 +332,7 @@ function LandingContent() {
 
                 {/* Unified Book Photo Card */}
                 <div className="relative bg-white rounded-3xl p-3 shadow-2xl border border-slate-200 overflow-hidden group">
-                  <div className="relative rounded-2xl overflow-hidden aspect-[4/5] bg-slate-100">
+                  <div className="relative rounded-2xl overflow-hidden aspect-square bg-slate-100">
                     <img 
                       src="/book_hero.jpg" 
                       alt="Libro Ama Lo Que Comes y App ALOEC" 
@@ -340,7 +340,7 @@ function LandingContent() {
                     />
                     
                     {/* Floating Offer Badge */}
-                    <div className="absolute bottom-4 left-4 right-4 bg-slate-900/90 backdrop-blur-md text-white p-3.5 rounded-2xl border border-white/20 shadow-lg flex items-center justify-between">
+                    <div className="absolute bottom-4 left-4 right-4 bg-slate-900/90 backdrop-blur-md text-white p-3 rounded-2xl border border-white/20 shadow-lg flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-emerald-500 text-slate-950 rounded-xl flex items-center justify-center font-black text-lg shrink-0">
                           📖
@@ -351,7 +351,7 @@ function LandingContent() {
                         </div>
                       </div>
                       <span className="bg-emerald-500 text-slate-950 font-black text-[10px] px-2.5 py-1 rounded-full uppercase">
-                        COMBO
+                        OFERTA
                       </span>
                     </div>
 
