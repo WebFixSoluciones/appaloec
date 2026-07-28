@@ -32,6 +32,16 @@ export default function CheckoutForm({ planId, planName, price, durationDays }: 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [referredByCode, setReferredByCode] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('aloec_ref_code');
+      if (stored) {
+        setReferredByCode(stored);
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,7 +80,8 @@ export default function CheckoutForm({ planId, planName, price, durationDays }: 
             name: name.trim(),
             email: email.trim().toLowerCase(),
             password: password.trim(),
-            planId
+            planId,
+            referralCode: referredByCode
           })
         });
 

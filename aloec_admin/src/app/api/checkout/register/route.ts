@@ -4,7 +4,7 @@ import { createCheckoutToken } from '../../../../lib/checkout/token';
 
 export async function POST(request: Request) {
   try {
-    const { name, email, password, planId } = await request.json();
+    const { name, email, password, planId, referralCode } = await request.json();
 
     if (!name || !email || !password || !planId) {
       return NextResponse.json(
@@ -54,8 +54,36 @@ export async function POST(request: Request) {
       );
     }
 
+    // Resolve referral code if provided
+    let referredByUid = null;
+    if (referralCode) {
+      try {
+        const refDoc = await db
+          .collection('referral_codes')
+          .doc(referralCode.toUpperCase())
+          .get();
+        if (refDoc.exists) {
+          referredByUid = refDoc.data()?.uid || null;
+
+          // Write referral event
+          await db.collection('referral_events').add({
+            type: 'registered',
+            referrerUid: referredByUid,
+            referredUid: userRecord.uid,
+            referralCode: referralCode,
+            metadata: {},
+            ipAddress: null,
+            userAgent: null,
+            createdAt: new Date(),
+          });
+        }
+      } catch (refErr) {
+        console.error('Error resolving referral code:', refErr);
+      }
+    }
+
     // Save user profile in Firestore
-    await db.collection('users').doc(userRecord.uid).set({
+    const userPayload: any = {
       uid: userRecord.uid,
       email,
       displayName: name,
@@ -64,7 +92,20 @@ export async function POST(request: Request) {
       authProvider: 'Email',
       createdAt: new Date(),
       updatedAt: new Date(),
-    }, { merge: true });
+    };
+
+    if (referralCode) {
+      userPayload.referredByCode = referralCode;
+      userPayload.referredByUid = referredByUid;
+      userPayload.referral = {
+        referredByCode: referralCode,
+        referredByUid: referredByUid,
+        status: 'referred',
+        registeredAt: new Date(),
+      };
+    }
+
+    await db.collection('users').doc(userRecord.uid).set(userPayload, { merge: true });
 
     // Generate checkout token
     const token = createCheckoutToken(userRecord.uid, planId);
