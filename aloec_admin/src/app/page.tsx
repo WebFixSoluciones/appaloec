@@ -1038,10 +1038,11 @@ function LandingContent() {
               <p className="font-bold text-white uppercase tracking-wider mb-3 text-[11px]">Legales & Administración</p>
               <ul className="space-y-2">
                 <li>
-                  <Link href="/polticas-de-privacidad" className="hover:text-emerald-400 transition-colors flex items-center gap-1">
+                  <Link href="/politicas-de-privacidad" className="hover:text-emerald-400 transition-colors flex items-center gap-1">
                     <span>Política de Privacidad</span>
                   </Link>
                 </li>
+
                 <li>
                   <Link href="/login" className="text-emerald-400 font-bold hover:underline inline-flex items-center gap-1">
                     Acceso Panel Administrativo <ExternalLink className="w-3 h-3" />

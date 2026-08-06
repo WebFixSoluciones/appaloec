@@ -80,9 +80,11 @@ export default function PrivacyPolicyView() {
       <nav className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm print:hidden">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white font-bold text-xl shadow-md shadow-emerald-600/20 group-hover:scale-105 transition-transform">
-              🍃
-            </div>
+            <img
+              src="/logo.png"
+              alt="ALOEC Logo"
+              className="h-10 w-auto object-contain transition-transform group-hover:scale-105"
+            />
             <div>
               <span className="text-lg font-extrabold tracking-tight text-slate-900 block leading-tight">
                 ALOEC
@@ -92,6 +94,7 @@ export default function PrivacyPolicyView() {
               </span>
             </div>
           </Link>
+
 
           <div className="flex items-center gap-3">
             <button
@@ -547,14 +550,17 @@ export default function PrivacyPolicyView() {
 
             <div className="bg-emerald-900 text-white p-6 rounded-2xl space-y-4 shadow-lg">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-700 flex items-center justify-center text-emerald-200 font-bold">
-                  🍃
-                </div>
+                <img
+                  src="/logo.png"
+                  alt="ALOEC Logo"
+                  className="h-10 w-auto object-contain brightness-200"
+                />
                 <div>
                   <h3 className="font-extrabold text-base">Atención al Cliente - ALOEC Ecuador</h3>
                   <p className="text-xs text-emerald-200">WebFix Soluciones - Departamento de Privacidad</p>
                 </div>
               </div>
+
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm pt-2 border-t border-emerald-800">
                 <div>
