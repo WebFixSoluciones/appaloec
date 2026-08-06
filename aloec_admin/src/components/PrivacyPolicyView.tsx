@@ -97,13 +97,13 @@ export default function PrivacyPolicyView() {
 
 
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowDeleteModal(true)}
+            <Link
+              href="/eliminacion-de-datos"
               className="px-3.5 py-1.5 text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg transition-colors flex items-center gap-1.5"
             >
               <Trash2 className="w-3.5 h-3.5" />
               <span>Solicitar Eliminación de Datos</span>
-            </button>
+            </Link>
             <Link
               href="/"
               className="px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:text-emerald-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex items-center gap-1"
