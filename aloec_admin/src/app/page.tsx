@@ -50,9 +50,8 @@ interface DynamicMembership {
 // Android APK Download Button Component
 function AndroidAPKButton() {
   return (
-    <a
-      href="/appaloecv16.apk"
-      download="appaloecv16.apk"
+    <Link
+      href="/register"
       className="inline-flex items-center gap-3 px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl border border-emerald-500/50 shadow-md hover:shadow-lg transition-all duration-200 group"
     >
       <Download className="w-6 h-6 text-emerald-100 transition-transform group-hover:translate-y-0.5 shrink-0" />
@@ -60,14 +59,14 @@ function AndroidAPKButton() {
         <span className="block text-[10px] uppercase tracking-wider font-semibold text-emerald-200">DESCARGA DIRECTA</span>
         <span className="block text-base font-bold tracking-tight text-white mt-0.5">Android APK (v16)</span>
       </div>
-    </a>
+    </Link>
   );
 }
 
 // Apple App Store Badge Component
-function AppStoreButton({ href = "#download" }: { href?: string }) {
+function AppStoreButton({ href = "/register" }: { href?: string }) {
   return (
-    <a
+    <Link
       href={href}
       className="inline-flex items-center gap-3 px-5 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl border border-slate-800 shadow-md hover:shadow-lg transition-all duration-200 group"
     >
@@ -78,7 +77,7 @@ function AppStoreButton({ href = "#download" }: { href?: string }) {
         <span className="block text-[10px] uppercase tracking-wider font-semibold text-slate-400">CONSIGUELO EN EL</span>
         <span className="block text-base font-bold tracking-tight text-white mt-0.5">App Store</span>
       </div>
-    </a>
+    </Link>
   );
 }
 
@@ -1036,16 +1035,22 @@ function LandingContent() {
             </div>
 
             <div>
-              <p className="font-bold text-white uppercase tracking-wider mb-3 text-[11px]">Administración</p>
+              <p className="font-bold text-white uppercase tracking-wider mb-3 text-[11px]">Legales & Administración</p>
               <ul className="space-y-2">
+                <li>
+                  <Link href="/polticas-de-privacidad" className="hover:text-emerald-400 transition-colors flex items-center gap-1">
+                    <span>Política de Privacidad</span>
+                  </Link>
+                </li>
                 <li>
                   <Link href="/login" className="text-emerald-400 font-bold hover:underline inline-flex items-center gap-1">
                     Acceso Panel Administrativo <ExternalLink className="w-3 h-3" />
                   </Link>
                 </li>
-                <li><span className="text-slate-600">Soporte: soporte@aloec.com</span></li>
+                <li><span className="text-slate-500">Soporte: soporte@alimentacionorganicaec.net</span></li>
               </ul>
             </div>
+
 
           </div>
 
