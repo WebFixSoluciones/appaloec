@@ -40,8 +40,8 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBSBkVK3-0t6kEN8IBE2saW2AuTQPzhGz4',
-    appId: '1:75165578833:android:db63c434d7c68e848e6a70',
+    apiKey: 'AIzaSyAtcwsCGfed0vLZfTK-IW5gTI5ttNXC1_Y',
+    appId: '1:75165578833:android:aad140d1afdeddc48e6a70',
     messagingSenderId: '75165578833',
     projectId: 'app-aloec',
     storageBucket: 'app-aloec.firebasestorage.app',
@@ -53,7 +53,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '75165578833',
     projectId: 'app-aloec',
     storageBucket: 'app-aloec.firebasestorage.app',
-    iosBundleId: 'com.example.aloec_mobile',
+    iosBundleId: 'net.alimentacionorganica.aloec',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -62,6 +62,6 @@ class DefaultFirebaseOptions {
     messagingSenderId: '75165578833',
     projectId: 'app-aloec',
     storageBucket: 'app-aloec.firebasestorage.app',
-    iosBundleId: 'com.example.aloec_mobile',
+    iosBundleId: 'net.alimentacionorganica.aloec',
   );
 }

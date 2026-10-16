@@ -3,6 +3,7 @@ import { getAdminDb } from '../../../../lib/firebase/admin';
 import { getPayphoneConfig, confirmPayment } from '../../../../lib/payphone/client';
 import { notifyAdmin } from '../../../../lib/notify/admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { processOrderReferralCommission } from '../../../../lib/referral/commissions';
 
 export async function POST(req: NextRequest) {
   try {
@@ -100,6 +101,13 @@ export async function POST(req: NextRequest) {
       }
 
       await batch.commit();
+
+      // Procesar comisión de afiliados / referidos si aplica
+      try {
+        await processOrderReferralCommission(orderDoc.id);
+      } catch (refErr) {
+        console.error('[webhook] Error procesando comisión de referidos:', refErr);
+      }
 
       notifyAdmin(
         'Pago confirmado via webhook - ALOEC',

@@ -1,131 +1,89 @@
+import 'dart:async';
+
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_core/firebase_core.dart';
+
 import 'core/router/app_router.dart';
-import 'core/theme/app_theme.dart';
 import 'core/services/notification_service.dart';
+import 'core/theme/app_theme.dart';
+import 'firebase_options.dart';
 
-Future<void> main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-
-  try {
-    await Firebase.initializeApp();
-  } on FirebaseException catch (e) {
-    runApp(_firebaseErrorApp(e));
-    return;
-  } catch (e) {
-    runApp(_firebaseErrorApp(e));
-    return;
-  }
-
-  try {
-    await NotificationService().initialize();
-    debugPrint('NotificationService initialized');
-  } catch (e) {
-    debugPrint('NotificationService init failed: $e');
-  }
-
-  runApp(const ProviderScope(child: AloecApp()));
+  runApp(const _BootstrapApp());
 }
 
-Widget _firebaseErrorApp(Object error) {
-  return MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.cloud_off, size: 72, color: Color(0xFFD32F2F)),
-              const SizedBox(height: 24),
-              Text(
-                'Error de inicializacion',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[800],
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'La aplicacion no pudo iniciar correctamente. Verifica tu conexion e intenta de nuevo.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 15, color: Colors.grey[600]),
-              ),
-              const SizedBox(height: 24),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
-                      blurRadius: 12,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Pasos para solucionar:',
-                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-                    ),
-                    const SizedBox(height: 12),
-                    _buildStep('1', 'Abre una terminal (PowerShell o CMD)'),
-                    _buildStep('2', 'Ejecuta: firebase login'),
-                    _buildStep(
-                        '3', 'Ejecuta: flutterfire configure\n    (dentro de la carpeta del proyecto)'),
-                    _buildStep('4', 'Recompila la app con:\n    flutter build apk --debug'),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Si el problema persiste, contacta a soporte.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 11, color: Colors.grey[400]),
-              ),
-            ],
-          ),
-        ),
-      ),
-    ),
-  );
+class _BootstrapApp extends StatefulWidget {
+  const _BootstrapApp();
+
+  @override
+  State<_BootstrapApp> createState() => _BootstrapAppState();
 }
 
-Widget _buildStep(String num, String text) {
-  return Padding(
-    padding: const EdgeInsets.only(bottom: 10),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 24,
-          height: 24,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: const Color(0xFF2E7D32),
-            borderRadius: BorderRadius.circular(12),
+class _BootstrapAppState extends State<_BootstrapApp> {
+  late Future<void> _startup = _initialize();
+
+  Future<void> _initialize() async {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    ).timeout(const Duration(seconds: 20));
+
+    // Notifications are optional and must not hold the first usable screen.
+    unawaited(_initializeNotifications());
+  }
+
+  Future<void> _initializeNotifications() async {
+    try {
+      await NotificationService().initialize();
+    } catch (error) {
+      debugPrint('NotificationService init failed: $error');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<void>(
+      future: _startup,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done &&
+            !snapshot.hasError) {
+          return const ProviderScope(child: AloecApp());
+        }
+
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          home: Scaffold(
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: snapshot.hasError
+                    ? Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.cloud_off, size: 64),
+                          const SizedBox(height: 20),
+                          const Text(
+                            'No se pudo iniciar ALOEC. Comprueba tu conexión e inténtalo de nuevo.',
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 20),
+                          FilledButton(
+                            onPressed: () {
+                              setState(() => _startup = _initialize());
+                            },
+                            child: const Text('Reintentar'),
+                          ),
+                        ],
+                      )
+                    : const CircularProgressIndicator(),
+              ),
+            ),
           ),
-          child: Text(num,
-              style: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(text,
-              style: TextStyle(fontSize: 13, color: Colors.grey[700], height: 1.4)),
-        ),
-      ],
-    ),
-  );
+        );
+      },
+    );
+  }
 }
 
 class AloecApp extends ConsumerWidget {

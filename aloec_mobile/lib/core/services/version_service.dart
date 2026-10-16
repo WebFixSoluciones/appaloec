@@ -3,22 +3,24 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
 class VersionService {
-  static const String currentVersion = '1.2.0';
+  static const String currentVersion = '1.3.0';
 
-  static Map<String, dynamic>? _cachedSettings;
+  static Future<Map<String, dynamic>?>? _settingsFuture;
 
   static Future<Map<String, dynamic>?> _getSettings() async {
-    if (_cachedSettings != null) return _cachedSettings;
+    return _settingsFuture ??= _loadSettings();
+  }
 
+  static Future<Map<String, dynamic>?> _loadSettings() async {
     try {
       final doc = await FirebaseFirestore.instance
           .collection('system_settings')
           .doc('global')
-          .get();
+          .get()
+          .timeout(const Duration(seconds: 5));
 
       if (doc.exists) {
-        _cachedSettings = doc.data();
-        return _cachedSettings;
+        return doc.data();
       }
     } catch (_) {}
 
@@ -26,11 +28,11 @@ class VersionService {
       final doc = await FirebaseFirestore.instance
           .collection('app_config')
           .doc('main')
-          .get();
+          .get()
+          .timeout(const Duration(seconds: 5));
 
       if (doc.exists) {
-        _cachedSettings = doc.data();
-        return _cachedSettings;
+        return doc.data();
       }
     } catch (_) {}
 

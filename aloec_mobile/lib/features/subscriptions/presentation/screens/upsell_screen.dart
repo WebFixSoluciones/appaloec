@@ -401,7 +401,7 @@ class _UpsellScreenState extends State<UpsellScreen>
 
                     Center(
                       child: TextButton(
-                        onPressed: () {
+                        onPressed: () async {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('Verificando compras anteriores...'),
@@ -409,7 +409,8 @@ class _UpsellScreenState extends State<UpsellScreen>
                             ),
                           );
                           final repo = MembershipsRepository();
-                          repo.restorePurchases().then((restored) {
+                          try {
+                            final restored = await repo.restorePurchases();
                             if (!mounted) return;
                             if (restored) {
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -418,7 +419,9 @@ class _UpsellScreenState extends State<UpsellScreen>
                                   backgroundColor: Colors.green,
                                 ),
                               );
-                              context.pop();
+                              if (context.mounted) {
+                                context.pop();
+                              }
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
@@ -427,15 +430,15 @@ class _UpsellScreenState extends State<UpsellScreen>
                                 ),
                               );
                             }
-                          }).catchError((e) {
+                          } catch (_) {
                             if (!mounted) return;
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
+                              const SnackBar(
                                 content: Text('No se pudo restaurar la compra. Intenta de nuevo.'),
                                 backgroundColor: Colors.red,
                               ),
                             );
-                          });
+                          }
                         },
                         child: const Text(
                           'Restaurar compra anterior',

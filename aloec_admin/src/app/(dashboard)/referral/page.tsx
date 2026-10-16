@@ -103,6 +103,7 @@ export default function ReferralPage() {
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [saving, setSaving] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   // Dashboard KPIs
   const [kpi, setKpi] = useState({ totalAffiliates: 0, totalCommissions: 0, pendingUSD: 0, paidUSD: 0, approvedUSD: 0 });
@@ -149,8 +150,13 @@ export default function ReferralPage() {
       for (const a of items) {
         try {
           const evSnap = await getDocs(query(collection(db, 'referral_events'),
-            where('referrerUid', '==', a.uid), where('type', '==', 'registered')));
-          a.referredCount = evSnap.size;
+            where('referrerUid', '==', a.uid)));
+          const uniqueReferred = new Set<string>();
+          evSnap.forEach(evDoc => {
+            const evData = evDoc.data();
+            if (evData.referredUid) uniqueReferred.add(evData.referredUid);
+          });
+          a.referredCount = uniqueReferred.size;
         } catch (_) {}
       }
 
@@ -174,9 +180,16 @@ export default function ReferralPage() {
       for (const d of snap.docs) {
         const data = d.data();
         items.push({
-          id: d.id, referrerUid: data.referrerUid || '', referrerName: '', referrerCode: data.referralCode || '',
-          referredUid: data.referredUid || '', triggerType: data.triggerType || '', amountUSD: Number(data.amountUSD || 0),
-          status: data.status || 'pending', createdAt: data.createdAt, releasedAt: data.releasedAt
+          id: d.id, 
+          referrerUid: data.referrerUid || '', 
+          referrerName: data.referrerName || (data.referrerUid ? data.referrerUid.slice(0, 8) : 'Afiliado'), 
+          referrerCode: data.referrerCode || data.referralCode || '',
+          referredUid: data.referredUid || '', 
+          triggerType: data.triggerType || '', 
+          amountUSD: Number(data.amountUSD || 0),
+          status: data.status || 'pending', 
+          createdAt: data.createdAt, 
+          releasedAt: data.releasedAt
         });
       }
       setCommissions(items);
@@ -193,8 +206,13 @@ export default function ReferralPage() {
       for (const d of snap.docs) {
         const data = d.data();
         items.push({
-          id: d.id, uid: data.uid || '', userName: '', amountUSD: Number(data.amountUSD || 0),
-          methodSnapshot: data.methodSnapshot || {}, status: data.status || 'pending', createdAt: data.createdAt
+          id: d.id, 
+          uid: data.uid || '', 
+          userName: data.userName || data.userEmail || (data.uid ? data.uid.slice(0, 8) : 'Usuario'), 
+          amountUSD: Number(data.amountUSD || 0),
+          methodSnapshot: data.methodSnapshot || {}, 
+          status: data.status || 'pending', 
+          createdAt: data.createdAt
         });
       }
       setPayouts(items);
@@ -216,28 +234,53 @@ export default function ReferralPage() {
 
   async function updateCommissionStatus(id: string, status: string) {
     try {
-      await updateDoc(doc(db, 'commissions', id), {
-        status,
-        [`statusLog.${Date.now()}`]: { status, timestamp: Timestamp.now(), actorUid: 'admin' }
+      const res = await fetch('/api/admin/referral/commission-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ commissionId: id, status }),
       });
-      await logAdminAction('UPDATE', 'commissions', id, { description: `Comisión ${status}` });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al actualizar comisión');
       toast.success(`Comisión ${status === 'approved' ? 'aprobada' : 'rechazada'}`);
-      loadCommissions();
-    } catch (e: any) { toast.error('Error: ' + e.message); }
+      loadAll();
+    } catch (e: any) { 
+      toast.error('Error: ' + e.message); 
+    }
   }
 
   async function updatePayoutStatus(id: string, status: string) {
     try {
-      const ref = doc(db, 'payouts', id);
-      if (status === 'completed') {
-        await updateDoc(ref, { status, processedAt: Timestamp.now() });
-      } else {
-        await updateDoc(ref, { status });
-      }
-      await logAdminAction('UPDATE', 'payouts', id, { description: `Pago ${status}` });
+      const res = await fetch('/api/admin/referral/payout-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ payoutId: id, status }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al procesar pago');
       toast.success(`Pago ${status === 'completed' ? 'completado' : status === 'processing' ? 'en proceso' : 'rechazado'}`);
-      loadPayouts();
-    } catch (e: any) { toast.error('Error: ' + e.message); }
+      loadAll();
+    } catch (e: any) { 
+      toast.error('Error: ' + e.message); 
+    }
+  }
+
+  async function handleSyncPending() {
+    setSyncing(true);
+    const toastId = toast.loading('Sincronizando comisiones de órdenes...');
+    try {
+      const res = await fetch('/api/admin/referral/sync-pending', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al sincronizar');
+      toast.success(
+        `Sincronización lista: ${data.commissionsCreated} comisiones creadas (${data.totalOrdersChecked} órdenes revisadas).`,
+        { id: toastId }
+      );
+      loadAll();
+    } catch (e: any) {
+      toast.error('Error: ' + e.message, { id: toastId });
+    } finally {
+      setSyncing(false);
+    }
   }
 
   function statusBadge(status: string) {
@@ -271,6 +314,15 @@ export default function ReferralPage() {
           <p className="text-sm text-ink-500 mt-1">Gestión de afiliados, comisiones, pagos y configuración del programa.</p>
         </div>
         <div className="flex gap-2">
+          <button 
+            onClick={handleSyncPending} 
+            disabled={syncing}
+            className="px-3 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm flex items-center gap-1.5 transition-colors disabled:opacity-50"
+            title="Buscar órdenes pagadas con enlace de referido y calcular comisiones pendientes"
+          >
+            <Coins size={14} className={syncing ? 'animate-spin' : ''} />
+            {syncing ? 'Sincronizando...' : 'Sincronizar Comisiones'}
+          </button>
           <button onClick={loadAll} className="px-3 py-2 border border-ink-300 text-ink-700 font-bold text-sm hover:bg-ink-50 flex items-center gap-1">
             <RefreshCw size={14} /> Actualizar
           </button>

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAdminAuth, getAdminDb } from '../../../../lib/firebase/admin';
 import { createCheckoutToken } from '../../../../lib/checkout/token';
+import { processRegistrationReferralCommission } from '../../../../lib/referral/commissions';
 
 export async function POST(request: Request) {
   try {
@@ -106,6 +107,14 @@ export async function POST(request: Request) {
     }
 
     await db.collection('users').doc(userRecord.uid).set(userPayload, { merge: true });
+
+    if (referredByUid && referralCode) {
+      try {
+        await processRegistrationReferralCommission(userRecord.uid, referredByUid, referralCode);
+      } catch (refCommErr) {
+        console.error('Error processing registration referral commission:', refCommErr);
+      }
+    }
 
     // Generate checkout token
     const token = createCheckoutToken(userRecord.uid, planId);

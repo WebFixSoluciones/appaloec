@@ -305,7 +305,7 @@ class PayphoneService {
       }
 
       return PayphoneTransactionResult(success: false, errorMessage: errorMsg);
-    } on http.ClientException catch (e) {
+    } on http.ClientException {
       return PayphoneTransactionResult(
         success: false,
         errorMessage: 'Error de conexion. Verifica tu acceso a internet.',

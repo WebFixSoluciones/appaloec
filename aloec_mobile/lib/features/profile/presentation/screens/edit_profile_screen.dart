@@ -19,7 +19,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _nameCtrl = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _saving = false;
-  String? _pendingPhotoPath;
   bool _uploadingPhoto = false;
 
   @override

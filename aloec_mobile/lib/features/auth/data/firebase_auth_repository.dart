@@ -38,7 +38,7 @@ class FirebaseAuthRepository implements AuthRepository {
         'referral': {
           'code': '',
           'referredByUid': null,
-          'referredByCode': referralCode ?? null,
+          'referredByCode': referralCode,
           'status': referralCode != null ? 'referred' : 'none',
           'registeredAt': FieldValue.serverTimestamp(),
           'convertedAt': null,

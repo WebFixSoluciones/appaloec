@@ -1,13 +1,16 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/premium_gate.dart';
 import '../providers/juices_provider.dart';
-import '../../domain/juice_entity.dart';
 
 // ─── URL helpers (mismo patrón que lesson_player_screen) ─────────────────────
 String _youtubeEmbed(String url) {
@@ -83,45 +86,164 @@ class _RecipeVideoPlayerState extends State<_RecipeVideoPlayer> {
   void initState() {
     super.initState();
     if (_canEmbed(widget.videoUrl, widget.videoSource)) {
-      _controller = WebViewController()
-        ..setJavaScriptMode(JavaScriptMode.unrestricted)
-        ..setNavigationDelegate(NavigationDelegate(
-          onPageStarted: (_) => setState(() {
-            _isLoading = true;
-            _hasError = false;
-          }),
-          onPageFinished: (_) => setState(() => _isLoading = false),
-          onWebResourceError: (_) => setState(() {
-            _isLoading = false;
-            _hasError = true;
-          }),
-        ));
+      _controller = WebViewController();
+      unawaited(_initializePlayer());
+    }
+  }
 
-      final src = widget.videoSource.toLowerCase();
+  void _setPlayerState({required bool loading, bool error = false}) {
+    if (!mounted) return;
+    setState(() {
+      _isLoading = loading;
+      _hasError = error;
+    });
+  }
+
+  Future<void> _initializePlayer() async {
+    try {
+      await _controller.setJavaScriptMode(JavaScriptMode.unrestricted);
+      await _controller.setNavigationDelegate(
+        NavigationDelegate(
+          onPageStarted: (_) => _setPlayerState(loading: true, error: false),
+          onPageFinished: (_) {
+            if (!mounted) return;
+            if (widget.videoSource.trim().toLowerCase() != 'upload') {
+              _setPlayerState(loading: false, error: _hasError);
+            }
+          },
+          onWebResourceError: (error) {
+            if (error.isForMainFrame != true) return;
+            _setPlayerState(loading: false, error: true);
+          },
+        ),
+      );
+      await _controller.addJavaScriptChannel(
+        'AloecVideo',
+        onMessageReceived: (message) {
+          if (message.message == 'ready' || message.message == 'playing') {
+            _setPlayerState(loading: false, error: false);
+          } else if (message.message.startsWith('error')) {
+            _setPlayerState(loading: false, error: true);
+          }
+        },
+      );
+      final platform = _controller.platform;
+      if (platform is AndroidWebViewController) {
+        await platform.setMediaPlaybackRequiresUserGesture(false);
+      }
+      if (!mounted) return;
+      await _loadVideo();
+    } catch (error) {
+      debugPrint('Recipe video initialization failed: $error');
+      _setPlayerState(loading: false, error: true);
+    }
+  }
+
+  String _buildHtmlVideoPlayer(String videoUrl) {
+    return '''
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        width: 100%;
+        height: 100%;
+        background-color: #000;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      video {
+        width: 100%;
+        height: 100%;
+        max-height: 100vh;
+        object-fit: contain;
+        background-color: #000;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      video::-internal-media-controls-download-button {
+        display: none !important;
+      }
+      video::-webkit-media-controls-enclosure {
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body oncontextmenu="return false;">
+    <video
+      id="videoPlayer"
+      controls
+      controlsList="nodownload"
+      oncontextmenu="return false;"
+      autoplay
+      playsinline
+      webkit-playsinline
+      preload="auto"
+      src="$videoUrl"
+    >
+      Tu dispositivo no soporta este reproductor de video.
+    </video>
+    <script>
+      (function() {
+        const player = document.getElementById('videoPlayer');
+        let readySent = false;
+        function notifyReady() {
+          if (!readySent && window.AloecVideo) {
+            readySent = true;
+            try { AloecVideo.postMessage('ready'); } catch(e) {}
+          }
+        }
+        player.addEventListener('loadedmetadata', notifyReady);
+        player.addEventListener('canplay', notifyReady);
+        player.addEventListener('playing', notifyReady);
+        player.addEventListener('error', function() {
+          const err = player.error;
+          if (err && err.code && err.code !== 1) {
+            if (window.AloecVideo) {
+              try { AloecVideo.postMessage('error'); } catch(e) {}
+            }
+          }
+        });
+        const playPromise = player.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(function() {
+            notifyReady();
+          });
+        }
+      })();
+    </script>
+  </body>
+</html>
+''';
+  }
+
+  Future<void> _loadVideo() async {
+    if (!mounted) return;
+    _setPlayerState(loading: true, error: false);
+    try {
+      final src = widget.videoSource.trim().toLowerCase();
       if (src == 'upload') {
-        final html = '''
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-              <style>
-                body { margin: 0; padding: 0; background: black; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-                video { width: 100%; height: 100%; object-fit: contain; }
-              </style>
-            </head>
-            <body>
-              <video controls autoplay playsinline>
-                <source src="${widget.videoUrl}" type="video/mp4">
-                Tu dispositivo no soporta este reproductor de video.
-              </video>
-            </body>
-          </html>
-        ''';
-        _controller.loadHtmlString(html);
+        final videoUrl = const HtmlEscape(HtmlEscapeMode.attribute)
+            .convert(widget.videoUrl.trim());
+        final html = _buildHtmlVideoPlayer(videoUrl);
+        await _controller.loadHtmlString(
+          html,
+          baseUrl: 'https://app-aloec.firebaseapp.com',
+        );
       } else {
         final embedUrl = _buildEmbedUrl(widget.videoUrl, widget.videoSource);
-        _controller.loadRequest(Uri.parse(embedUrl));
+        await _controller.loadRequest(Uri.parse(embedUrl));
       }
+    } catch (error) {
+      debugPrint('Recipe video loading failed: $error');
+      _setPlayerState(loading: false, error: true);
     }
   }
 
@@ -216,28 +338,16 @@ class _RecipeVideoPlayerState extends State<_RecipeVideoPlayer> {
                       const Text('No se pudo cargar el video',
                           style: TextStyle(color: Colors.white70, fontSize: 13)),
                       const SizedBox(height: 12),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          TextButton(
-                            onPressed: () {
-                              setState(() { _isLoading = true; _hasError = false; });
-                              _controller.reload();
-                            },
-                            child: const Text('Reintentar',
-                                style: TextStyle(color: AppColors.primaryGreen)),
-                          ),
-                          TextButton(
-                            onPressed: () async {
-                              final uri = Uri.parse(widget.videoUrl);
-                              if (await canLaunchUrl(uri)) {
-                                await launchUrl(uri, mode: LaunchMode.externalApplication);
-                              }
-                            },
-                            child: const Text('Abrir navegador',
-                                style: TextStyle(color: Colors.white54)),
-                          ),
-                        ],
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primaryGreen,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        icon: const Icon(Icons.refresh, size: 16),
+                        onPressed: () => unawaited(_loadVideo()),
+                        label: const Text('Reintentar', style: TextStyle(fontWeight: FontWeight.bold)),
                       ),
                     ],
                   ),

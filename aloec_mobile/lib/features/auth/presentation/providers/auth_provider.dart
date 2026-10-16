@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/errors/auth_error_messages.dart';
 import '../../data/firebase_auth_repository.dart';
@@ -14,30 +16,44 @@ class AuthState {
 
   factory AuthState.initial() => AuthState(status: AuthStateStatus.initial);
   factory AuthState.loading() => AuthState(status: AuthStateStatus.loading);
-  factory AuthState.authenticated(String userId) => AuthState(status: AuthStateStatus.authenticated, userId: userId);
-  factory AuthState.unauthenticated() => AuthState(status: AuthStateStatus.unauthenticated);
-  factory AuthState.error(String message) => AuthState(status: AuthStateStatus.error, errorMessage: message);
+  factory AuthState.authenticated(String userId) =>
+      AuthState(status: AuthStateStatus.authenticated, userId: userId);
+  factory AuthState.unauthenticated() =>
+      AuthState(status: AuthStateStatus.unauthenticated);
+  factory AuthState.error(String message) =>
+      AuthState(status: AuthStateStatus.error, errorMessage: message);
 }
 
-final authNotifierProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
+final authNotifierProvider =
+    StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   return AuthNotifier(ref.watch(authRepositoryProvider));
 });
 
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository _authRepository;
+  late final StreamSubscription<String?> _authSubscription;
 
   AuthNotifier(this._authRepository) : super(AuthState.initial()) {
     _checkAuthState();
   }
 
   void _checkAuthState() {
-    _authRepository.authStateChanges.listen((userId) {
+    _authSubscription = _authRepository.authStateChanges.listen((userId) {
+      if (!mounted) return;
       if (userId != null) {
         state = AuthState.authenticated(userId);
       } else {
         state = AuthState.unauthenticated();
       }
+    }, onError: (Object error) {
+      if (mounted) state = AuthState.error(mapAuthError(error));
     });
+  }
+
+  @override
+  void dispose() {
+    _authSubscription.cancel();
+    super.dispose();
   }
 
   Future<void> signIn(String email, String password) async {
@@ -45,16 +61,18 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       await _authRepository.signInWithEmail(email, password);
     } catch (e) {
-      state = AuthState.error(mapAuthError(e));
+      if (mounted) state = AuthState.error(mapAuthError(e));
     }
   }
 
-  Future<void> register(String email, String password, String name, {String? referralCode}) async {
+  Future<void> register(String email, String password, String name,
+      {String? referralCode}) async {
     state = AuthState.loading();
     try {
-      await _authRepository.registerWithEmail(email, password, name, referralCode: referralCode);
+      await _authRepository.registerWithEmail(email, password, name,
+          referralCode: referralCode);
     } catch (e) {
-      state = AuthState.error(mapAuthError(e));
+      if (mounted) state = AuthState.error(mapAuthError(e));
     }
   }
 

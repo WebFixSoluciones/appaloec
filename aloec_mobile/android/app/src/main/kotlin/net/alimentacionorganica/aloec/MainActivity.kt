@@ -1,4 +1,4 @@
-package com.example.aloec_mobile
+package net.alimentacionorganica.aloec
 
 import io.flutter.embedding.android.FlutterActivity
 

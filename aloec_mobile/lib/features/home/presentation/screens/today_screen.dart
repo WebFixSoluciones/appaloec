@@ -172,7 +172,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
                 ),
                 icon: const Icon(Icons.calculate),
                 label: const Text('Calcular mi IMC',
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 16, fontWeight: FontWeight.w600)),
                 onPressed: () => context.push('/bmi-calculator'),
               ),

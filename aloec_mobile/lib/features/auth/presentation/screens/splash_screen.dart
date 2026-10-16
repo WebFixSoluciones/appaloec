@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../providers/auth_provider.dart';
 import '../../../../core/widgets/aloec_logo.dart';
 import '../../../../core/services/version_service.dart';
@@ -58,18 +59,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       _navigated = true;
       context.go('/onboarding');
     } else {
-      // Aún en estado initial o loading: esperar a que cambie
-      ref.listenManual<AuthState>(authNotifierProvider, (previous, next) {
-        if (_navigated || !mounted) return;
-        if (next.status == AuthStateStatus.authenticated) {
-          _navigated = true;
-          context.go('/home');
-        } else if (next.status == AuthStateStatus.unauthenticated ||
-            next.status == AuthStateStatus.error) {
-          _navigated = true;
-          context.go('/onboarding');
-        }
-      });
+      // The authentication stream can be delayed offline. Always leave splash.
+      _navigated = true;
+      context.go(
+          FirebaseAuth.instance.currentUser == null ? '/onboarding' : '/home');
     }
   }
 

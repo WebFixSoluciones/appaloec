@@ -91,10 +91,10 @@ final protocolDayProvider =
     StateNotifierProvider<ProtocolDayNotifier, ProtocolDayState>((ref) {
   final notifier = ProtocolDayNotifier();
   ref.listen(_activeProtocolIdProvider, (prev, next) {
-    if (next != null && next != prev) {
-      if (notifier.state.protocol?.id != next) {
-        notifier.loadProtocol();
-      }
+    final protocolId = next.asData?.value;
+    if (protocolId != prev?.asData?.value &&
+        protocolId != notifier.activeProtocolId) {
+      notifier.loadProtocol();
     }
   });
   return notifier;
@@ -104,6 +104,8 @@ class ProtocolDayNotifier extends StateNotifier<ProtocolDayState> {
   ProtocolDayNotifier() : super(const ProtocolDayState()) {
     loadProtocol();
   }
+
+  String? get activeProtocolId => state.protocol?.id;
 
   Future<void> loadProtocol() async {
     state = state.copyWith(isLoading: true);
@@ -135,15 +137,23 @@ class ProtocolDayNotifier extends StateNotifier<ProtocolDayState> {
               .get();
 
           if (bmiSnap.docs.isNotEmpty) {
-            final bmiValue = (bmiSnap.docs.first.data()['bmiValue'] as num?)?.toDouble();
+            final bmiValue =
+                (bmiSnap.docs.first.data()['bmiValue'] as num?)?.toDouble();
             String? categoryKey;
             if (bmiValue != null) {
-              if (bmiValue < 18.5) categoryKey = 'underweight';
-              else if (bmiValue < 25) categoryKey = 'normal';
-              else if (bmiValue < 30) categoryKey = 'overweight';
-              else if (bmiValue < 35) categoryKey = 'obesity1';
-              else if (bmiValue < 40) categoryKey = 'obesity2';
-              else categoryKey = 'obesity3';
+              if (bmiValue < 18.5) {
+                categoryKey = 'underweight';
+              } else if (bmiValue < 25) {
+                categoryKey = 'normal';
+              } else if (bmiValue < 30) {
+                categoryKey = 'overweight';
+              } else if (bmiValue < 35) {
+                categoryKey = 'obesity1';
+              } else if (bmiValue < 40) {
+                categoryKey = 'obesity2';
+              } else {
+                categoryKey = 'obesity3';
+              }
             }
             if (categoryKey != null) {
               final protocolQuery = await FirebaseFirestore.instance
@@ -291,7 +301,8 @@ class ProtocolDayNotifier extends StateNotifier<ProtocolDayState> {
   }
 
   TimeOfDay? _parseTime(String timeStr) {
-    final cleaned = timeStr.replaceAll(RegExp(r'\s*(AM|PM)\s*', caseSensitive: false), '');
+    final cleaned =
+        timeStr.replaceAll(RegExp(r'\s*(AM|PM)\s*', caseSensitive: false), '');
     final parts = cleaned.split(':');
     if (parts.length != 2) return null;
 

@@ -34,7 +34,14 @@ import '../../features/referral/presentation/screens/earnings_screen.dart';
 import '../../features/referral/presentation/screens/payout_methods_screen.dart';
 import '../../features/referral/presentation/screens/payout_history_screen.dart';
 
-const _publicRoutes = ['/splash', '/onboarding', '/auth/login', '/auth/register', '/auth/forgot-password', '/force-update'];
+const _publicRoutes = [
+  '/splash',
+  '/onboarding',
+  '/auth/login',
+  '/auth/register',
+  '/auth/forgot-password',
+  '/force-update'
+];
 
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {
@@ -69,7 +76,10 @@ final goRouter = GoRouter(
     }
 
     // Si hay usuario y está en ruta pública (excepto splash inicial) → al home
-    if (user != null && isPublicRoute && state.matchedLocation != '/splash') {
+    if (user != null &&
+        isPublicRoute &&
+        state.matchedLocation != '/splash' &&
+        state.matchedLocation != '/force-update') {
       return '/home';
     }
 
@@ -176,7 +186,10 @@ final goRouter = GoRouter(
       builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>?;
         final protocol = extra?['protocol'] as ProtocolModel?;
-        if (protocol == null) return const Scaffold(body: Center(child: Text('Protocolo no disponible')));
+        if (protocol == null) {
+          return const Scaffold(
+              body: Center(child: Text('Protocolo no disponible')));
+        }
         return ProtocolDetailScreen(protocol: protocol);
       },
     ),
