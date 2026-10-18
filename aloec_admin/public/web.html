@@ -1558,6 +1558,37 @@
     </div>
 
     <!-- ============================================================ -->
+    <!-- MODAL APP STORE PRÓXIMAMENTE                                 -->
+    <!-- ============================================================ -->
+    <div class="modal-overlay" id="appStoreModal">
+        <div class="modal-card" style="text-align:center;max-width:440px;">
+            <button class="modal-close" onclick="closeAppStoreModal()">&times;</button>
+            <div style="width:64px;height:64px;border-radius:18px;background:#0f172a;display:inline-flex;align-items:center;justify-content:center;margin-bottom:1rem;box-shadow:0 10px 25px rgba(0,0,0,0.15)">
+                <svg viewBox="0 0 24 24" style="width:36px;height:36px;fill:#ffffff">
+                    <path d="M18.71,19.5C17.88,20.74 17,21.95 15.66,21.97C14.32,22 13.89,21.18 12.37,21.18C10.84,21.18 10.37,21.95 9.1,22C7.79,22.05 6.8,20.68 5.96,19.47C4.25,17 2.94,12.45 4.7,9.39C5.57,7.87 7.13,6.91 8.82,6.88C10.1,6.86 11.32,7.75 12.11,7.75C12.89,7.75 14.37,6.68 15.92,6.84C16.57,6.87 18.39,7.1 19.56,8.82C19.47,8.88 17.39,10.1 17.41,12.63C17.44,15.65 20.06,16.66 20.1,16.67C20.08,16.74 19.67,18.11 18.71,19.5M15.97,4.17C16.63,3.37 17.07,2.28 16.95,1C16,1.04 14.9,1.6 14.24,2.38C13.68,3.04 13.19,4.14 13.34,5.39C14.39,5.47 15.4,4.88 15.97,4.17Z"/>
+                </svg>
+            </div>
+            <div style="display:inline-block;padding:0.25rem 0.75rem;background:#fef3c7;color:#92400e;font-size:0.75rem;font-weight:800;border-radius:999px;text-transform:uppercase;margin-bottom:0.75rem;letter-spacing:0.05em">
+                Próximamente
+            </div>
+            <h3 style="font-size:1.4rem;font-weight:900;color:var(--text);margin-bottom:0.5rem">¡Muy pronto en App Store!</h3>
+            <p style="font-size:0.9rem;color:var(--text-muted);line-height:1.5;margin-bottom:1.25rem">
+                Estamos finalizando el proceso de revisión con Apple. Muy pronto podrás descargar la aplicación oficial de <strong>ALOEC</strong> directamente en tu iPhone o iPad.
+            </p>
+            <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:14px;padding:0.9rem;margin-bottom:1.25rem;text-align:left">
+                <p style="font-size:0.8rem;font-weight:700;color:#065f46;margin-bottom:0.2rem">¿Tienes Android o deseas ingresar por la Web?</p>
+                <p style="font-size:0.75rem;color:#047857;margin:0">Ya puedes descargar la app oficial desde Google Play Store o acceder directamente a la plataforma web.</p>
+            </div>
+            <a href="https://play.google.com/store/apps/details?id=net.alimentacionorganica.aloec&hl=es_419" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="width:100%;margin-bottom:0.5rem;font-size:0.9rem;padding:0.85rem">
+                Ver en Google Play Store →
+            </a>
+            <button type="button" onclick="closeAppStoreModal()" class="btn" style="width:100%;background:transparent;color:var(--text-muted);border:none;font-size:0.85rem;padding:0.5rem;cursor:pointer">
+                Entendido, cerrar
+            </button>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
     <!-- FIREBASE + REFERRAL LOGIC                                     -->
     <!-- ============================================================ -->
     <script>
@@ -1630,16 +1661,28 @@
             });
         });
 
-        // Handle App Store coming soon hint
+        function openAppStoreModal() {
+            var m = document.getElementById('appStoreModal');
+            if (m) m.classList.add('active');
+        }
+        function closeAppStoreModal() {
+            var m = document.getElementById('appStoreModal');
+            if (m) m.classList.remove('active');
+        }
+
+        // Close appStoreModal when clicking outside card
+        var appStoreOverlay = document.getElementById('appStoreModal');
+        if (appStoreOverlay) {
+            appStoreOverlay.addEventListener('click', function(e) {
+                if (e.target === appStoreOverlay) closeAppStoreModal();
+            });
+        }
+
+        // Handle App Store coming soon popup
         document.querySelectorAll('.store-btn-apple').forEach(function(btn) {
             btn.addEventListener('click', function(e) {
-                var href = btn.getAttribute('href');
-                if (href === '#' || href === '#descargar') {
-                    e.preventDefault();
-                    showToast('¡Próximamente en iOS! Ya puedes descargar la App oficial en Google Play.');
-                    var el = document.getElementById('descargar');
-                    if (el && href === '#descargar') el.scrollIntoView({ behavior: 'smooth' });
-                }
+                e.preventDefault();
+                openAppStoreModal();
             });
         });
 

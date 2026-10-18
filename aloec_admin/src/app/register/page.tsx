@@ -280,11 +280,20 @@ function RegisterContent() {
 
             <div className="space-y-3 pt-2">
               <a
+                href="https://play.google.com/store/apps/details?id=net.alimentacionorganica.aloec&hl=es_419"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-3.5 bg-slate-950 hover:bg-black text-white font-bold text-xs rounded-xl shadow-md border border-emerald-500/50 transition-all flex items-center justify-center gap-2"
+              >
+                <span>Instalar desde Google Play Store ↗</span>
+              </a>
+
+              <a
                 href="/appaloecv16.apk"
                 download="appaloecv16.apk"
-                className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
+                className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-2 border border-slate-200"
               >
-                <Download className="w-4 h-4" /> Reintentar Descarga Directa
+                <Download className="w-4 h-4 text-emerald-600" /> Descarga Directa APK (v16)
               </a>
 
               <Link

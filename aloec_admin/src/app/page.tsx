@@ -35,7 +35,8 @@ import {
   RefreshCw,
   Flame,
   Calendar,
-  Gift
+  Gift,
+  X
 } from 'lucide-react';
 
 interface DynamicMembership {
@@ -89,27 +90,31 @@ function AndroidAPKButton() {
   );
 }
 
-// Apple App Store Badge Component
-function AppStoreButton({ href = "/register" }: { href?: string }) {
+// Apple App Store Badge Component (Triggers "Muy pronto en App Store" Popup)
+function AppStoreButton({ onClick }: { onClick?: () => void }) {
   return (
-    <Link
-      href={href}
-      className="inline-flex items-center gap-3 px-5 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl border border-slate-800 shadow-md hover:shadow-lg transition-all duration-200 group"
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex items-center gap-3 px-5 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl border border-slate-800 shadow-md hover:shadow-lg transition-all duration-200 group cursor-pointer text-left"
     >
       <svg className="w-7 h-7 fill-current shrink-0 transition-transform group-hover:scale-105" viewBox="0 0 384 512">
         <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 66.2 32.1 114.7c20.1 30.1 44.1 63.8 75.9 62.6 30.5-1.2 42.6-19.4 79.4-19.4 36.5 0 47.6 19.4 79.4 18.2 32.4-1.2 53.6-30.8 73.1-60.6 15.6-23.7 22.1-47.2 22.5-48.4-1.2-.6-43.7-17-43.7-61.9zM258.6 92.4c15.3-18.6 25.8-44.4 23-70.4-22.3 1-49.1 14.9-64.8 33.3-13.8 16.1-26 42.4-22.7 67.5 24.8 1.9 50-13 64.5-30.4z"/>
       </svg>
       <div className="text-left leading-none">
-        <span className="block text-[10px] uppercase tracking-wider font-semibold text-slate-400">CONSIGUELO EN EL</span>
+        <span className="block text-[10px] uppercase tracking-wider font-semibold text-slate-400">PRÓXIMAMENTE EN</span>
         <span className="block text-base font-bold tracking-tight text-white mt-0.5">App Store</span>
       </div>
-    </Link>
+    </button>
   );
 }
 
 function LandingContent() {
   const searchParams = useSearchParams();
   const [refCode, setRefCode] = useState<string | null>(null);
+
+  // App Store Modal State
+  const [showAppStoreModal, setShowAppStoreModal] = useState<boolean>(false);
 
   // Dynamic Memberships State
   const [memberships, setMemberships] = useState<DynamicMembership[]>([]);
@@ -323,7 +328,7 @@ function LandingContent() {
               {/* Download Store Badges */}
               <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-3">
                 <GooglePlayButton />
-                <AppStoreButton href="#download" />
+                <AppStoreButton onClick={() => setShowAppStoreModal(true)} />
               </div>
 
               {/* Trust Indicators */}
@@ -971,7 +976,7 @@ function LandingContent() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
             <GooglePlayButton />
-            <AppStoreButton href="#download" />
+            <AppStoreButton onClick={() => setShowAppStoreModal(true)} />
           </div>
 
           <div className="pt-6">
@@ -1055,7 +1060,7 @@ function LandingContent() {
               <p className="font-bold text-white uppercase tracking-wider mb-3 text-[11px]">Descargas & Web</p>
               <ul className="space-y-2">
                 <li><a href="https://play.google.com/store/apps/details?id=net.alimentacionorganica.aloec&hl=es_419" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Google Play Store</a></li>
-                <li><a href="#download" className="hover:text-white transition-colors">Apple App Store</a></li>
+                <li><button type="button" onClick={() => setShowAppStoreModal(true)} className="hover:text-white transition-colors text-left">Apple App Store</button></li>
                 <li><a href="https://app.alimentacionorganicaec.com" className="hover:text-white transition-colors">Plataforma Web</a></li>
               </ul>
             </div>
@@ -1098,6 +1103,73 @@ function LandingContent() {
 
         </div>
       </footer>
+
+      {/* ── App Store Coming Soon Modal ────────────────────────────────────── */}
+      {showAppStoreModal && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => setShowAppStoreModal(false)}
+        >
+          <div 
+            className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-100 text-center relative space-y-5 animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setShowAppStoreModal(false)}
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+              aria-label="Cerrar modal"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="w-16 h-16 bg-slate-900 text-white rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-slate-900/20">
+              <svg className="w-8 h-8 fill-current" viewBox="0 0 384 512">
+                <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 66.2 32.1 114.7c20.1 30.1 44.1 63.8 75.9 62.6 30.5-1.2 42.6-19.4 79.4-19.4 36.5 0 47.6 19.4 79.4 18.2 32.4-1.2 53.6-30.8 73.1-60.6 15.6-23.7 22.1-47.2 22.5-48.4-1.2-.6-43.7-17-43.7-61.9zM258.6 92.4c15.3-18.6 25.8-44.4 23-70.4-22.3 1-49.1 14.9-64.8 33.3-13.8 16.1-26 42.4-22.7 67.5 24.8 1.9 50-13 64.5-30.4z"/>
+              </svg>
+            </div>
+
+            <div className="space-y-2">
+              <span className="inline-block px-3 py-1 bg-amber-100 text-amber-800 text-xs font-black rounded-full uppercase tracking-wider">
+                Próximamente
+              </span>
+              <h3 className="text-2xl font-black text-slate-900">
+                ¡Muy pronto en App Store!
+              </h3>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Estamos finalizando el proceso de revisión con Apple. Muy pronto podrás descargar la aplicación oficial de <strong>ALOEC</strong> directamente en tu iPhone o iPad.
+              </p>
+            </div>
+
+            <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 text-left space-y-1">
+              <p className="text-xs font-bold text-emerald-900">
+                ¿Tienes un dispositivo Android o deseas usar la versión Web?
+              </p>
+              <p className="text-xs text-emerald-700">
+                Ya puedes instalar ALOEC desde <strong>Google Play Store</strong> o ingresar a la plataforma web directamente.
+              </p>
+            </div>
+
+            <div className="space-y-2 pt-2">
+              <a
+                href="https://play.google.com/store/apps/details?id=net.alimentacionorganica.aloec&hl=es_419"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-md transition-colors"
+              >
+                Ver en Google Play Store →
+              </a>
+              <button
+                type="button"
+                onClick={() => setShowAppStoreModal(false)}
+                className="w-full px-5 py-2.5 text-xs font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors"
+              >
+                Entendido, cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
