@@ -754,14 +754,16 @@ function LandingContent() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             
             {/* Juice Card 1 */}
-            <div className="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-all">
-              <div className="h-48 bg-gradient-to-br from-emerald-600 to-green-500 p-6 flex flex-col justify-between text-white relative">
-                <span className="bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full text-[11px] font-bold w-max">
-                  🌿 ALOEC-J01 · Desintoxicante
-                </span>
-                <div>
-                  <h3 className="text-2xl font-black">Jugo Verde Renovador</h3>
-                  <p className="text-xs text-emerald-100 mt-0.5">Alcaliniza e impulsa la digestión</p>
+            <div className="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-all group">
+              <div className="relative h-52 overflow-hidden bg-slate-900">
+                <img 
+                  src="/juices/jugo-verde.jpg" 
+                  alt="Jugo Verde Renovador" 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent flex flex-col justify-end p-5 text-white">
+                  <h3 className="text-2xl font-black text-white drop-shadow-sm">Jugo Verde Renovador</h3>
+                  <p className="text-xs text-emerald-300 font-medium mt-0.5">Alcaliniza e impulsa la digestión</p>
                 </div>
               </div>
               <div className="p-6 space-y-4">
@@ -779,14 +781,16 @@ function LandingContent() {
             </div>
 
             {/* Juice Card 2 */}
-            <div className="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-all">
-              <div className="h-48 bg-gradient-to-br from-amber-600 to-orange-500 p-6 flex flex-col justify-between text-white relative">
-                <span className="bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full text-[11px] font-bold w-max">
-                  🥕 ALOEC-J02 · Hepático
-                </span>
-                <div>
-                  <h3 className="text-2xl font-black">Jugo ZanaFruta</h3>
-                  <p className="text-xs text-amber-100 mt-0.5">Rico en Betacarotenos y Antioxidantes</p>
+            <div className="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-all group">
+              <div className="relative h-52 overflow-hidden bg-slate-900">
+                <img 
+                  src="/juices/jugo-zanahoria.jpg" 
+                  alt="Jugo ZanaFruta" 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent flex flex-col justify-end p-5 text-white">
+                  <h3 className="text-2xl font-black text-white drop-shadow-sm">Jugo ZanaFruta</h3>
+                  <p className="text-xs text-amber-300 font-medium mt-0.5">Rico en Betacarotenos y Antioxidantes</p>
                 </div>
               </div>
               <div className="p-6 space-y-4">
@@ -804,14 +808,16 @@ function LandingContent() {
             </div>
 
             {/* Juice Card 3 */}
-            <div className="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-all">
-              <div className="h-48 bg-gradient-to-br from-teal-700 to-emerald-600 p-6 flex flex-col justify-between text-white relative">
-                <span className="bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full text-[11px] font-bold w-max">
-                  🌱 ALOEC-J03 · Antiinflamatorio
-                </span>
-                <div>
-                  <h3 className="text-2xl font-black">Batido Quinua Dorada</h3>
-                  <p className="text-xs text-teal-100 mt-0.5">Proteína vegetal y fuerza celular</p>
+            <div className="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-all group">
+              <div className="relative h-52 overflow-hidden bg-slate-900">
+                <img 
+                  src="/juices/batido-quinua.jpg" 
+                  alt="Batido Quinua Dorada" 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent flex flex-col justify-end p-5 text-white">
+                  <h3 className="text-2xl font-black text-white drop-shadow-sm">Batido Quinua Dorada</h3>
+                  <p className="text-xs text-emerald-300 font-medium mt-0.5">Proteína vegetal y fuerza celular</p>
                 </div>
               </div>
               <div className="p-6 space-y-4">
