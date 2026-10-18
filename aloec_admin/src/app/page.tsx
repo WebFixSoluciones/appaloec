@@ -965,74 +965,153 @@ function LandingContent() {
         </div>
       </section>
 
-      {/* ── Footer ─────────────────────────────────────────────────────────── */}
-      <footer className="bg-slate-950 text-slate-400 py-12 border-t border-slate-900 text-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      {/* ── Footer Minimalista & Profesional ─────────────────────────────────── */}
+      <footer className="bg-slate-950 text-slate-400 pt-16 pb-12 border-t border-slate-800/80 relative overflow-hidden text-xs">
+        {/* Subtle background glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-24 bg-emerald-500/5 blur-3xl pointer-events-none"></div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 relative z-10">
           
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 items-start">
             
-            <div className="space-y-4">
-              <div className="flex items-center">
-                <img src="/logo.png" alt="ALOEC Logo" className="h-8 w-auto brightness-200" />
+            {/* Brand Column (Col 1-5) */}
+            <div className="md:col-span-5 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-white px-3.5 py-1.5 rounded-xl inline-flex items-center shadow-sm">
+                  <img src="/logo.png" alt="ALOEC Logo" className="h-7 w-auto object-contain" />
+                </div>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800/60 uppercase tracking-wider">
+                  App Oficial
+                </span>
               </div>
-              <p className="text-slate-500 leading-relaxed">
-                Alimentación Orgánica & Salud Holística. Promoviendo la salud natural y la jugoterapia científica globalmente.
+
+              <p className="text-slate-400 text-xs sm:text-sm leading-relaxed max-w-sm">
+                Alimentación Orgánica & Salud Holística. Tu guía interactiva de medicina integrativa, jugoterapia científica y hábitos saludables.
               </p>
-              <p className="text-emerald-400 font-mono font-bold">
-                app.alimentacionorganicaec.com
-              </p>
+
+              {/* Direct Store Download Badges in Footer */}
+              <div className="flex flex-wrap items-center gap-2.5 pt-1">
+                <a
+                  href="https://play.google.com/store/apps/details?id=net.alimentacionorganica.aloec&hl=es_419"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 hover:border-slate-700 transition-colors text-[11px] font-semibold"
+                >
+                  <svg className="w-3.5 h-3.5 fill-current text-emerald-400 shrink-0" viewBox="0 0 512 512">
+                    <path fill="#410593" d="M325.8 244.6L79.7 490.7c-7.9-5-12.7-13.7-12.7-23.7V45c0-10 4.8-18.7 12.7-23.7l246.1 223.3z"/>
+                    <path fill="#00E676" d="M386.4 300.2l-60.6-55.6 60.6-55.6 68.3 38.9c19.5 11.1 19.5 29.2 0 40.3l-68.3 32z"/>
+                    <path fill="#FF3D00" d="M79.7 21.3L325.8 244.6l60.6-55.6-267.8-152.6c-12-6.8-26.3-5-38.9 4.9z"/>
+                    <path fill="#FFC107" d="M79.7 490.7l246.1-223.3 60.6 55.6-267.8 152.6c-12 6.8-26.3 5-38.9-4.9z"/>
+                  </svg>
+                  <span>Google Play</span>
+                </a>
+
+                <button
+                  type="button"
+                  onClick={() => setShowAppStoreModal(true)}
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 hover:border-slate-700 transition-colors text-[11px] font-semibold"
+                >
+                  <svg className="w-3.5 h-3.5 fill-current text-white shrink-0" viewBox="0 0 384 512">
+                    <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 66.2 32.1 114.7c20.1 30.1 44.1 63.8 75.9 62.6 30.5-1.2 42.6-19.4 79.4-19.4 36.5 0 47.6 19.4 79.4 18.2 32.4-1.2 53.6-30.8 73.1-60.6 15.6-23.7 22.1-47.2 22.5-48.4-1.2-.6-43.7-17-43.7-61.9zM258.6 92.4c15.3-18.6 25.8-44.4 23-70.4-22.3 1-49.1 14.9-64.8 33.3-13.8 16.1-26 42.4-22.7 67.5 24.8 1.9 50-13 64.5-30.4z"/>
+                  </svg>
+                  <span>App Store</span>
+                </button>
+              </div>
             </div>
 
-            <div>
-              <p className="font-bold text-white uppercase tracking-wider mb-3 text-[11px]">Navegación</p>
-              <ul className="space-y-2">
-                <li><a href="#libro-app" className="hover:text-white transition-colors">Libro + App</a></li>
-                <li><a href="#beneficios" className="hover:text-white transition-colors">Beneficios</a></li>
-                <li><a href="#calculadora" className="hover:text-white transition-colors">Calculadora IMC</a></li>
-                <li><a href="#recetas" className="hover:text-white transition-colors">Jugos Verdes</a></li>
-                <li><a href="#precios" className="hover:text-white transition-colors">Planes & Ofertas</a></li>
-              </ul>
+            {/* Links Columns (Col 6-12: 3 clean columns) */}
+            <div className="md:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-8">
+              
+              {/* Col A: Navegación */}
+              <div className="space-y-3">
+                <p className="text-[11px] font-bold text-white uppercase tracking-wider">Explorar</p>
+                <ul className="space-y-2.5">
+                  <li><a href="#libro-app" className="hover:text-emerald-400 transition-colors">Libro + App</a></li>
+                  <li><a href="#beneficios" className="hover:text-emerald-400 transition-colors">Beneficios</a></li>
+                  <li><a href="#calculadora" className="hover:text-emerald-400 transition-colors">Calculadora IMC</a></li>
+                  <li><a href="#recetas" className="hover:text-emerald-400 transition-colors">Recetario</a></li>
+                  <li><a href="#precios" className="hover:text-emerald-400 transition-colors">Planes & Precios</a></li>
+                </ul>
+              </div>
+
+              {/* Col B: Ecosistema */}
+              <div className="space-y-3">
+                <p className="text-[11px] font-bold text-white uppercase tracking-wider">Ecosistema</p>
+                <ul className="space-y-2.5">
+                  <li>
+                    <a 
+                      href="https://play.google.com/store/apps/details?id=net.alimentacionorganica.aloec&hl=es_419" 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="hover:text-emerald-400 transition-colors flex items-center gap-1.5"
+                    >
+                      <span>Google Play</span>
+                      <ExternalLink className="w-2.5 h-2.5 text-slate-500" />
+                    </a>
+                  </li>
+                  <li>
+                    <button 
+                      type="button" 
+                      onClick={() => setShowAppStoreModal(true)} 
+                      className="hover:text-emerald-400 transition-colors text-left"
+                    >
+                      Apple App Store
+                    </button>
+                  </li>
+                  <li>
+                    <a href="https://app.alimentacionorganicaec.com" className="hover:text-emerald-400 transition-colors">
+                      Plataforma Web
+                    </a>
+                  </li>
+                  <li>
+                    <Link href="/register" className="hover:text-emerald-400 transition-colors">
+                      Crear Cuenta
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Col C: Seguridad & Legal */}
+              <div className="space-y-3 col-span-2 sm:col-span-1">
+                <p className="text-[11px] font-bold text-white uppercase tracking-wider">Seguridad</p>
+                <ul className="space-y-2.5">
+                  <li>
+                    <Link href="/politicas-de-privacidad" className="hover:text-emerald-400 transition-colors">
+                      Políticas de Privacidad
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/login" className="text-slate-300 hover:text-emerald-400 font-semibold inline-flex items-center gap-1 transition-colors">
+                      <Lock className="w-3 h-3 text-emerald-400" /> Acceso Administrativo
+                    </Link>
+                  </li>
+                  <li className="pt-1 text-slate-500 text-[11px] leading-tight">
+                    <span>Soporte: </span>
+                    <a href="mailto:soporte@alimentacionorganicaec.net" className="text-slate-400 hover:underline">
+                      soporte@alimentacionorganicaec.net
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
             </div>
-
-            <div>
-              <p className="font-bold text-white uppercase tracking-wider mb-3 text-[11px]">Descargas & Web</p>
-              <ul className="space-y-2">
-                <li><a href="https://play.google.com/store/apps/details?id=net.alimentacionorganica.aloec&hl=es_419" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Google Play Store</a></li>
-                <li><button type="button" onClick={() => setShowAppStoreModal(true)} className="hover:text-white transition-colors text-left">Apple App Store</button></li>
-                <li><a href="https://app.alimentacionorganicaec.com" className="hover:text-white transition-colors">Plataforma Web</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <p className="font-bold text-white uppercase tracking-wider mb-3 text-[11px]">Legales & Administración</p>
-              <ul className="space-y-2">
-                <li>
-                  <Link href="/politicas-de-privacidad" className="hover:text-emerald-400 transition-colors flex items-center gap-1">
-                    <span>Política de Privacidad</span>
-                  </Link>
-                </li>
-
-                <li>
-                  <Link href="/login" className="text-emerald-400 font-bold hover:underline inline-flex items-center gap-1">
-                    Acceso Panel Administrativo <ExternalLink className="w-3 h-3" />
-                  </Link>
-                </li>
-                <li><span className="text-slate-500">Soporte: soporte@alimentacionorganicaec.net</span></li>
-              </ul>
-            </div>
-
 
           </div>
 
-          <div className="pt-8 border-t border-slate-900 flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
-            <p>© {new Date().getFullYear()} ALOEC — Todos los derechos reservados.</p>
-            <p>
+          {/* Bottom Bar: Clean, balanced, modern */}
+          <div className="pt-8 border-t border-slate-900 flex flex-col sm:flex-row justify-between items-center gap-4 text-[11px] text-slate-500">
+            <div className="flex items-center gap-2.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <p>© {new Date().getFullYear()} ALOEC — Todos los derechos reservados.</p>
+            </div>
+            
+            <p className="flex items-center gap-1 text-slate-500">
               Desarrollado con excelencia por{' '}
               <a
                 href="https://webfixsoluciones.net"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-emerald-400 hover:underline font-bold"
+                className="text-emerald-400 hover:text-emerald-300 font-bold transition-colors"
               >
                 Web Fix Soluciones
               </a>
