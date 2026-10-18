@@ -415,138 +415,25 @@ function LandingContent() {
         </div>
       </section>
 
-      {/* ── App Interface Showcase (Real Screenshots Mock) ──────────────────── */}
-      <section className="py-20 bg-slate-100 border-b border-slate-200/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
+      {/* ── Unified Section: IMC Calculator & App Experience ────────────────── */}
+      <section id="calculadora" className="py-16 sm:py-20 bg-slate-100/80 border-b border-slate-200/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
           
-          <div className="text-center max-w-5xl mx-auto space-y-4">
+          {/* Header */}
+          <div className="text-center max-w-4xl mx-auto space-y-3">
             <span className="px-3.5 py-1.5 bg-emerald-100 text-emerald-800 text-xs font-extrabold rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
-              <Smartphone className="w-4 h-4 text-emerald-700" /> Experiencia Móvil de Primera
+              <Calculator className="w-4 h-4 text-emerald-700" /> Diagnóstico Biológico & App ALOEC
             </span>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-slate-900 md:whitespace-nowrap">
-              Conoce la interfaz de la Aplicación Móvil ALOEC
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 sm:whitespace-nowrap">
+              Calcula tu IMC y Conoce las Funciones de la App
             </h2>
             <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto">
-              Diseño limpio, minimalista y libre de distracciones para acompañar tu lectura del libro.
+              Determina tu rango biológico al instante y descubre cómo la aplicación acompaña tu lectura con planes y hábitos diarios.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            
-            {/* Screen 1: IMC Calculator */}
-            <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-md space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md">
-                  PANTALLA 1
-                </span>
-                <span className="text-xs text-slate-500 font-bold">Calculadora de IMC</span>
-              </div>
-              <div className="bg-slate-50 p-4 rounded-2xl space-y-3 border border-slate-200">
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="p-3 bg-emerald-700 text-white rounded-xl text-center font-bold text-xs flex items-center justify-center gap-1">
-                    <span>♂ Masculino</span>
-                  </div>
-                  <div className="p-3 bg-slate-200 text-slate-600 rounded-xl text-center font-bold text-xs flex items-center justify-center gap-1">
-                    <span>♀ Femenino</span>
-                  </div>
-                </div>
-                <div className="bg-white p-3 rounded-xl border border-slate-200 space-y-1 text-center">
-                  <span className="text-[10px] text-slate-400 font-bold uppercase">Resultado IMC</span>
-                  <p className="text-3xl font-black text-amber-600 font-mono">26.6</p>
-                  <p className="text-xs font-bold text-amber-700 bg-amber-50 py-0.5 px-2 rounded-full inline-block">Sobrepeso</p>
-                </div>
-              </div>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Ingresa tu género, edad, estatura y peso para determinar al instante tu rango biológico y asignarte tu protocolo médico.
-              </p>
-            </div>
-
-            {/* Screen 2: Progress & Daily Streaks */}
-            <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-md space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md">
-                  PANTALLA 2
-                </span>
-                <span className="text-xs text-slate-500 font-bold">Progreso & Racha</span>
-              </div>
-              <div className="bg-slate-50 p-4 rounded-2xl space-y-3 border border-slate-200">
-                <div className="bg-white p-3 rounded-xl border border-slate-200 flex items-center gap-3">
-                  <div className="w-10 h-10 bg-amber-100 text-amber-700 rounded-xl flex items-center justify-center shrink-0">
-                    <Flame className="w-6 h-6 fill-current" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-black text-slate-800">Días Consecutivos</p>
-                    <p className="text-[10px] text-slate-500">Completa tus jugos para subir tu racha</p>
-                  </div>
-                </div>
-                <div className="bg-white p-3 rounded-xl border border-slate-200">
-                  <div className="flex justify-between items-center text-xs font-bold mb-2">
-                    <span className="text-slate-700">Cumplimiento Semanal</span>
-                    <span className="text-emerald-700 font-mono">100%</span>
-                  </div>
-                  <div className="flex justify-between text-[10px] text-slate-400 font-bold pt-1">
-                    <span className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center">M</span>
-                    <span className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center">X</span>
-                    <span className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center">J</span>
-                    <span className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center">V</span>
-                    <span className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center">S</span>
-                    <span className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center">D</span>
-                    <span className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center">L</span>
-                  </div>
-                </div>
-              </div>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Monitorea tu racha de hábitos saludables, cumplimiento semanal de jugos y evolución corporal día tras día.
-              </p>
-            </div>
-
-            {/* Screen 3: Video Lessons */}
-            <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-md space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md">
-                  PANTALLA 3
-                </span>
-                <span className="text-xs text-slate-500 font-bold">Lecciones en Video</span>
-              </div>
-              <div className="bg-slate-50 p-4 rounded-2xl space-y-3 border border-slate-200">
-                <div className="bg-slate-900 text-white p-3 rounded-xl flex items-center justify-between">
-                  <div>
-                    <span className="text-[9px] bg-emerald-500 text-slate-950 font-black px-1.5 py-0.5 rounded uppercase">CURSO JUGOS</span>
-                    <p className="text-xs font-bold mt-1">Clase 1: Jugo ZanaFruta</p>
-                    <p className="text-[10px] text-slate-400">Jugo de Zanahoria con Manzanas Verdes</p>
-                  </div>
-                  <div className="w-8 h-8 bg-emerald-500 text-slate-950 rounded-full flex items-center justify-center shrink-0">
-                    <Play className="w-4 h-4 fill-current ml-0.5" />
-                  </div>
-                </div>
-              </div>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Aprende la preparación correcta de cada jugo verde con las lecciones dictadas en video por instructores expertos.
-              </p>
-            </div>
-
-          </div>
-
-        </div>
-      </section>
-
-      {/* ── Interactive Live IMC Calculator Section ──────────────────────────── */}
-      <section id="calculadora" className="py-20 bg-white border-b border-slate-200/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div className="text-center max-w-5xl mx-auto space-y-4 mb-12">
-            <span className="px-3.5 py-1.5 bg-emerald-100 text-emerald-800 text-xs font-extrabold rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
-              <Calculator className="w-4 h-4 text-emerald-700" /> Diagnóstico Biológico en Vivo
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900">
-              Calcula tu Índice de Masa Corporal (IMC)
-            </h2>
-            <p className="text-base sm:text-lg text-slate-600 md:whitespace-nowrap">
-              Descubre qué protocolo médico de jugoterapia orgánica necesita tu organismo hoy mismo.
-            </p>
-          </div>
-
-          <div className="max-w-4xl mx-auto bg-slate-50 border border-slate-200 rounded-3xl p-6 sm:p-10 shadow-lg grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+          {/* Interactive Calculator Card */}
+          <div className="max-w-5xl mx-auto bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-10 shadow-lg shadow-slate-200/50 grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
             
             {/* Inputs Column */}
             <div className="md:col-span-6 space-y-6">
@@ -561,7 +448,7 @@ function LandingContent() {
                     className={`py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border transition-all ${
                       gender === 'male' 
                         ? 'bg-emerald-700 text-white border-emerald-700 shadow-sm' 
-                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                     }`}
                   >
                     ♂ Masculino
@@ -572,7 +459,7 @@ function LandingContent() {
                     className={`py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border transition-all ${
                       gender === 'female' 
                         ? 'bg-emerald-700 text-white border-emerald-700 shadow-sm' 
-                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                     }`}
                   >
                     ♀ Femenino
@@ -610,9 +497,13 @@ function LandingContent() {
                 />
               </div>
 
-              <div className="bg-white p-4 rounded-xl border border-slate-200 text-xs text-slate-500 space-y-1">
-                <p className="font-bold text-slate-700">📌 ¿Sabías que?</p>
-                <p>El índice de masa corporal orienta la selección de enzimas, antioxidantes e ingredientes verdes específicos para desbloquear tu metabolismo.</p>
+              <div className="bg-emerald-50/70 p-3.5 rounded-xl border border-emerald-200/80 text-xs text-emerald-900 space-y-1">
+                <p className="font-bold flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-700" /> Diagnóstico Automatizado
+                </p>
+                <p className="text-emerald-800/90 leading-relaxed text-[11px]">
+                  El IMC orienta la selección de enzimas, antioxidantes e ingredientes verdes específicos para desbloquear tu metabolismo.
+                </p>
               </div>
             </div>
 
@@ -639,6 +530,47 @@ function LandingContent() {
               >
                 Obtener Mi Protocolo Completo →
               </a>
+            </div>
+
+          </div>
+
+          {/* Compact Feature Highlights (Racha, Videocursos, Protocolos) */}
+          <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+            
+            <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs flex items-start gap-3.5 hover:border-emerald-300 transition-colors">
+              <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                <Layers className="w-5 h-5" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">9 Protocolos Médicos</h4>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Asignados al instante según tu diagnóstico para desintoxicación, control de peso y salud celular.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs flex items-start gap-3.5 hover:border-emerald-300 transition-colors">
+              <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                <Flame className="w-5 h-5 fill-current" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Progreso & Racha</h4>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Registra tus hábitos diarios, cumplimiento semanal de jugos y evolución corporal en tu móvil.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs flex items-start gap-3.5 hover:border-emerald-300 transition-colors">
+              <div className="w-10 h-10 rounded-xl bg-slate-900 text-emerald-400 flex items-center justify-center shrink-0">
+                <Play className="w-5 h-5 fill-current ml-0.5" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Videocursos en HD</h4>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Lecciones guiadas de nutrición, terapia Gerson y preparación correcta de cada jugo verde.
+                </p>
+              </div>
             </div>
 
           </div>
