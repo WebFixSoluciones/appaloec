@@ -31,9 +31,9 @@ class _ForceUpdateScreenState extends State<ForceUpdateScreen> {
   Future<void> _openStore() async {
     if (_isAndroid) {
       final uris = [
-        Uri.parse('market://details?id=com.webfix.aloec_mobile'),
+        Uri.parse('market://details?id=net.alimentacionorganica.aloec'),
         Uri.parse(
-            'https://play.google.com/store/apps/details?id=com.webfix.aloec_mobile'),
+            'https://play.google.com/store/apps/details?id=net.alimentacionorganica.aloec&hl=es_419'),
       ];
       for (final uri in uris) {
         try {

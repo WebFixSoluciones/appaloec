@@ -251,24 +251,113 @@
             align-items: center;
             background-color: var(--dark);
             color: #ffffff;
-            padding: 0.75rem 1.5rem;
-            border-radius: 12px;
+            padding: 0.8rem 1.5rem;
+            border-radius: 14px;
             text-decoration: none;
-            gap: 0.8rem;
+            gap: 0.85rem;
             transition: var(--transition);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.12);
         }
 
         .store-btn:hover {
             background-color: #000000;
             transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
         }
 
-        .store-btn svg {
+        .store-btn-google {
+            background: linear-gradient(135deg, #091220 0%, #0f1c30 100%);
+            border: 2px solid rgba(16, 185, 129, 0.6);
+            box-shadow: 0 10px 24px -5px rgba(16, 185, 129, 0.35);
+            position: relative;
+        }
+
+        .store-btn-google:hover {
+            background: linear-gradient(135deg, #020617 0%, #08111e 100%);
+            border-color: #10B981;
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 16px 32px -4px rgba(16, 185, 129, 0.5);
+        }
+
+        .store-btn-apple {
+            background-color: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            opacity: 0.95;
+        }
+
+        .store-btn svg:not(.google-play-svg) {
             width: 24px;
             height: 24px;
             fill: #ffffff;
+        }
+
+        .google-play-svg {
+            width: 26px;
+            height: 26px;
+            flex-shrink: 0;
+            transition: transform 0.2s ease;
+        }
+
+        .store-btn-google:hover .google-play-svg {
+            transform: scale(1.12);
+        }
+
+        .store-badge-pill {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(16, 185, 129, 0.18);
+            border: 1px solid rgba(16, 185, 129, 0.45);
+            color: #34D399;
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 0.22rem 0.55rem;
+            border-radius: 9999px;
+            margin-left: 0.35rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .live-dot {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: #34D399;
+            box-shadow: 0 0 8px #34D399;
+            vertical-align: middle;
+            margin-right: 4px;
+            animation: pulse-dot 1.8s infinite ease-in-out;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.35; transform: scale(0.7); }
+        }
+
+        .aloec-toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #064E3B;
+            color: #ffffff;
+            padding: 14px 22px;
+            border-radius: 14px;
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.3);
+            border: 1.5px solid #10B981;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.92rem;
+            font-weight: 600;
+            z-index: 99999;
+            transform: translateY(120px);
+            opacity: 0;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+        .aloec-toast.show {
+            transform: translateY(0);
+            opacity: 1;
         }
 
         .store-btn-text {
@@ -763,8 +852,8 @@
         }
 
         .cta-box .store-btn {
-            background-color: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.25);
             backdrop-filter: blur(8px);
         }
 
@@ -773,7 +862,7 @@
             color: var(--dark);
         }
 
-        .cta-box .store-btn:hover svg {
+        .cta-box .store-btn:hover svg:not(.google-play-svg) {
             fill: var(--dark);
         }
 
@@ -783,6 +872,32 @@
 
         .cta-box .store-btn:hover .store-btn-text span:last-child {
             color: var(--dark);
+        }
+
+        .cta-box .store-btn-google {
+            background: #020617;
+            border: 2px solid #34D399;
+            color: #ffffff !important;
+            box-shadow: 0 14px 32px rgba(0, 0, 0, 0.45);
+        }
+
+        .cta-box .store-btn-google:hover {
+            background: #000000;
+            border-color: #10B981;
+            color: #ffffff !important;
+            box-shadow: 0 18px 40px rgba(16, 185, 129, 0.4);
+        }
+
+        .cta-box .store-btn-google .store-btn-text span:first-child {
+            color: #A7F3D0 !important;
+        }
+
+        .cta-box .store-btn-google .store-btn-text span:last-child {
+            color: #ffffff !important;
+        }
+
+        .cta-box .store-btn-google:hover .store-btn-text span:last-child {
+            color: #ffffff !important;
         }
 
         .cta-decorations {
@@ -1060,22 +1175,26 @@
                 </div>
                 <p style="color:var(--text-muted);font-size:0.82rem;margin-top:0.8rem">o descarga la app</p>
                 <div class="store-buttons">
-                    <a href="#descargar" class="store-btn">
+                    <a href="https://play.google.com/store/apps/details?id=net.alimentacionorganica.aloec&hl=es_419" target="_blank" rel="noopener noreferrer" class="store-btn store-btn-google js-playstore-btn">
+                        <svg class="google-play-svg" viewBox="0 0 512 512" aria-hidden="true">
+                            <path fill="#410593" d="M325.8 244.6L79.7 490.7c-7.9-5-12.7-13.7-12.7-23.7V45c0-10 4.8-18.7 12.7-23.7l246.1 223.3z"/>
+                            <path fill="#00E676" d="M386.4 300.2l-60.6-55.6 60.6-55.6 68.3 38.9c19.5 11.1 19.5 29.2 0 40.3l-68.3 32z"/>
+                            <path fill="#FF3D00" d="M79.7 21.3L325.8 244.6l60.6-55.6-267.8-152.6c-12-6.8-26.3-5-38.9 4.9z"/>
+                            <path fill="#FFC107" d="M79.7 490.7l246.1-223.3 60.6 55.6-267.8 152.6c-12 6.8-26.3 5-38.9-4.9z"/>
+                        </svg>
+                        <div class="store-btn-text">
+                            <span><span class="live-dot"></span> DISPONIBLE EN</span>
+                            <span>Google Play</span>
+                        </div>
+                        <span class="store-badge-pill">App Oficial</span>
+                    </a>
+                    <a href="#descargar" class="store-btn store-btn-apple">
                         <svg viewBox="0 0 24 24">
                             <path d="M18.71,19.5C17.88,20.74 17,21.95 15.66,21.97C14.32,22 13.89,21.18 12.37,21.18C10.84,21.18 10.37,21.95 9.1,22C7.79,22.05 6.8,20.68 5.96,19.47C4.25,17 2.94,12.45 4.7,9.39C5.57,7.87 7.13,6.91 8.82,6.88C10.1,6.86 11.32,7.75 12.11,7.75C12.89,7.75 14.37,6.68 15.92,6.84C16.57,6.87 18.39,7.1 19.56,8.82C19.47,8.88 17.39,10.1 17.41,12.63C17.44,15.65 20.06,16.66 20.1,16.67C20.08,16.74 19.67,18.11 18.71,19.5M15.97,4.17C16.63,3.37 17.07,2.28 16.95,1C16,1.04 14.9,1.6 14.24,2.38C13.68,3.04 13.19,4.14 13.34,5.39C14.39,5.47 15.4,4.88 15.97,4.17Z"/>
                         </svg>
                         <div class="store-btn-text">
-                            <span>Consíguelo en el</span>
+                            <span>Próximamente en</span>
                             <span>App Store</span>
-                        </div>
-                    </a>
-                    <a href="#descargar" class="store-btn">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M3,5.27V18.73L16.55,12L3,5.27M17.87,11.33L21,12.9L22.56,12L21,11.1L17.87,12.67V11.33M3.23,4L16.85,10.8L19.23,9.58L5.78,2.78C4.74,2.26 3.65,2.89 3.23,4M3.23,20C3.65,21.11 4.74,21.74 5.78,21.22L19.23,14.42L16.85,13.2L3.23,20Z"/>
-                        </svg>
-                        <div class="store-btn-text">
-                            <span>Disponible en</span>
-                            <span>Google Play</span>
                         </div>
                     </a>
                 </div>
@@ -1333,22 +1452,26 @@
                 <p>Descarga la app de ALOEC de forma gratuita y da hoy el primer paso para incorporar hábitos de desintoxicación saludables a tu rutina diaria con jugos verdes naturales.</p>
                 
                 <div class="store-buttons">
-                    <a href="#" class="store-btn">
+                    <a href="https://play.google.com/store/apps/details?id=net.alimentacionorganica.aloec&hl=es_419" target="_blank" rel="noopener noreferrer" class="store-btn store-btn-google js-playstore-btn">
+                        <svg class="google-play-svg" viewBox="0 0 512 512" aria-hidden="true">
+                            <path fill="#410593" d="M325.8 244.6L79.7 490.7c-7.9-5-12.7-13.7-12.7-23.7V45c0-10 4.8-18.7 12.7-23.7l246.1 223.3z"/>
+                            <path fill="#00E676" d="M386.4 300.2l-60.6-55.6 60.6-55.6 68.3 38.9c19.5 11.1 19.5 29.2 0 40.3l-68.3 32z"/>
+                            <path fill="#FF3D00" d="M79.7 21.3L325.8 244.6l60.6-55.6-267.8-152.6c-12-6.8-26.3-5-38.9 4.9z"/>
+                            <path fill="#FFC107" d="M79.7 490.7l246.1-223.3 60.6 55.6-267.8 152.6c-12 6.8-26.3 5-38.9-4.9z"/>
+                        </svg>
+                        <div class="store-btn-text">
+                            <span><span class="live-dot"></span> DESCARGA DIRECTA</span>
+                            <span>Google Play</span>
+                        </div>
+                        <span class="store-badge-pill">Ver en Play Store ↗</span>
+                    </a>
+                    <a href="#descargar" class="store-btn store-btn-apple">
                         <svg viewBox="0 0 24 24">
                             <path d="M18.71,19.5C17.88,20.74 17,21.95 15.66,21.97C14.32,22 13.89,21.18 12.37,21.18C10.84,21.18 10.37,21.95 9.1,22C7.79,22.05 6.8,20.68 5.96,19.47C4.25,17 2.94,12.45 4.7,9.39C5.57,7.87 7.13,6.91 8.82,6.88C10.1,6.86 11.32,7.75 12.11,7.75C12.89,7.75 14.37,6.68 15.92,6.84C16.57,6.87 18.39,7.1 19.56,8.82C19.47,8.88 17.39,10.1 17.41,12.63C17.44,15.65 20.06,16.66 20.1,16.67C20.08,16.74 19.67,18.11 18.71,19.5M15.97,4.17C16.63,3.37 17.07,2.28 16.95,1C16,1.04 14.9,1.6 14.24,2.38C13.68,3.04 13.19,4.14 13.34,5.39C14.39,5.47 15.4,4.88 15.97,4.17Z"/>
                         </svg>
                         <div class="store-btn-text">
-                            <span>Consíguelo en el</span>
+                            <span>Próximamente en</span>
                             <span>App Store</span>
-                        </div>
-                    </a>
-                    <a href="#" class="store-btn">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M3,5.27V18.73L16.55,12L3,5.27M17.87,11.33L21,12.9L22.56,12L21,11.1L17.87,12.67V11.33M3.23,4L16.85,10.8L19.23,9.58L5.78,2.78C4.74,2.26 3.65,2.89 3.23,4M3.23,20C3.65,21.11 4.74,21.74 5.78,21.22L19.23,14.42L16.85,13.2L3.23,20Z"/>
-                        </svg>
-                        <div class="store-btn-text">
-                            <span>Disponible en</span>
-                            <span>Google Play</span>
                         </div>
                     </a>
                 </div>
@@ -1415,14 +1538,19 @@
             <div class="modal-success" id="modalSuccess">
                 <h4>¡Cuenta creada!</h4>
                 <p>Descarga la app para comenzar tu viaje saludable.</p>
-                <div class="store-buttons">
-                    <a href="#" class="store-btn">
-                        <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:#fff"><path d="M18.71,19.5C17.88,20.74 17,21.95 15.66,21.97C14.32,22 13.89,21.18 12.37,21.18C10.84,21.18 10.37,21.95 9.1,22C7.79,22.05 6.8,20.68 5.96,19.47C4.25,17 2.94,12.45 4.7,9.39C5.57,7.87 7.13,6.91 8.82,6.88C10.1,6.86 11.32,7.75 12.11,7.75C12.89,7.75 14.37,6.68 15.92,6.84C16.57,6.87 18.39,7.1 19.56,8.82C19.47,8.88 17.39,10.1 17.41,12.63C17.44,15.65 20.06,16.66 20.1,16.67C20.08,16.74 19.67,18.11 18.71,19.5M15.97,4.17C16.63,3.37 17.07,2.28 16.95,1C16,1.04 14.9,1.6 14.24,2.38C13.68,3.04 13.19,4.14 13.34,5.39C14.39,5.47 15.4,4.88 15.97,4.17Z"/></svg>
-                        <div class="store-btn-text"><span>Consíguelo en el</span><span>App Store</span></div>
-                    </a>
-                    <a href="#" class="store-btn">
-                        <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:#fff"><path d="M3,5.27V18.73L16.55,12L3,5.27M17.87,11.33L21,12.9L22.56,12L21,11.1L17.87,12.67V11.33M3.23,4L16.85,10.8L19.23,9.58L5.78,2.78C4.74,2.26 3.65,2.89 3.23,4M3.23,20C3.65,21.11 4.74,21.74 5.78,21.22L19.23,14.42L16.85,13.2L3.23,20Z"/></svg>
+                <div class="store-buttons" style="justify-content:center">
+                    <a href="https://play.google.com/store/apps/details?id=net.alimentacionorganica.aloec&hl=es_419" target="_blank" rel="noopener noreferrer" class="store-btn store-btn-google js-playstore-btn">
+                        <svg class="google-play-svg" viewBox="0 0 512 512" style="width:24px;height:24px" aria-hidden="true">
+                            <path fill="#410593" d="M325.8 244.6L79.7 490.7c-7.9-5-12.7-13.7-12.7-23.7V45c0-10 4.8-18.7 12.7-23.7l246.1 223.3z"/>
+                            <path fill="#00E676" d="M386.4 300.2l-60.6-55.6 60.6-55.6 68.3 38.9c19.5 11.1 19.5 29.2 0 40.3l-68.3 32z"/>
+                            <path fill="#FF3D00" d="M79.7 21.3L325.8 244.6l60.6-55.6-267.8-152.6c-12-6.8-26.3-5-38.9 4.9z"/>
+                            <path fill="#FFC107" d="M79.7 490.7l246.1-223.3 60.6 55.6-267.8 152.6c-12 6.8-26.3 5-38.9-4.9z"/>
+                        </svg>
                         <div class="store-btn-text"><span>Disponible en</span><span>Google Play</span></div>
+                    </a>
+                    <a href="#" class="store-btn store-btn-apple">
+                        <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:#fff"><path d="M18.71,19.5C17.88,20.74 17,21.95 15.66,21.97C14.32,22 13.89,21.18 12.37,21.18C10.84,21.18 10.37,21.95 9.1,22C7.79,22.05 6.8,20.68 5.96,19.47C4.25,17 2.94,12.45 4.7,9.39C5.57,7.87 7.13,6.91 8.82,6.88C10.1,6.86 11.32,7.75 12.11,7.75C12.89,7.75 14.37,6.68 15.92,6.84C16.57,6.87 18.39,7.1 19.56,8.82C19.47,8.88 17.39,10.1 17.41,12.63C17.44,15.65 20.06,16.66 20.1,16.67C20.08,16.74 19.67,18.11 18.71,19.5M15.97,4.17C16.63,3.37 17.07,2.28 16.95,1C16,1.04 14.9,1.6 14.24,2.38C13.68,3.04 13.19,4.14 13.34,5.39C14.39,5.47 15.4,4.88 15.97,4.17Z"/></svg>
+                        <div class="store-btn-text"><span>Próximamente</span><span>App Store</span></div>
                     </a>
                 </div>
             </div>
@@ -1472,16 +1600,45 @@
             return code;
         }
 
+        // ── Toast Notification Helper ──
+        function showToast(msg) {
+            var toast = document.getElementById('aloecToast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'aloecToast';
+                toast.className = 'aloec-toast';
+                document.body.appendChild(toast);
+            }
+            toast.innerHTML = '<span>🌱</span> <span>' + msg + '</span>';
+            toast.classList.add('show');
+            setTimeout(function() {
+                toast.classList.remove('show');
+            }, 3600);
+        }
+
         // ── Clipboard copy on Download buttons ──
         const storedCode = getStoredReferralCode();
-        document.querySelectorAll('a[href="#descargar"]').forEach(function(btn) {
-            btn.addEventListener('click', function(e) {
+
+        // Handle Play Store click with referral copy assistance
+        document.querySelectorAll('.js-playstore-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
                 if (storedCode) {
-                    e.preventDefault();
                     copyToClipboard(storedCode).then(function() {
-                        var el = document.getElementById('descargar');
-                        if (el) el.scrollIntoView({ behavior: 'smooth' });
+                        showToast('¡Código de descuento "' + storedCode + '" copiado al portapapeles!');
                     });
+                }
+            });
+        });
+
+        // Handle App Store coming soon hint
+        document.querySelectorAll('.store-btn-apple').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                var href = btn.getAttribute('href');
+                if (href === '#' || href === '#descargar') {
+                    e.preventDefault();
+                    showToast('¡Próximamente en iOS! Ya puedes descargar la App oficial en Google Play.');
+                    var el = document.getElementById('descargar');
+                    if (el && href === '#descargar') el.scrollIntoView({ behavior: 'smooth' });
                 }
             });
         });
