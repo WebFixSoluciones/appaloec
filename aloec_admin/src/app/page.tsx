@@ -419,14 +419,14 @@ function LandingContent() {
       <section className="py-20 bg-slate-100 border-b border-slate-200/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
           
-          <div className="text-center max-w-3xl mx-auto space-y-4">
+          <div className="text-center max-w-5xl mx-auto space-y-4">
             <span className="px-3.5 py-1.5 bg-emerald-100 text-emerald-800 text-xs font-extrabold rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
               <Smartphone className="w-4 h-4 text-emerald-700" /> Experiencia Móvil de Primera
             </span>
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-slate-900 md:whitespace-nowrap">
               Conoce la interfaz de la Aplicación Móvil ALOEC
             </h2>
-            <p className="text-base sm:text-lg text-slate-600">
+            <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto">
               Diseño limpio, minimalista y libre de distracciones para acompañar tu lectura del libro.
             </p>
           </div>
