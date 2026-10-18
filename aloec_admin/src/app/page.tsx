@@ -971,11 +971,11 @@ function LandingContent() {
       <section id="download" className="py-20 bg-emerald-700 text-white relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8 relative z-10">
           
-          <div className="max-w-3xl mx-auto space-y-4">
-            <h2 className="text-3xl sm:text-5xl font-black tracking-tight">
-              Descarga la App ALOEC en tu smartphone
+          <div className="max-w-4xl mx-auto space-y-4">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight sm:whitespace-nowrap">
+              Descarga la App ALOEC
             </h2>
-            <p className="text-lg text-emerald-100">
+            <p className="text-base sm:text-lg text-emerald-100 max-w-2xl mx-auto">
               Acompaña la lectura del libro "Ama Lo Que Comes" con la app oficial. Disponible globalmente para Android e iOS.
             </p>
           </div>
