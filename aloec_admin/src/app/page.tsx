@@ -49,24 +49,18 @@ interface DynamicMembership {
 }
 
 // Google Play Official Store Button Component
-function GooglePlayButton() {
+function GooglePlayButton({ className = "" }: { className?: string }) {
   return (
     <a
       href="https://play.google.com/store/apps/details?id=net.alimentacionorganica.aloec&hl=es_419"
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-3.5 px-6 py-3.5 bg-[#0a1112] hover:bg-[#3e9d51] text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 group transform hover:-translate-y-0.5"
+      className={`inline-flex items-center justify-center gap-3 px-7 py-3.5 bg-[#0a1112] hover:bg-[#3e9d51] text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 group transform hover:-translate-y-0.5 ${className}`}
     >
-      <svg className="w-7 h-7 shrink-0 transition-transform group-hover:scale-110" viewBox="0 0 512 512" aria-hidden="true">
-        <path fill="#410593" d="M325.8 244.6L79.7 490.7c-7.9-5-12.7-13.7-12.7-23.7V45c0-10 4.8-18.7 12.7-23.7l246.1 223.3z"/>
-        <path fill="#00E676" d="M386.4 300.2l-60.6-55.6 60.6-55.6 68.3 38.9c19.5 11.1 19.5 29.2 0 40.3l-68.3 32z"/>
-        <path fill="#FF3D00" d="M79.7 21.3L325.8 244.6l60.6-55.6-267.8-152.6c-12-6.8-26.3-5-38.9 4.9z"/>
-        <path fill="#FFC107" d="M79.7 490.7l246.1-223.3 60.6 55.6-267.8 152.6c-12 6.8-26.3 5-38.9-4.9z"/>
+      <svg className="w-6 h-6 shrink-0 fill-white transition-transform group-hover:scale-105" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3.609 1.814L13.792 12 3.61 22.186A2.404 2.404 0 0 1 3 20.575V3.425c0-.623.226-1.196.609-1.611zm1.484-.814L15.206 6.838 12.593 9.451 5.093 1zM5.093 23l7.5-8.451 2.613 2.613L5.093 23zm11.393-7.514l2.946-1.7c.947-.546.947-1.436 0-1.982l-2.946-1.7-2.353 2.691 2.353 2.691z"/>
       </svg>
-      <div className="text-left leading-none">
-        <span className="block text-[10px] uppercase tracking-wider font-extrabold text-[#e2f859]">DISPONIBLE EN</span>
-        <span className="block text-base font-black tracking-tight text-white mt-1">Google Play</span>
-      </div>
+      <span className="text-base sm:text-lg font-black tracking-tight text-white">Google Play</span>
     </a>
   );
 }
@@ -88,20 +82,17 @@ function AndroidAPKButton() {
 }
 
 // Apple App Store Badge Component (Triggers "Muy pronto en App Store" Popup)
-function AppStoreButton({ onClick }: { onClick?: () => void }) {
+function AppStoreButton({ onClick, className = "" }: { onClick?: () => void; className?: string }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex items-center gap-3.5 px-6 py-3.5 bg-white hover:bg-[#0a1112] text-[#0a1112] hover:text-white border-2 border-[#0a1112] rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer text-left transform hover:-translate-y-0.5"
+      className={`inline-flex items-center justify-center gap-3 px-7 py-3.5 bg-white hover:bg-[#0a1112] text-[#0a1112] hover:text-white border-2 border-[#0a1112] rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer text-left transform hover:-translate-y-0.5 ${className}`}
     >
-      <svg className="w-7 h-7 fill-current shrink-0 transition-transform group-hover:scale-110" viewBox="0 0 384 512">
+      <svg className="w-6 h-6 fill-current shrink-0 transition-transform group-hover:scale-105" viewBox="0 0 384 512" aria-hidden="true">
         <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 66.2 32.1 114.7c20.1 30.1 44.1 63.8 75.9 62.6 30.5-1.2 42.6-19.4 79.4-19.4 36.5 0 47.6 19.4 79.4 18.2 32.4-1.2 53.6-30.8 73.1-60.6 15.6-23.7 22.1-47.2 22.5-48.4-1.2-.6-43.7-17-43.7-61.9zM258.6 92.4c15.3-18.6 25.8-44.4 23-70.4-22.3 1-49.1 14.9-64.8 33.3-13.8 16.1-26 42.4-22.7 67.5 24.8 1.9 50-13 64.5-30.4z"/>
       </svg>
-      <div className="text-left leading-none">
-        <span className="block text-[10px] uppercase tracking-wider font-extrabold opacity-70 group-hover:opacity-90">PRÓXIMAMENTE EN</span>
-        <span className="block text-base font-black tracking-tight mt-1">App Store</span>
-      </div>
+      <span className="text-base sm:text-lg font-black tracking-tight">App Store</span>
     </button>
   );
 }
@@ -308,41 +299,8 @@ function LandingContent() {
 
                 {/* The Two Main Hero Buttons: Google Play & App Store */}
                 <div className="pt-2 flex flex-wrap items-center gap-4">
-                  
-                  {/* Button 1: Google Play Store (Direct Link) */}
-                  <a
-                    href="https://play.google.com/store/apps/details?id=net.alimentacionorganica.aloec&hl=es_419"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-3.5 px-6 py-4 bg-[#0a1112] hover:bg-[#3e9d51] text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-0.5 group"
-                  >
-                    <svg className="w-7 h-7 shrink-0 transition-transform group-hover:scale-110" viewBox="0 0 512 512" aria-hidden="true">
-                      <path fill="#410593" d="M325.8 244.6L79.7 490.7c-7.9-5-12.7-13.7-12.7-23.7V45c0-10 4.8-18.7 12.7-23.7l246.1 223.3z"/>
-                      <path fill="#00E676" d="M386.4 300.2l-60.6-55.6 60.6-55.6 68.3 38.9c19.5 11.1 19.5 29.2 0 40.3l-68.3 32z"/>
-                      <path fill="#FF3D00" d="M79.7 21.3L325.8 244.6l60.6-55.6-267.8-152.6c-12-6.8-26.3-5-38.9 4.9z"/>
-                      <path fill="#FFC107" d="M79.7 490.7l246.1-223.3 60.6 55.6-267.8 152.6c-12 6.8-26.3 5-38.9-4.9z"/>
-                    </svg>
-                    <div className="text-left leading-none">
-                      <span className="block text-[10px] uppercase tracking-wider font-extrabold text-[#e2f859]">DISPONIBLE EN</span>
-                      <span className="block text-base font-black tracking-tight text-white mt-1">Google Play</span>
-                    </div>
-                  </a>
-
-                  {/* Button 2: Apple App Store (Opens Coming Soon Popup) */}
-                  <button
-                    type="button"
-                    onClick={() => setShowAppStoreModal(true)}
-                    className="inline-flex items-center gap-3.5 px-6 py-4 bg-white hover:bg-[#0a1112] text-[#0a1112] hover:text-white border-2 border-[#0a1112] rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 group cursor-pointer text-left"
-                  >
-                    <svg className="w-7 h-7 fill-current shrink-0 transition-transform group-hover:scale-110" viewBox="0 0 384 512">
-                      <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 66.2 32.1 114.7c20.1 30.1 44.1 63.8 75.9 62.6 30.5-1.2 42.6-19.4 79.4-19.4 36.5 0 47.6 19.4 79.4 18.2 32.4-1.2 53.6-30.8 73.1-60.6 15.6-23.7 22.1-47.2 22.5-48.4-1.2-.6-43.7-17-43.7-61.9zM258.6 92.4c15.3-18.6 25.8-44.4 23-70.4-22.3 1-49.1 14.9-64.8 33.3-13.8 16.1-26 42.4-22.7 67.5 24.8 1.9 50-13 64.5-30.4z"/>
-                    </svg>
-                    <div className="text-left leading-none">
-                      <span className="block text-[10px] uppercase tracking-wider font-extrabold opacity-70 group-hover:opacity-90">PRÓXIMAMENTE EN</span>
-                      <span className="block text-base font-black tracking-tight mt-1">App Store</span>
-                    </div>
-                  </button>
-
+                  <GooglePlayButton />
+                  <AppStoreButton onClick={() => setShowAppStoreModal(true)} />
                 </div>
 
                 {/* Trust Row */}
