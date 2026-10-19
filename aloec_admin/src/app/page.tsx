@@ -64,7 +64,7 @@ function GooglePlayButton() {
         <path fill="#FFC107" d="M79.7 490.7l246.1-223.3 60.6 55.6-267.8 152.6c-12 6.8-26.3 5-38.9-4.9z"/>
       </svg>
       <div className="text-left leading-none">
-        <span className="block text-[10px] uppercase tracking-wider font-extrabold text-[#f6f859]">DISPONIBLE EN</span>
+        <span className="block text-[10px] uppercase tracking-wider font-extrabold text-[#e2f859]">DISPONIBLE EN</span>
         <span className="block text-base font-black tracking-tight text-white mt-1">Google Play</span>
       </div>
     </a>
@@ -237,7 +237,7 @@ function LandingContent() {
       
       {/* ── Top Announcement Bar ────────────────────────────────────────────── */}
       <div className="bg-[#0a1112] text-white px-4 py-2 text-xs font-semibold text-center flex items-center justify-center gap-2 border-b border-white/10">
-        <span className="inline-flex items-center gap-1 bg-[#f6f859] text-[#0a1112] px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-black">
+        <span className="inline-flex items-center gap-1 bg-[#e2f859] text-[#0a1112] px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-black">
           LIBRO + APP
         </span>
         <span className="text-white/90">
@@ -281,15 +281,15 @@ function LandingContent() {
               href="#precios"
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#3e9d51] hover:bg-[#348745] text-white font-extrabold text-sm rounded-xl shadow-md hover:shadow-lg transition-all transform active:scale-95"
             >
-              <BookOpen className="w-4 h-4 text-[#f6f859]" /> Comprar Libro + App
+              <BookOpen className="w-4 h-4 text-[#e2f859]" /> Comprar Libro + App
             </a>
           </div>
         </div>
       </header>
 
-      {/* ── Hero Section (Minimalist Fresh Style with #f6f859 and #0a1112) ──── */}
+      {/* ── Hero Section (Minimalist Fresh Style with #e2f859 and #0a1112) ──── */}
       <div className="bg-white">
-        <section id="libro-app" className="relative pt-12 pb-16 lg:pt-16 lg:pb-24 overflow-hidden bg-[#f6f859] rounded-b-[2.5rem] lg:rounded-b-[3.5rem]">
+        <section id="libro-app" className="relative pt-12 pb-16 lg:pt-16 lg:pb-24 overflow-hidden bg-[#e2f859] rounded-b-[2.5rem] lg:rounded-b-[3.5rem]">
           <div className="w-[90%] max-w-[1600px] mx-auto px-2 sm:px-4">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
               
@@ -323,7 +323,7 @@ function LandingContent() {
                       <path fill="#FFC107" d="M79.7 490.7l246.1-223.3 60.6 55.6-267.8 152.6c-12 6.8-26.3 5-38.9-4.9z"/>
                     </svg>
                     <div className="text-left leading-none">
-                      <span className="block text-[10px] uppercase tracking-wider font-extrabold text-[#f6f859]">DISPONIBLE EN</span>
+                      <span className="block text-[10px] uppercase tracking-wider font-extrabold text-[#e2f859]">DISPONIBLE EN</span>
                       <span className="block text-base font-black tracking-tight text-white mt-1">Google Play</span>
                     </div>
                   </a>
@@ -374,81 +374,61 @@ function LandingContent() {
         </section>
       </div>
 
-      {/* ── Key Metrics Bar (Clean White Background) ─────────────────────────── */}
-      <section className="bg-white text-[#0a1112] py-12 sm:py-16 border-b border-slate-200/80">
+      {/* ── Key Metrics Bar (Clean Minimalist Typography Without Icons or Dividers) ── */}
+      <section className="bg-white text-[#0a1112] py-10 sm:py-14 border-b border-slate-200/80">
         <div className="w-[90%] max-w-[1600px] mx-auto px-2 sm:px-4">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0 lg:divide-x lg:divide-slate-200/80 text-center">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 text-center">
             
             {/* Metric 1 */}
-            <div className="px-3 sm:px-6 space-y-2 group">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-[#3e9d51]/10 text-[#3e9d51] mb-1 border border-[#3e9d51]/20 group-hover:bg-[#3e9d51]/20 group-hover:scale-105 transition-all shadow-xs">
-                <Users className="w-6 h-6 text-[#3e9d51]" />
-              </div>
-              <div>
-                <p className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#0a1112] tracking-tight">
-                  +10,000
-                </p>
-                <p className="text-sm sm:text-base font-extrabold text-[#0a1112] mt-1">
-                  Lectores y Pacientes
-                </p>
-                <p className="text-xs text-[#0a1112]/60 font-medium mt-0.5">
-                  Transformando su salud celular
-                </p>
-              </div>
+            <div className="px-2 sm:px-4 space-y-1">
+              <p className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0a1112] tracking-tight">
+                +10,000
+              </p>
+              <p className="text-sm sm:text-base font-extrabold text-[#0a1112]">
+                Lectores y Pacientes
+              </p>
+              <p className="text-xs text-[#0a1112]/60 font-medium">
+                Transformando su salud celular
+              </p>
             </div>
 
             {/* Metric 2 */}
-            <div className="px-3 sm:px-6 space-y-2 group">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-[#3e9d51]/10 text-[#3e9d51] mb-1 border border-[#3e9d51]/20 group-hover:bg-[#3e9d51]/20 group-hover:scale-105 transition-all shadow-xs">
-                <Droplet className="w-6 h-6 text-[#3e9d51]" />
-              </div>
-              <div>
-                <p className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#3e9d51] tracking-tight">
-                  +50
-                </p>
-                <p className="text-sm sm:text-base font-extrabold text-[#0a1112] mt-1">
-                  Recetas de Jugoterapia
-                </p>
-                <p className="text-xs text-[#0a1112]/60 font-medium mt-0.5">
-                  Fórmulas alcalinizantes con video HD
-                </p>
-              </div>
+            <div className="px-2 sm:px-4 space-y-1">
+              <p className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#3e9d51] tracking-tight">
+                +50
+              </p>
+              <p className="text-sm sm:text-base font-extrabold text-[#0a1112]">
+                Recetas de Jugoterapia
+              </p>
+              <p className="text-xs text-[#0a1112]/60 font-medium">
+                Fórmulas alcalinizantes con video HD
+              </p>
             </div>
 
             {/* Metric 3 */}
-            <div className="px-3 sm:px-6 space-y-2 group">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-[#3e9d51]/10 text-[#3e9d51] mb-1 border border-[#3e9d51]/20 group-hover:bg-[#3e9d51]/20 group-hover:scale-105 transition-all shadow-xs">
-                <Activity className="w-6 h-6 text-[#3e9d51]" />
-              </div>
-              <div>
-                <p className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#0a1112] tracking-tight">
-                  9
-                </p>
-                <p className="text-sm sm:text-base font-extrabold text-[#0a1112] mt-1">
-                  Protocolos según IMC
-                </p>
-                <p className="text-xs text-[#0a1112]/60 font-medium mt-0.5">
-                  Guías médicas personalizadas
-                </p>
-              </div>
+            <div className="px-2 sm:px-4 space-y-1">
+              <p className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0a1112] tracking-tight">
+                9
+              </p>
+              <p className="text-sm sm:text-base font-extrabold text-[#0a1112]">
+                Protocolos según IMC
+              </p>
+              <p className="text-xs text-[#0a1112]/60 font-medium">
+                Guías médicas personalizadas
+              </p>
             </div>
 
             {/* Metric 4 */}
-            <div className="px-3 sm:px-6 space-y-2 group">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-[#3e9d51]/10 text-[#3e9d51] mb-1 border border-[#3e9d51]/20 group-hover:bg-[#3e9d51]/20 group-hover:scale-105 transition-all shadow-xs">
-                <Award className="w-6 h-6 text-[#3e9d51]" />
-              </div>
-              <div>
-                <p className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#3e9d51] tracking-tight">
-                  100%
-                </p>
-                <p className="text-sm sm:text-base font-extrabold text-[#0a1112] mt-1">
-                  Orgánico e Internacional
-                </p>
-                <p className="text-xs text-[#0a1112]/60 font-medium mt-0.5">
-                  Medicina integrativa y respaldo
-                </p>
-              </div>
+            <div className="px-2 sm:px-4 space-y-1">
+              <p className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#3e9d51] tracking-tight">
+                100%
+              </p>
+              <p className="text-sm sm:text-base font-extrabold text-[#0a1112]">
+                Orgánico e Internacional
+              </p>
+              <p className="text-xs text-[#0a1112]/60 font-medium">
+                Medicina integrativa y respaldo
+              </p>
             </div>
 
           </div>
@@ -461,7 +441,7 @@ function LandingContent() {
           
           {/* Header */}
           <div className="text-center max-w-4xl mx-auto space-y-3">
-            <span className="px-3.5 py-1.5 bg-[#f6f859] text-[#0a1112] text-xs font-black rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
+            <span className="px-3.5 py-1.5 bg-[#e2f859] text-[#0a1112] text-xs font-black rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
               <Calculator className="w-4 h-4 text-[#3e9d51]" /> Diagnóstico Biológico & App ALOEC
             </span>
             <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-[#0a1112] sm:whitespace-nowrap">
@@ -537,7 +517,7 @@ function LandingContent() {
                 />
               </div>
 
-              <div className="bg-[#f6f859]/30 p-3.5 rounded-xl border border-[#3e9d51]/20 text-xs text-[#0a1112] space-y-1">
+              <div className="bg-[#e2f859]/30 p-3.5 rounded-xl border border-[#3e9d51]/20 text-xs text-[#0a1112] space-y-1">
                 <p className="font-bold flex items-center gap-1.5 text-[#3e9d51]">
                   <Sparkles className="w-3.5 h-3.5" /> Diagnóstico Automatizado
                 </p>
@@ -552,9 +532,9 @@ function LandingContent() {
               <div className="absolute top-0 right-0 -mr-10 -mt-10 w-32 h-32 bg-[#3e9d51]/20 rounded-full blur-xl pointer-events-none"></div>
 
               <div>
-                <span className="text-xs uppercase tracking-widest text-[#f6f859] font-black">Tu Resultado IMC</span>
+                <span className="text-xs uppercase tracking-widest text-[#e2f859] font-black">Tu Resultado IMC</span>
                 <p className="text-5xl font-black text-white mt-1 font-mono tracking-tight">{calculatedBmi ?? '--'}</p>
-                <p className="text-sm font-bold text-[#0a1112] bg-[#f6f859] mt-2 px-3 py-1 rounded-full inline-block">
+                <p className="text-sm font-bold text-[#0a1112] bg-[#e2f859] mt-2 px-3 py-1 rounded-full inline-block">
                   {bmiCategory}
                 </p>
               </div>
@@ -590,7 +570,7 @@ function LandingContent() {
             </div>
 
             <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs flex items-start gap-3.5 hover:border-[#3e9d51] transition-colors">
-              <div className="w-10 h-10 rounded-xl bg-[#f6f859] text-[#0a1112] flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-[#e2f859] text-[#0a1112] flex items-center justify-center shrink-0">
                 <Flame className="w-5 h-5 fill-current" />
               </div>
               <div className="space-y-1">
@@ -602,7 +582,7 @@ function LandingContent() {
             </div>
 
             <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs flex items-start gap-3.5 hover:border-[#3e9d51] transition-colors">
-              <div className="w-10 h-10 rounded-xl bg-[#0a1112] text-[#f6f859] flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-[#0a1112] text-[#e2f859] flex items-center justify-center shrink-0">
                 <Play className="w-5 h-5 fill-current ml-0.5" />
               </div>
               <div className="space-y-1">
@@ -623,7 +603,7 @@ function LandingContent() {
         <div className="w-[90%] max-w-[1600px] mx-auto px-2 sm:px-4">
           
           <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
-            <span className="px-3.5 py-1.5 bg-[#f6f859] text-[#0a1112] text-xs font-black rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
+            <span className="px-3.5 py-1.5 bg-[#e2f859] text-[#0a1112] text-xs font-black rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
               <Sparkles className="w-4 h-4 text-[#3e9d51]" /> Ecosistema ALOEC
             </span>
             <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-[#0a1112]">
@@ -644,7 +624,7 @@ function LandingContent() {
                   alt="Libro Ama Lo Que Comes" 
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
-                <div className="absolute top-4 left-4 bg-[#f6f859] text-[#0a1112] text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider">
+                <div className="absolute top-4 left-4 bg-[#e2f859] text-[#0a1112] text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider">
                   LIBRO OFICIAL
                 </div>
               </div>
@@ -664,7 +644,7 @@ function LandingContent() {
                   <Smartphone className="w-8 h-8" />
                 </div>
                 <p className="text-sm font-black text-white">App ALOEC en tu Celular</p>
-                <p className="text-xs text-[#f6f859] font-semibold mt-1">Android · iOS · Plataforma Web</p>
+                <p className="text-xs text-[#e2f859] font-semibold mt-1">Android · iOS · Plataforma Web</p>
                 <div className="absolute top-4 left-4 bg-[#3e9d51] text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider">
                   APP INCLUIDA
                 </div>
@@ -710,7 +690,7 @@ function LandingContent() {
           
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-4">
             <div>
-              <span className="px-3 py-1 bg-[#f6f859] text-[#0a1112] text-xs font-black rounded-full uppercase tracking-wider">
+              <span className="px-3 py-1 bg-[#e2f859] text-[#0a1112] text-xs font-black rounded-full uppercase tracking-wider">
                 Recetario Terapéutico
               </span>
               <h2 className="text-3xl font-black text-[#0a1112] mt-2">Jugos Verdes Destacados</h2>
@@ -732,7 +712,7 @@ function LandingContent() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent flex flex-col justify-end p-5 text-white">
                   <h3 className="text-2xl font-black text-white drop-shadow-sm">Jugo Verde Renovador</h3>
-                  <p className="text-xs text-[#f6f859] font-semibold mt-0.5">Alcaliniza e impulsa la digestión</p>
+                  <p className="text-xs text-[#e2f859] font-semibold mt-0.5">Alcaliniza e impulsa la digestión</p>
                 </div>
               </div>
               <div className="p-6 space-y-4">
@@ -759,7 +739,7 @@ function LandingContent() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent flex flex-col justify-end p-5 text-white">
                   <h3 className="text-2xl font-black text-white drop-shadow-sm">Jugo ZanaFruta</h3>
-                  <p className="text-xs text-[#f6f859] font-semibold mt-0.5">Rico en Betacarotenos y Antioxidantes</p>
+                  <p className="text-xs text-[#e2f859] font-semibold mt-0.5">Rico en Betacarotenos y Antioxidantes</p>
                 </div>
               </div>
               <div className="p-6 space-y-4">
@@ -786,7 +766,7 @@ function LandingContent() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent flex flex-col justify-end p-5 text-white">
                   <h3 className="text-2xl font-black text-white drop-shadow-sm">Batido Quinua Dorada</h3>
-                  <p className="text-xs text-[#f6f859] font-semibold mt-0.5">Proteína vegetal y fuerza celular</p>
+                  <p className="text-xs text-[#e2f859] font-semibold mt-0.5">Proteína vegetal y fuerza celular</p>
                 </div>
               </div>
               <div className="p-6 space-y-4">
@@ -813,7 +793,7 @@ function LandingContent() {
         <div className="w-[90%] max-w-[1600px] mx-auto px-2 sm:px-4">
           
           <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
-            <span className="px-3.5 py-1.5 bg-[#f6f859] text-[#0a1112] text-xs font-black rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
+            <span className="px-3.5 py-1.5 bg-[#e2f859] text-[#0a1112] text-xs font-black rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
               <Award className="w-4 h-4 text-[#3e9d51]" /> PLANES DISPONIBLES
             </span>
             <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white whitespace-nowrap">
@@ -836,10 +816,10 @@ function LandingContent() {
               {memberships.map((m, idx) => (
                 <div 
                   key={m.id}
-                  className="bg-[#0a1112] border-2 border-[#3e9d51] hover:border-[#f6f859] rounded-3xl p-8 shadow-2xl flex flex-col justify-between relative overflow-hidden transition-all duration-300 group"
+                  className="bg-[#0a1112] border-2 border-[#3e9d51] hover:border-[#e2f859] rounded-3xl p-8 shadow-2xl flex flex-col justify-between relative overflow-hidden transition-all duration-300 group"
                 >
                   {idx === 0 && (
-                    <div className="absolute top-0 right-0 bg-[#f6f859] text-[#0a1112] font-black text-[10px] uppercase tracking-wider px-4 py-1 rounded-bl-xl shadow-xs">
+                    <div className="absolute top-0 right-0 bg-[#e2f859] text-[#0a1112] font-black text-[10px] uppercase tracking-wider px-4 py-1 rounded-bl-xl shadow-xs">
                       OFERTA RECOMENDADA
                     </div>
                   )}
@@ -851,7 +831,7 @@ function LandingContent() {
                         <span className="text-5xl font-black text-white font-mono">${m.price.toFixed(2)}</span>
                         <span className="text-xs font-bold text-slate-400">USD / {m.durationDays} días</span>
                       </div>
-                      <p className="text-xs text-[#f6f859] font-medium">Incluye Libro + App ALOEC · Sin cargos ocultos</p>
+                      <p className="text-xs text-[#e2f859] font-medium">Incluye Libro + App ALOEC · Sin cargos ocultos</p>
                     </div>
 
                     <div className="space-y-3 text-sm text-slate-300">
@@ -869,7 +849,7 @@ function LandingContent() {
                       href={`/checkout?plan=${m.id}`}
                       className="block w-full py-3.5 bg-[#3e9d51] hover:bg-[#348745] text-white font-black text-sm rounded-xl shadow-lg transition-all text-center transform active:scale-95 flex items-center justify-center gap-2"
                     >
-                      <BookOpen className="w-4 h-4 text-[#f6f859]" /> Comprar Libro + App ALOEC →
+                      <BookOpen className="w-4 h-4 text-[#e2f859]" /> Comprar Libro + App ALOEC →
                     </Link>
                     <p className="text-center text-[10px] text-slate-400 flex items-center justify-center gap-1">
                       <Lock className="w-3 h-3 text-slate-400" /> Transacción internacional segura (PayPhone)
@@ -882,7 +862,7 @@ function LandingContent() {
           ) : (
             /* Fallback Card if no active membership documents exist yet */
             <div className="max-w-lg mx-auto bg-[#0a1112] border-2 border-[#3e9d51] rounded-3xl p-8 sm:p-10 shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 bg-[#f6f859] text-[#0a1112] font-black text-[10px] uppercase tracking-wider px-4 py-1 rounded-bl-xl shadow-xs">
+              <div className="absolute top-0 right-0 bg-[#e2f859] text-[#0a1112] font-black text-[10px] uppercase tracking-wider px-4 py-1 rounded-bl-xl shadow-xs">
                 OFERTA RECOMENDADA
               </div>
               
@@ -892,7 +872,7 @@ function LandingContent() {
                   <span className="text-5xl font-black text-white font-mono">$49.99</span>
                   <span className="text-xs font-bold text-slate-400">USD / 3000 días</span>
                 </div>
-                <p className="text-xs text-[#f6f859] font-medium">Incluye Libro + App ALOEC · Sin cargos ocultos</p>
+                <p className="text-xs text-[#e2f859] font-medium">Incluye Libro + App ALOEC · Sin cargos ocultos</p>
               </div>
 
               <div className="py-8 space-y-3 text-sm text-slate-300">
@@ -923,7 +903,7 @@ function LandingContent() {
                   href="/checkout?plan=plan-nico"
                   className="block w-full py-4 bg-[#3e9d51] hover:bg-[#348745] text-white font-black text-base rounded-xl shadow-lg transition-all text-center transform active:scale-95 flex items-center justify-center gap-2"
                 >
-                  <BookOpen className="w-5 h-5 text-[#f6f859]" /> Adquirir Libro + App ALOEC →
+                  <BookOpen className="w-5 h-5 text-[#e2f859]" /> Adquirir Libro + App ALOEC →
                 </Link>
                 <p className="text-center text-[11px] text-slate-400 flex items-center justify-center gap-1.5">
                   <Lock className="w-3.5 h-3.5 text-slate-400" /> Transacción encriptada a través de PayPhone
@@ -940,7 +920,7 @@ function LandingContent() {
         <div className="w-[90%] max-w-[1600px] mx-auto px-2 sm:px-4 text-center space-y-8 relative z-10">
           
           <div className="max-w-4xl mx-auto space-y-4">
-            <span className="px-3.5 py-1.5 bg-[#f6f859] text-[#0a1112] text-xs font-black rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
+            <span className="px-3.5 py-1.5 bg-[#e2f859] text-[#0a1112] text-xs font-black rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
               INSTALA LA APLICACIÓN
             </span>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight sm:whitespace-nowrap">
@@ -958,7 +938,7 @@ function LandingContent() {
 
           <div className="pt-6">
             <p className="text-xs text-slate-400">
-              ¿Prefieres usar la versión web? Visita <strong className="underline text-[#f6f859]">app.alimentacionorganicaec.com</strong> desde cualquier navegador.
+              ¿Prefieres usar la versión web? Visita <strong className="underline text-[#e2f859]">app.alimentacionorganicaec.com</strong> desde cualquier navegador.
             </p>
           </div>
 
@@ -970,7 +950,7 @@ function LandingContent() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
           
           <div className="text-center space-y-4">
-            <span className="px-3.5 py-1.5 bg-[#f6f859] text-[#0a1112] text-xs font-black rounded-full uppercase tracking-wider">
+            <span className="px-3.5 py-1.5 bg-[#e2f859] text-[#0a1112] text-xs font-black rounded-full uppercase tracking-wider">
               Resuelve tus dudas
             </span>
             <h2 className="text-3xl sm:text-4xl font-black text-[#0a1112]">Preguntas Frecuentes</h2>
@@ -1317,7 +1297,7 @@ function LandingContent() {
             </div>
 
             <div className="space-y-2">
-              <span className="inline-block px-3 py-1 bg-[#f6f859] text-[#0a1112] text-xs font-black rounded-full uppercase tracking-wider">
+              <span className="inline-block px-3 py-1 bg-[#e2f859] text-[#0a1112] text-xs font-black rounded-full uppercase tracking-wider">
                 Próximamente
               </span>
               <h3 className="text-2xl font-black text-[#0a1112]">

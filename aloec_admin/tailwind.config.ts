@@ -36,7 +36,7 @@ const config: Config = {
         aloec: {
           green: '#3e9d51', // VERDE ALOEC
           black: '#0a1112', // NEGRO ALOEC
-          light: '#f6f859', // VERDE CLARO
+          light: '#e2f859', // VERDE CLARO
         },
         surface: '#ffffff',
         background: '#ffffff',
