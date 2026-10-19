@@ -60,7 +60,7 @@ function GooglePlayButton({ className = "" }: { className?: string }) {
       <svg className="w-6 h-6 shrink-0 fill-white transition-transform group-hover:scale-105" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M3.609 1.814L13.792 12 3.61 22.186A2.404 2.404 0 0 1 3 20.575V3.425c0-.623.226-1.196.609-1.611zm1.484-.814L15.206 6.838 12.593 9.451 5.093 1zM5.093 23l7.5-8.451 2.613 2.613L5.093 23zm11.393-7.514l2.946-1.7c.947-.546.947-1.436 0-1.982l-2.946-1.7-2.353 2.691 2.353 2.691z"/>
       </svg>
-      <span className="text-base sm:text-lg font-black tracking-tight text-white">Google Play</span>
+      <span className="text-base sm:text-lg font-bold tracking-tight text-white">Google Play</span>
     </a>
   );
 }
@@ -92,7 +92,7 @@ function AppStoreButton({ onClick, className = "" }: { onClick?: () => void; cla
       <svg className="w-6 h-6 fill-current shrink-0 transition-transform group-hover:scale-105" viewBox="0 0 384 512" aria-hidden="true">
         <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 66.2 32.1 114.7c20.1 30.1 44.1 63.8 75.9 62.6 30.5-1.2 42.6-19.4 79.4-19.4 36.5 0 47.6 19.4 79.4 18.2 32.4-1.2 53.6-30.8 73.1-60.6 15.6-23.7 22.1-47.2 22.5-48.4-1.2-.6-43.7-17-43.7-61.9zM258.6 92.4c15.3-18.6 25.8-44.4 23-70.4-22.3 1-49.1 14.9-64.8 33.3-13.8 16.1-26 42.4-22.7 67.5 24.8 1.9 50-13 64.5-30.4z"/>
       </svg>
-      <span className="text-base sm:text-lg font-black tracking-tight">App Store</span>
+      <span className="text-base sm:text-lg font-bold tracking-tight">App Store</span>
     </button>
   );
 }
@@ -288,8 +288,8 @@ function LandingContent() {
               <div className="lg:col-span-7 space-y-6 text-left">
                 
                 {/* Main Headline */}
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-[#0a1112] leading-[1.12]">
-                  Transforma tu salud con el libro <span className="underline decoration-[#0a1112]/20 underline-offset-8">"Ama Lo Que Comes"</span> y la App ALOEC
+                <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-[#0a1112] leading-[1.12]">
+                  Transforma tu salud con el libro "Ama Lo Que Comes" y la App ALOEC
                 </h1>
 
                 {/* Subtitle */}

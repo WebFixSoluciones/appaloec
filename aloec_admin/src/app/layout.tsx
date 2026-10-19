@@ -1,11 +1,18 @@
 import './globals.css';
-import { Inter } from 'next/font/google';
+import { Inter, Plus_Jakarta_Sans } from 'next/font/google';
 import { Toaster } from 'sonner';
 
 const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-inter',
+});
+
+const plusJakarta = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-heading',
+  weight: ['400', '500', '600', '700', '800'],
 });
 
 export const metadata = {
@@ -19,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" className={`${inter.variable} ${inter.className}`}>
+    <html lang="es" className={`${inter.variable} ${plusJakarta.variable} ${inter.className}`}>
       <body className={`${inter.className} font-sans antialiased text-[#0a1112]`}>
         {children}
         <Toaster richColors position="top-right" />
