@@ -44,7 +44,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: _screens,
         ),
       ),
-      floatingActionButton: const ProtocolFab(),
+      floatingActionButton: _selectedIndex == 0 ? const ProtocolFab() : null,
       bottomNavigationBar: WellnessBottomNav(
         selectedIndex: _selectedIndex,
         onDestinationSelected: (index) {

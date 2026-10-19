@@ -370,6 +370,21 @@ function RegisterContent() {
           </div>
         )}
 
+        {/* Footer Legal Links */}
+        <div className="mt-8 text-center text-xs text-slate-500 space-x-3">
+          <Link href="/terminos-y-condiciones" className="hover:text-emerald-700 transition-colors">
+            Términos y Condiciones
+          </Link>
+          <span>·</span>
+          <Link href="/politicas-de-privacidad" className="hover:text-emerald-700 transition-colors">
+            Políticas de Privacidad
+          </Link>
+          <span>·</span>
+          <Link href="/" className="hover:text-slate-900 transition-colors">
+            Inicio
+          </Link>
+        </div>
+
       </div>
 
       {/* ── App Store Coming Soon Modal ────────────────────────────────────── */}

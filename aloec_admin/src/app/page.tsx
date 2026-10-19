@@ -1073,7 +1073,7 @@ function LandingContent() {
 
               {/* Col C: Seguridad & Legal */}
               <div className="space-y-3 col-span-2 sm:col-span-1">
-                <p className="text-[11px] font-bold text-white uppercase tracking-wider">Seguridad</p>
+                <p className="text-[11px] font-bold text-white uppercase tracking-wider">Seguridad & Legal</p>
                 <ul className="space-y-2.5">
                   <li>
                     <Link href="/terminos-y-condiciones" className="hover:text-emerald-400 transition-colors">
@@ -1083,6 +1083,11 @@ function LandingContent() {
                   <li>
                     <Link href="/politicas-de-privacidad" className="hover:text-emerald-400 transition-colors">
                       Políticas de Privacidad
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/eliminacion-de-datos" className="hover:text-rose-400 transition-colors">
+                      Eliminación de Datos
                     </Link>
                   </li>
                   <li>
@@ -1103,11 +1108,25 @@ function LandingContent() {
 
           </div>
 
-          {/* Bottom Bar: Clean, balanced, modern */}
-          <div className="pt-8 border-t border-slate-900 flex flex-col sm:flex-row justify-between items-center gap-4 text-[11px] text-slate-500">
+          {/* Bottom Bar: Clean, balanced, modern with direct legal links */}
+          <div className="pt-8 border-t border-slate-900 flex flex-col md:flex-row justify-between items-center gap-4 text-[11px] text-slate-500">
             <div className="flex items-center gap-2.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               <p>© {new Date().getFullYear()} ALOEC — Todos los derechos reservados.</p>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center gap-4 text-slate-400">
+              <Link href="/terminos-y-condiciones" className="hover:text-emerald-400 transition-colors font-medium">
+                Términos y Condiciones
+              </Link>
+              <span className="text-slate-700">·</span>
+              <Link href="/politicas-de-privacidad" className="hover:text-emerald-400 transition-colors font-medium">
+                Políticas de Privacidad
+              </Link>
+              <span className="text-slate-700">·</span>
+              <Link href="/eliminacion-de-datos" className="hover:text-emerald-400 transition-colors font-medium">
+                Eliminación de Datos
+              </Link>
             </div>
             
             <p className="flex items-center gap-1 text-slate-500">

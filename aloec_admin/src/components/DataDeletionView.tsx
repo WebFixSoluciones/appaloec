@@ -238,9 +238,22 @@ export default function DataDeletionView() {
       </div>
 
       {/* Footer note */}
-      <footer className="py-8 border-t border-slate-200 text-center text-xs text-slate-500 space-y-1 bg-white">
-        <p>© 2026 ALOEC - Alimentación Orgánica EC. Todos los derechos reservados.</p>
-        <p>Desarrollado y administrado por WebFix Soluciones.</p>
+      <footer className="py-8 border-t border-slate-200 text-center text-xs text-slate-500 space-y-2 bg-white">
+        <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-semibold">
+          <Link href="/terminos-y-condiciones" className="text-emerald-700 hover:underline">
+            Términos y Condiciones
+          </Link>
+          <span>·</span>
+          <Link href="/politicas-de-privacidad" className="text-emerald-700 hover:underline">
+            Políticas de Privacidad
+          </Link>
+          <span>·</span>
+          <Link href="/" className="text-slate-700 hover:underline">
+            Inicio
+          </Link>
+        </div>
+        <p>© {new Date().getFullYear()} ALOEC - Alimentación Orgánica EC. Todos los derechos reservados.</p>
+        <p className="text-slate-400">Desarrollado y administrado por WebFix Soluciones.</p>
       </footer>
     </div>
   );

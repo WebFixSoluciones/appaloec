@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../banners/presentation/widgets/banner_carousel.dart';
+import '../../../courses/presentation/screens/courses_screen.dart';
 import '../../domain/juice_entity.dart';
 import '../providers/juices_provider.dart';
 
@@ -42,11 +43,51 @@ class _JuicesScreenState extends ConsumerState<JuicesScreen> {
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
-        title: const Text('Recetas Saludables',
-            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,
         elevation: 0,
+        leadingWidth: 100,
+        leading: const Padding(
+          padding: EdgeInsets.only(left: 16),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'ALOEC',
+              style: TextStyle(
+                color: AppColors.primaryGreen,
+                fontWeight: FontWeight.w800,
+                fontSize: 20,
+              ),
+            ),
+          ),
+        ),
+        title: const Text(
+          'Recetas Saludables',
+          style: TextStyle(
+            color: AppColors.textDark,
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
+        ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.school_outlined, color: AppColors.textDark),
+            tooltip: 'Videocursos',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const CoursesScreen(),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined, color: AppColors.textDark),
+            tooltip: 'Notificaciones',
+            onPressed: () => context.push('/notifications'),
+          ),
+          const SizedBox(width: 4),
+        ],
       ),
       body: recipesAsync.isLoading && allRecipes.isEmpty
           ? const Center(child: CircularProgressIndicator(color: AppColors.primaryGreen))
