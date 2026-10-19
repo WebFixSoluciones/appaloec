@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../juices/presentation/screens/juices_screen.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
 import '../../../progress/presentation/screens/progress_screen.dart';
+import '../providers/home_tab_provider.dart';
 import '../widgets/wellness_bottom_nav.dart';
 import '../widgets/protocol_fab.dart';
 import 'today_screen.dart';
@@ -16,12 +17,14 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  late int _selectedIndex;
-
   @override
   void initState() {
     super.initState();
-    _selectedIndex = widget.initialIndex;
+    if (widget.initialIndex != 1) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(homeTabProvider.notifier).state = widget.initialIndex;
+      });
+    }
   }
 
   final List<Widget> _screens = const [
@@ -33,22 +36,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final selectedIndex = ref.watch(homeTabProvider);
+
     return Scaffold(
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 200),
         transitionBuilder: (child, animation) =>
             FadeTransition(opacity: animation, child: child),
         child: IndexedStack(
-          key: ValueKey(_selectedIndex),
-          index: _selectedIndex,
+          key: ValueKey(selectedIndex),
+          index: selectedIndex,
           children: _screens,
         ),
       ),
-      floatingActionButton: _selectedIndex == 0 ? const ProtocolFab() : null,
+      floatingActionButton: selectedIndex == 0 ? const ProtocolFab() : null,
       bottomNavigationBar: WellnessBottomNav(
-        selectedIndex: _selectedIndex,
+        selectedIndex: selectedIndex,
         onDestinationSelected: (index) {
-          setState(() => _selectedIndex = index);
+          ref.read(homeTabProvider.notifier).state = index;
         },
       ),
     );

@@ -45,18 +45,16 @@ class _JuicesScreenState extends ConsumerState<JuicesScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leadingWidth: 100,
-        leading: const Padding(
-          padding: EdgeInsets.only(left: 16),
+        leadingWidth: 56,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 16),
           child: Align(
             alignment: Alignment.centerLeft,
-            child: Text(
-              'ALOEC',
-              style: TextStyle(
-                color: AppColors.primaryGreen,
-                fontWeight: FontWeight.w800,
-                fontSize: 20,
-              ),
+            child: Image.asset(
+              'assets/images/isotype.png',
+              width: 32,
+              height: 32,
+              fit: BoxFit.contain,
             ),
           ),
         ),

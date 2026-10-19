@@ -6,6 +6,8 @@ import '../../../../core/widgets/premium_gate.dart';
 import '../../../courses/presentation/screens/courses_screen.dart';
 import '../../../banners/presentation/widgets/banner_carousel.dart';
 import '../../../profile/data/firestore_profile_repository.dart';
+import 'package:flutter/services.dart';
+import '../providers/home_tab_provider.dart';
 import '../providers/protocol_day_provider.dart';
 import '../widgets/block_card.dart';
 
@@ -62,17 +64,25 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.backgroundLight,
         elevation: 0,
-        leadingWidth: 100,
+        leadingWidth: 56,
         leading: Padding(
           padding: const EdgeInsets.only(left: 16),
           child: Align(
             alignment: Alignment.centerLeft,
-            child: Text(
-              'ALOEC',
-              style: TextStyle(
-                color: AppColors.primaryGreen,
-                fontWeight: FontWeight.w800,
-                fontSize: 20,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () {
+                HapticFeedback.lightImpact();
+                ref.read(homeTabProvider.notifier).state = 1;
+              },
+              child: Tooltip(
+                message: 'Ver Recetas',
+                child: Image.asset(
+                  'assets/images/isotype.png',
+                  width: 32,
+                  height: 32,
+                  fit: BoxFit.contain,
+                ),
               ),
             ),
           ),
