@@ -1076,6 +1076,11 @@ function LandingContent() {
                 <p className="text-[11px] font-bold text-white uppercase tracking-wider">Seguridad</p>
                 <ul className="space-y-2.5">
                   <li>
+                    <Link href="/terminos-y-condiciones" className="hover:text-emerald-400 transition-colors">
+                      Términos y Condiciones
+                    </Link>
+                  </li>
+                  <li>
                     <Link href="/politicas-de-privacidad" className="hover:text-emerald-400 transition-colors">
                       Políticas de Privacidad
                     </Link>

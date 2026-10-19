@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -9,8 +11,19 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
 
-  /// Inicializa el plugin y solicita permisos al sistema operativo.
+  bool _initialized = false;
+  static ValueChanged<String?>? onNotificationTap;
+
+  /// Inicializa el plugin, zonas horarias y canal de Android.
   Future<void> initialize() async {
+    if (_initialized) return;
+
+    try {
+      tz.initializeTimeZones();
+    } catch (e) {
+      debugPrint('⚠️ [NotificationService] TimeZone init: $e');
+    }
+
     const AndroidInitializationSettings androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
@@ -26,13 +39,43 @@ class NotificationService {
       iOS: iosSettings,
     );
 
-    await _plugin.initialize(initSettings);
+    await _plugin.initialize(
+      initSettings,
+      onDidReceiveNotificationResponse: (NotificationResponse response) {
+        debugPrint('🔔 [NotificationService] Tap recibido: ${response.payload}');
+        onNotificationTap?.call(response.payload);
+      },
+    );
+
+    // Crear el canal explícitamente en Android para garantizar sonido y máxima visibilidad
+    try {
+      final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
+      if (androidPlugin != null) {
+        await androidPlugin.createNotificationChannel(
+          const AndroidNotificationChannel(
+            'aloec_protocol_channel',
+            'Recordatorios de Protocolo ALOEC',
+            description:
+                'Notificaciones diarias de recordatorio de comidas y actividades del protocolo de salud.',
+            importance: Importance.max,
+            playSound: true,
+            enableVibration: true,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('⚠️ [NotificationService] Error creando canal Android: $e');
+    }
+
+    _initialized = true;
   }
 
   /// Cancela TODAS las notificaciones programadas previamente.
   Future<void> cancelAllNotifications() async {
     try {
       await _plugin.cancelAll();
+      debugPrint('🔕 [NotificationService] Todas las notificaciones canceladas');
     } catch (e) {
       debugPrint('⚠️ [NotificationService] Error al cancelar notificaciones: $e');
     }
@@ -44,7 +87,8 @@ class NotificationService {
       final androidImplementation =
           _plugin.resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin>();
-      final grantedAndroid = await androidImplementation?.requestNotificationsPermission();
+      final grantedAndroid =
+          await androidImplementation?.requestNotificationsPermission();
 
       final iosImplementation =
           _plugin.resolvePlatformSpecificImplementation<
@@ -62,31 +106,22 @@ class NotificationService {
     }
   }
 
-  /// Programa una notificación diaria recurrente a la hora especificada.
-  ///
-  /// [id] - ID único de la notificación (usa el índice de la comida).
-  /// [hour] - Hora de la notificación (formato 24h).
-  /// [minute] - Minuto de la notificación.
-  /// [title] - Título de la notificación (Ej: "¡Hora de tu Desayuno! 🥤").
-  /// [body] - Cuerpo del mensaje con los ítems del protocolo.
-  Future<void> scheduleDailyNotification({
-    required int id,
-    required int hour,
-    required int minute,
-    required String title,
-    required String body,
-  }) async {
+  NotificationDetails _buildNotificationDetails({
+    String? channelDescription,
+  }) {
     final AndroidNotificationDetails androidDetails =
         AndroidNotificationDetails(
       'aloec_protocol_channel',
       'Recordatorios de Protocolo ALOEC',
-      channelDescription:
+      channelDescription: channelDescription ??
           'Notificaciones diarias de recordatorio de comidas y actividades del protocolo de salud.',
-      importance: Importance.high,
+      importance: Importance.max,
       priority: Priority.high,
       icon: '@mipmap/ic_launcher',
       color: const Color(0xFF67B539),
       ticker: 'aloec_ticker',
+      enableVibration: true,
+      playSound: true,
     );
 
     const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
@@ -95,32 +130,111 @@ class NotificationService {
       presentSound: true,
     );
 
-    final NotificationDetails notifDetails = NotificationDetails(
+    return NotificationDetails(
       android: androidDetails,
       iOS: iosDetails,
     );
+  }
+
+  /// Envía una notificación INMEDIATA al dispositivo para pruebas de usuario.
+  Future<bool> showInstantNotification({
+    required String title,
+    required String body,
+    String? payload,
+  }) async {
+    try {
+      await initialize();
+      final hasPermission = await requestPermission();
+      if (!hasPermission) {
+        debugPrint('⚠️ [NotificationService] Permiso de notificación denegado');
+      }
+
+      await _plugin.show(
+        DateTime.now().millisecond,
+        title,
+        body,
+        _buildNotificationDetails(),
+        payload: payload,
+      );
+      debugPrint('✅ [NotificationService] Notificación instantánea enviada: $title');
+      return true;
+    } catch (e) {
+      debugPrint('⚠️ [NotificationService] Error en notificación instantánea: $e');
+      return false;
+    }
+  }
+
+  tz.TZDateTime _nextInstanceOfTime(int hour, int minute) {
+    try {
+      final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
+      tz.TZDateTime scheduledDate =
+          tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+      if (scheduledDate.isBefore(now)) {
+        scheduledDate = scheduledDate.add(const Duration(days: 1));
+      }
+      return scheduledDate;
+    } catch (_) {
+      // Fallback a hora estándar si tz.local no está mapeado
+      final now = DateTime.now();
+      DateTime dt = DateTime(now.year, now.month, now.day, hour, minute);
+      if (dt.isBefore(now)) {
+        dt = dt.add(const Duration(days: 1));
+      }
+      return tz.TZDateTime.from(dt, tz.UTC);
+    }
+  }
+
+  /// Programa una notificación diaria recurrente a la hora exacta especificada.
+  Future<void> scheduleDailyNotification({
+    required int id,
+    required int hour,
+    required int minute,
+    required String title,
+    required String body,
+    String? payload,
+  }) async {
+    await initialize();
+    final notifDetails = _buildNotificationDetails();
 
     try {
-      await _plugin.periodicallyShow(
+      final scheduledDate = _nextInstanceOfTime(hour, minute);
+      await _plugin.zonedSchedule(
         id,
         title,
         body,
-        RepeatInterval.daily,
+        scheduledDate,
         notifDetails,
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        matchDateTimeComponents: DateTimeComponents.time,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        payload: payload,
       );
+      debugPrint(
+          '⏰ [NotificationService] Programada notificación #$id a las $hour:$minute: $title');
     } catch (e) {
-      debugPrint('⚠️ [NotificationService] Error programando notificación #$id: $e');
+      debugPrint(
+          '⚠️ [NotificationService] zonedSchedule falló, intentando fallback periódica: $e');
+      try {
+        await _plugin.periodicallyShow(
+          id,
+          title,
+          body,
+          RepeatInterval.daily,
+          notifDetails,
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        );
+      } catch (err) {
+        debugPrint('⚠️ [NotificationService] Fallback periódica falló: $err');
+      }
     }
   }
 
   /// Programa todas las notificaciones para un protocolo dado.
-  ///
-  /// [meals] - Lista de comidas/actividades con su hora y descripción.
-  /// Retorna `true` si se programaron con éxito.
   Future<bool> scheduleProtocolNotifications(
       List<ProtocolMealNotification> meals) async {
     try {
+      await initialize();
       await cancelAllNotifications();
 
       for (int i = 0; i < meals.length; i++) {
@@ -131,6 +245,7 @@ class NotificationService {
           minute: meal.minute,
           title: meal.title,
           body: meal.body,
+          payload: meal.payload,
         );
       }
 
@@ -151,11 +266,13 @@ class ProtocolMealNotification {
   final int minute;
   final String title;
   final String body;
+  final String? payload;
 
   const ProtocolMealNotification({
     required this.hour,
     required this.minute,
     required this.title,
     required this.body,
+    this.payload,
   });
 }

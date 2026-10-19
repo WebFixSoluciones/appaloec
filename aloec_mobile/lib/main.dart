@@ -36,6 +36,14 @@ class _BootstrapAppState extends State<_BootstrapApp> {
   Future<void> _initializeNotifications() async {
     try {
       await NotificationService().initialize();
+      NotificationService.onNotificationTap = (payload) {
+        debugPrint('📲 [AloecApp] Notificación pulsada, payload: $payload');
+        if (payload != null && payload.isNotEmpty) {
+          goRouter.go(payload);
+        } else {
+          goRouter.go('/home');
+        }
+      };
     } catch (error) {
       debugPrint('NotificationService init failed: $error');
     }
