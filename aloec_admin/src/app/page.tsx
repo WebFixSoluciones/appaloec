@@ -289,98 +289,157 @@ function LandingContent() {
       </header>
 
       {/* ── Hero Section (Brevo-Style Redesign for ALOEC) ──────────────────── */}
-      <section id="libro-app" className="relative pt-12 pb-16 lg:pt-16 lg:pb-24 overflow-hidden bg-[#C0FFA5] rounded-b-[2.5rem] lg:rounded-b-[3.5rem]">
-        <div className="w-[90%] max-w-[1600px] mx-auto px-2 sm:px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
-            
-            {/* Hero Left Content (Matching Brevo style) */}
-            <div className="lg:col-span-7 space-y-6 text-left">
+      <div className="bg-white">
+        <section id="libro-app" className="relative pt-12 pb-16 lg:pt-16 lg:pb-24 overflow-hidden bg-[#C0FFA5] rounded-b-[2.5rem] lg:rounded-b-[3.5rem]">
+          <div className="w-[90%] max-w-[1600px] mx-auto px-2 sm:px-4">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
               
-              {/* Main Headline */}
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-950 leading-[1.12]">
-                Transforma tu salud con el libro <span className="underline decoration-slate-900/25 underline-offset-8">"Ama Lo Que Comes"</span> y la App ALOEC
-              </h1>
+              {/* Hero Left Content (Matching Brevo style) */}
+              <div className="lg:col-span-7 space-y-6 text-left">
+                
+                {/* Main Headline */}
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-950 leading-[1.12]">
+                  Transforma tu salud con el libro <span className="underline decoration-slate-900/25 underline-offset-8">"Ama Lo Que Comes"</span> y la App ALOEC
+                </h1>
 
-              {/* Subtitle */}
-              <p className="text-base sm:text-lg text-slate-800 font-medium leading-relaxed max-w-xl">
-                Una plataforma única para tu nutrición y medicina integrativa. Recetas de jugoterapia curativa, calculadora biológica de IMC y 9 protocolos guiados día a día por José Rengifo.
-              </p>
-
-              {/* Brevo-Style Solid Black CTA Button */}
-              <div className="pt-2 flex flex-wrap items-center gap-3.5">
-                <a
-                  href="#precios"
-                  className="inline-flex items-center justify-center px-8 py-4 bg-slate-950 hover:bg-black text-white text-base font-extrabold rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 active:scale-95"
-                >
-                  Comprar Libro + App
-                </a>
-
-                <a
-                  href="#calculadora"
-                  className="inline-flex items-center justify-center px-6 py-4 bg-white/85 hover:bg-white text-slate-950 text-sm font-extrabold rounded-2xl border border-black/10 shadow-xs transition-all hover:-translate-y-0.5"
-                >
-                  <Calculator className="w-4 h-4 mr-2 text-emerald-800" /> Calcular IMC Gratis
-                </a>
-              </div>
-
-              {/* Brevo-Style Trust Indicator & Rating */}
-              <div className="pt-3 space-y-2.5 text-xs text-slate-800 font-medium">
-                <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <span>Atención y soporte en español 🇪🇨</span>
-                  <span>·</span>
-                  <span>Libro digital incluido</span>
-                  <span>·</span>
-                  <span>Disponible en Android, iOS y Web</span>
+                {/* Subtitle */}
+                <p className="text-base sm:text-lg text-slate-800 font-medium leading-relaxed max-w-xl">
+                  Una plataforma única para tu nutrición y medicina integrativa. Recetas de jugoterapia curativa, calculadora biológica de IMC y 9 protocolos guiados día a día por José Rengifo.
                 </p>
 
-                <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-xs px-3.5 py-1.5 rounded-full border border-black/5 shadow-xs">
-                  <div className="flex items-center text-amber-500">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
-                    ))}
+                {/* Brevo-Style Solid Black CTA Button */}
+                <div className="pt-2 flex flex-wrap items-center gap-3.5">
+                  <a
+                    href="#precios"
+                    className="inline-flex items-center justify-center px-8 py-4 bg-slate-950 hover:bg-black text-white text-base font-extrabold rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 active:scale-95"
+                  >
+                    Comprar Libro + App
+                  </a>
+
+                  <a
+                    href="#calculadora"
+                    className="inline-flex items-center justify-center px-6 py-4 bg-white/85 hover:bg-white text-slate-950 text-sm font-extrabold rounded-2xl border border-black/10 shadow-xs transition-all hover:-translate-y-0.5"
+                  >
+                    <Calculator className="w-4 h-4 mr-2 text-emerald-800" /> Calcular IMC Gratis
+                  </a>
+                </div>
+
+                {/* Brevo-Style Trust Indicator & Rating */}
+                <div className="pt-3 space-y-2.5 text-xs text-slate-800 font-medium">
+                  <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <span>Atención y soporte en español 🇪🇨</span>
+                    <span>·</span>
+                    <span>Libro digital incluido</span>
+                    <span>·</span>
+                    <span>Disponible en Android, iOS y Web</span>
+                  </p>
+
+                  <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-xs px-3.5 py-1.5 rounded-full border border-black/5 shadow-xs">
+                    <div className="flex items-center text-amber-500">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
+                      ))}
+                    </div>
+                    <span className="font-black text-slate-950 text-xs">4.9 / 5</span>
+                    <span className="text-slate-600 font-medium text-[11px]">(+10,000 lectores y pacientes)</span>
                   </div>
-                  <span className="font-black text-slate-950 text-xs">4.9 / 5</span>
-                  <span className="text-slate-600 font-medium text-[11px]">(+10,000 lectores y pacientes)</span>
+                </div>
+
+              </div>
+
+              {/* Hero Right Visual: Clean, borderless image without white padding or overlays (Brevo Style) */}
+              <div className="lg:col-span-5 flex justify-center lg:justify-end">
+                <div className="w-full max-w-md lg:max-w-lg">
+                  <img 
+                    src="/book_hero.jpg" 
+                    alt="Libro Ama Lo Que Comes y App ALOEC" 
+                    className="w-full h-auto rounded-3xl shadow-2xl object-cover"
+                  />
                 </div>
               </div>
 
             </div>
+          </div>
+        </section>
+      </div>
 
-            {/* Hero Right Visual: Clean, borderless image without white padding or overlays (Brevo Style) */}
-            <div className="lg:col-span-5 flex justify-center lg:justify-end">
-              <div className="w-full max-w-md lg:max-w-lg">
-                <img 
-                  src="/book_hero.jpg" 
-                  alt="Libro Ama Lo Que Comes y App ALOEC" 
-                  className="w-full h-auto rounded-3xl shadow-2xl object-cover"
-                />
+      {/* ── Key Metrics Bar (Clean White Background) ─────────────────────────── */}
+      <section className="bg-white text-slate-900 py-12 sm:py-16 border-b border-slate-200/80">
+        <div className="w-[90%] max-w-[1600px] mx-auto px-2 sm:px-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0 lg:divide-x lg:divide-slate-200/80 text-center">
+            
+            {/* Metric 1 */}
+            <div className="px-3 sm:px-6 space-y-2 group">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 mb-1 border border-emerald-100/80 group-hover:bg-emerald-100 group-hover:scale-105 transition-all shadow-xs">
+                <Users className="w-6 h-6 text-emerald-700" />
+              </div>
+              <div>
+                <p className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-950 tracking-tight">
+                  +10,000
+                </p>
+                <p className="text-sm sm:text-base font-extrabold text-slate-900 mt-1">
+                  Lectores y Pacientes
+                </p>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  Transformando su salud celular
+                </p>
               </div>
             </div>
 
-          </div>
-        </div>
-      </section>
+            {/* Metric 2 */}
+            <div className="px-3 sm:px-6 space-y-2 group">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 mb-1 border border-emerald-100/80 group-hover:bg-emerald-100 group-hover:scale-105 transition-all shadow-xs">
+                <Droplet className="w-6 h-6 text-emerald-700" />
+              </div>
+              <div>
+                <p className="text-3xl sm:text-4xl lg:text-5xl font-black text-emerald-700 tracking-tight">
+                  +50
+                </p>
+                <p className="text-sm sm:text-base font-extrabold text-slate-900 mt-1">
+                  Recetas de Jugoterapia
+                </p>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  Fórmulas alcalinizantes con video HD
+                </p>
+              </div>
+            </div>
 
-      {/* ── Key Metrics Bar ──────────────────────────────────────────────────── */}
-      <section className="bg-slate-900 text-white py-10 border-y border-slate-800">
-        <div className="w-[90%] max-w-[1600px] mx-auto px-2 sm:px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div>
-              <p className="text-3xl sm:text-4xl font-black text-emerald-400">+10,000</p>
-              <p className="text-xs sm:text-sm text-slate-400 font-medium mt-1">Lectores y Pacientes</p>
+            {/* Metric 3 */}
+            <div className="px-3 sm:px-6 space-y-2 group">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 mb-1 border border-emerald-100/80 group-hover:bg-emerald-100 group-hover:scale-105 transition-all shadow-xs">
+                <Activity className="w-6 h-6 text-emerald-700" />
+              </div>
+              <div>
+                <p className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-950 tracking-tight">
+                  9
+                </p>
+                <p className="text-sm sm:text-base font-extrabold text-slate-900 mt-1">
+                  Protocolos según IMC
+                </p>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  Guías médicas personalizadas
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-3xl sm:text-4xl font-black text-emerald-400">+50</p>
-              <p className="text-xs sm:text-sm text-slate-400 font-medium mt-1">Recetas de Jugoterapia</p>
+
+            {/* Metric 4 */}
+            <div className="px-3 sm:px-6 space-y-2 group">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 mb-1 border border-emerald-100/80 group-hover:bg-emerald-100 group-hover:scale-105 transition-all shadow-xs">
+                <Award className="w-6 h-6 text-emerald-700" />
+              </div>
+              <div>
+                <p className="text-3xl sm:text-4xl lg:text-5xl font-black text-emerald-700 tracking-tight">
+                  100%
+                </p>
+                <p className="text-sm sm:text-base font-extrabold text-slate-900 mt-1">
+                  Orgánico e Internacional
+                </p>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  Medicina integrativa y respaldo
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-3xl sm:text-4xl font-black text-emerald-400">9</p>
-              <p className="text-xs sm:text-sm text-slate-400 font-medium mt-1">Protocolos según IMC</p>
-            </div>
-            <div>
-              <p className="text-3xl sm:text-4xl font-black text-amber-400">100%</p>
-              <p className="text-xs sm:text-sm text-slate-400 font-medium mt-1">Orgánico e Internacional</p>
-            </div>
+
           </div>
         </div>
       </section>
