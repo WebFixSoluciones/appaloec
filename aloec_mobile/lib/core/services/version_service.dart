@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
 class VersionService {
-  static const String currentVersion = '1.3.0';
+  static const String currentVersion = '1.3.1';
 
   static Future<Map<String, dynamic>?>? _settingsFuture;
 

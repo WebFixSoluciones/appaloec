@@ -162,31 +162,68 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   prefixIcon: Icons.lock_outline,
                   obscureText: true,
                 ),
+                AloecTextField(
+                  controller: _referralCtrl,
+                  hintText: 'Código de referido (opcional)',
+                  prefixIcon: Icons.card_giftcard,
+                  readOnly: false,
+                ),
                 const SizedBox(height: 16),
-                if (_referralCtrl.text.isNotEmpty)
-                  AloecTextField(
-                    controller: _referralCtrl,
-                    hintText: 'Código de referido',
-                    prefixIcon: Icons.card_giftcard,
-                    readOnly: true,
-                  ),
-                if (_referralCtrl.text.isNotEmpty)
-                  const SizedBox(height: 16),
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Checkbox(
-                      value: _acceptedTerms,
-                      activeColor: const Color(0xFF67B539),
-                      onChanged: (value) {
-                        setState(() {
-                          _acceptedTerms = value ?? false;
-                        });
-                      },
+                    SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: Checkbox(
+                        value: _acceptedTerms,
+                        activeColor: const Color(0xFF67B539),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4)),
+                        onChanged: (value) {
+                          setState(() {
+                            _acceptedTerms = value ?? false;
+                          });
+                        },
+                      ),
                     ),
-                    const Expanded(
-                      child: Text(
-                        'Al continuar, acepta nuestra Política de privacidad y Términos de uso',
-                        style: TextStyle(color: Colors.grey, fontSize: 12),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Wrap(
+                        children: [
+                          const Text(
+                            'Acepto la ',
+                            style: TextStyle(color: Colors.grey, fontSize: 13),
+                          ),
+                          GestureDetector(
+                            onTap: () => context.push('/privacy'),
+                            child: const Text(
+                              'Política de Privacidad',
+                              style: TextStyle(
+                                color: Color(0xFF67B539),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
+                          const Text(
+                            ' y los ',
+                            style: TextStyle(color: Colors.grey, fontSize: 13),
+                          ),
+                          GestureDetector(
+                            onTap: () => context.push('/terms'),
+                            child: const Text(
+                              'Términos de Uso',
+                              style: TextStyle(
+                                color: Color(0xFF67B539),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],

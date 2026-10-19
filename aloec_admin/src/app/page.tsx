@@ -253,7 +253,7 @@ function LandingContent() {
 
       {/* ── Navigation Header ───────────────────────────────────────────────── */}
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-sm transition-all">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        <div className="w-[90%] max-w-[1600px] mx-auto px-2 sm:px-4 h-20 flex items-center justify-between">
           
           {/* Logo Only */}
           <div className="flex items-center">
@@ -293,7 +293,7 @@ function LandingContent() {
         <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-emerald-200/40 rounded-full blur-3xl pointer-events-none"></div>
         <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-96 h-96 bg-green-200/30 rounded-full blur-3xl pointer-events-none"></div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="w-[90%] max-w-[1600px] mx-auto px-2 sm:px-4 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
             
             {/* Hero Left Content */}
@@ -393,7 +393,7 @@ function LandingContent() {
 
       {/* ── Key Metrics Bar ──────────────────────────────────────────────────── */}
       <section className="bg-slate-900 text-white py-10 border-y border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-[90%] max-w-[1600px] mx-auto px-2 sm:px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
               <p className="text-3xl sm:text-4xl font-black text-emerald-400">+10,000</p>
@@ -417,7 +417,7 @@ function LandingContent() {
 
       {/* ── Unified Section: IMC Calculator & App Experience ────────────────── */}
       <section id="calculadora" className="py-16 sm:py-20 bg-slate-100/80 border-b border-slate-200/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+        <div className="w-[90%] max-w-[1600px] mx-auto px-2 sm:px-4 space-y-10">
           
           {/* Header */}
           <div className="text-center max-w-4xl mx-auto space-y-3">
@@ -433,7 +433,7 @@ function LandingContent() {
           </div>
 
           {/* Interactive Calculator Card */}
-          <div className="max-w-5xl mx-auto bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-10 shadow-lg shadow-slate-200/50 grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+          <div className="max-w-6xl mx-auto bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-10 shadow-lg shadow-slate-200/50 grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
             
             {/* Inputs Column */}
             <div className="md:col-span-6 space-y-6">
@@ -580,7 +580,7 @@ function LandingContent() {
 
       {/* ── Feature Pillars (Flat Modern Grid) ──────────────────────────────── */}
       <section id="beneficios" className="py-20 bg-slate-50 border-b border-slate-200/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-[90%] max-w-[1600px] mx-auto px-2 sm:px-4">
           
           <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
             <span className="px-3.5 py-1.5 bg-emerald-100 text-emerald-800 text-xs font-extrabold rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
@@ -669,7 +669,7 @@ function LandingContent() {
 
       {/* ── Juicing Catalog Preview ─────────────────────────────────────────── */}
       <section id="recetas" className="py-20 bg-white border-b border-slate-200/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-[90%] max-w-[1600px] mx-auto px-2 sm:px-4">
           
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-4">
             <div>
@@ -773,7 +773,7 @@ function LandingContent() {
 
       {/* ── Pricing / Memberships Section (Dynamic Firestore Plans) ─────────── */}
       <section id="precios" className="py-20 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-white relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-[90%] max-w-[1600px] mx-auto px-2 sm:px-4">
           
           <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
             <span className="px-3.5 py-1.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-extrabold rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
@@ -901,7 +901,7 @@ function LandingContent() {
 
       {/* ── App Downloads Section ───────────────────────────────────────────── */}
       <section id="download" className="py-20 bg-emerald-700 text-white relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8 relative z-10">
+        <div className="w-[90%] max-w-[1600px] mx-auto px-2 sm:px-4 text-center space-y-8 relative z-10">
           
           <div className="max-w-4xl mx-auto space-y-4">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight sm:whitespace-nowrap">
@@ -965,181 +965,288 @@ function LandingContent() {
         </div>
       </section>
 
-      {/* ── Footer Minimalista & Profesional ─────────────────────────────────── */}
-      <footer className="bg-slate-950 text-slate-400 pt-16 pb-12 border-t border-slate-800/80 relative overflow-hidden text-xs">
-        {/* Subtle background glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-24 bg-emerald-500/5 blur-3xl pointer-events-none"></div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 relative z-10">
+      {/* ── Footer: Brevo Style for ALOEC in Black ───────────────────────────── */}
+      <footer className="bg-black text-neutral-400 font-sans border-t border-neutral-900 pt-16 pb-12">
+        <div className="w-[90%] max-w-[1600px] mx-auto px-2 sm:px-4">
           
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 items-start">
+          {/* Top Row: Logo on Left, Social Icons on Right */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-12 border-b border-neutral-800/80">
+            <Link href="/" className="flex items-center gap-3 group">
+              <div className="bg-white p-1.5 rounded-xl inline-flex items-center shadow-sm">
+                <img src="/logo.png" alt="ALOEC Logo" className="h-7 w-auto object-contain" />
+              </div>
+              <span className="text-xl font-black text-white tracking-tight">
+                ALOEC<span className="text-emerald-500">.</span>
+              </span>
+            </Link>
+
+            {/* Social Icons row (X, LinkedIn, Instagram, YouTube, Facebook, TikTok) */}
+            <div className="flex items-center gap-4 text-neutral-400">
+              <a href="https://x.com" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)" className="hover:text-white hover:scale-110 transition-all p-1">
+                <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              </a>
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="hover:text-white hover:scale-110 transition-all p-1">
+                <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/></svg>
+              </a>
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="hover:text-white hover:scale-110 transition-all p-1">
+                <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+              </a>
+              <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="hover:text-white hover:scale-110 transition-all p-1">
+                <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+              </a>
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="hover:text-white hover:scale-110 transition-all p-1">
+                <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              </a>
+              <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" aria-label="TikTok" className="hover:text-white hover:scale-110 transition-all p-1">
+                <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.24 1.07-.14 1.61.24 1.64 1.82 2.89 3.5 2.77 1.81-.02 3.25-1.54 3.25-3.35V.02z"/></svg>
+              </a>
+            </div>
+          </div>
+
+          {/* Middle Row: 5 Columns (PRODUCTO, PARA EMPEZAR, RECURSOS, PARTNERS, EMPRESA) */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 lg:gap-10 py-12 text-[13px]">
             
-            {/* Brand Column (Col 1-5) */}
-            <div className="md:col-span-5 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="bg-white px-3.5 py-1.5 rounded-xl inline-flex items-center shadow-sm">
-                  <img src="/logo.png" alt="ALOEC Logo" className="h-7 w-auto object-contain" />
-                </div>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800/60 uppercase tracking-wider">
-                  App Oficial
-                </span>
-              </div>
-
-              <p className="text-slate-400 text-xs sm:text-sm leading-relaxed max-w-sm">
-                Alimentación Orgánica & Salud Holística. Tu guía interactiva de medicina integrativa, jugoterapia científica y hábitos saludables.
-              </p>
-
-              {/* Direct Store Download Badges in Footer */}
-              <div className="flex flex-wrap items-center gap-2.5 pt-1">
-                <a
-                  href="https://play.google.com/store/apps/details?id=net.alimentacionorganica.aloec&hl=es_419"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 hover:border-slate-700 transition-colors text-[11px] font-semibold"
-                >
-                  <svg className="w-3.5 h-3.5 fill-current text-emerald-400 shrink-0" viewBox="0 0 512 512">
-                    <path fill="#410593" d="M325.8 244.6L79.7 490.7c-7.9-5-12.7-13.7-12.7-23.7V45c0-10 4.8-18.7 12.7-23.7l246.1 223.3z"/>
-                    <path fill="#00E676" d="M386.4 300.2l-60.6-55.6 60.6-55.6 68.3 38.9c19.5 11.1 19.5 29.2 0 40.3l-68.3 32z"/>
-                    <path fill="#FF3D00" d="M79.7 21.3L325.8 244.6l60.6-55.6-267.8-152.6c-12-6.8-26.3-5-38.9 4.9z"/>
-                    <path fill="#FFC107" d="M79.7 490.7l246.1-223.3 60.6 55.6-267.8 152.6c-12 6.8-26.3 5-38.9-4.9z"/>
-                  </svg>
-                  <span>Google Play</span>
-                </a>
-
-                <button
-                  type="button"
-                  onClick={() => setShowAppStoreModal(true)}
-                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 hover:border-slate-700 transition-colors text-[11px] font-semibold"
-                >
-                  <svg className="w-3.5 h-3.5 fill-current text-white shrink-0" viewBox="0 0 384 512">
-                    <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 66.2 32.1 114.7c20.1 30.1 44.1 63.8 75.9 62.6 30.5-1.2 42.6-19.4 79.4-19.4 36.5 0 47.6 19.4 79.4 18.2 32.4-1.2 53.6-30.8 73.1-60.6 15.6-23.7 22.1-47.2 22.5-48.4-1.2-.6-43.7-17-43.7-61.9zM258.6 92.4c15.3-18.6 25.8-44.4 23-70.4-22.3 1-49.1 14.9-64.8 33.3-13.8 16.1-26 42.4-22.7 67.5 24.8 1.9 50-13 64.5-30.4z"/>
-                  </svg>
-                  <span>App Store</span>
-                </button>
-              </div>
+            {/* Col 1: PRODUCTO */}
+            <div className="space-y-4">
+              <h3 className="text-xs font-bold text-white uppercase tracking-wider">PRODUCTO</h3>
+              <ul className="space-y-2.5">
+                <li>
+                  <a 
+                    href="https://play.google.com/store/apps/details?id=net.alimentacionorganica.aloec&hl=es_419"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-emerald-400 transition-colors inline-flex items-center gap-1.5"
+                  >
+                    App Android (Google Play)
+                    <ExternalLink className="w-2.5 h-2.5 text-neutral-600" />
+                  </a>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => setShowAppStoreModal(true)}
+                    className="hover:text-emerald-400 transition-colors text-left"
+                  >
+                    App iOS (App Store)
+                  </button>
+                </li>
+                <li>
+                  <a href="/appaloecv16.apk" download="appaloecv16.apk" className="hover:text-emerald-400 transition-colors">
+                    Descarga APK Directo (v16)
+                  </a>
+                </li>
+                <li>
+                  <a href="https://app.alimentacionorganicaec.com" className="hover:text-emerald-400 transition-colors">
+                    Plataforma Web ALOEC
+                  </a>
+                </li>
+                <li>
+                  <a href="#calculadora" className="hover:text-emerald-400 transition-colors">
+                    Calculadora de IMC
+                  </a>
+                </li>
+                <li>
+                  <a href="#recetas" className="hover:text-emerald-400 transition-colors">
+                    Catálogo de Jugoterapia
+                  </a>
+                </li>
+                <li>
+                  <a href="#protocolos" className="hover:text-emerald-400 transition-colors">
+                    9 Protocolos Médicos
+                  </a>
+                </li>
+                <li>
+                  <a href="#precios" className="hover:text-emerald-400 transition-colors">
+                    Planes & Membresías
+                  </a>
+                </li>
+              </ul>
             </div>
 
-            {/* Links Columns (Col 6-12: 3 clean columns) */}
-            <div className="md:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-8">
-              
-              {/* Col A: Navegación */}
-              <div className="space-y-3">
-                <p className="text-[11px] font-bold text-white uppercase tracking-wider">Explorar</p>
-                <ul className="space-y-2.5">
-                  <li><a href="#libro-app" className="hover:text-emerald-400 transition-colors">Libro + App</a></li>
-                  <li><a href="#beneficios" className="hover:text-emerald-400 transition-colors">Beneficios</a></li>
-                  <li><a href="#calculadora" className="hover:text-emerald-400 transition-colors">Calculadora IMC</a></li>
-                  <li><a href="#recetas" className="hover:text-emerald-400 transition-colors">Recetario</a></li>
-                  <li><a href="#precios" className="hover:text-emerald-400 transition-colors">Planes & Precios</a></li>
-                </ul>
-              </div>
+            {/* Col 2: PARA EMPEZAR */}
+            <div className="space-y-4">
+              <h3 className="text-xs font-bold text-white uppercase tracking-wider">PARA EMPEZAR</h3>
+              <ul className="space-y-2.5">
+                <li>
+                  <a href="#libro-app" className="hover:text-emerald-400 transition-colors">
+                    Libro "Ama Lo Que Comes"
+                  </a>
+                </li>
+                <li>
+                  <a href="#libro-app" className="hover:text-emerald-400 transition-colors">
+                    Autor José Rengifo
+                  </a>
+                </li>
+                <li>
+                  <a href="#beneficios" className="hover:text-emerald-400 transition-colors">
+                    Nutrición Basada en Plantas
+                  </a>
+                </li>
+                <li>
+                  <a href="#beneficios" className="hover:text-emerald-400 transition-colors">
+                    Beneficios del Jugo Verde
+                  </a>
+                </li>
+                <li>
+                  <a href="#calculadora" className="hover:text-emerald-400 transition-colors">
+                    Diagnóstico Nutricional
+                  </a>
+                </li>
+                <li>
+                  <a href="#faq" className="hover:text-emerald-400 transition-colors">
+                    Preguntas Frecuentes
+                  </a>
+                </li>
+                <li>
+                  <Link href="/register" className="hover:text-emerald-400 transition-colors">
+                    Crear Cuenta Gratuita
+                  </Link>
+                </li>
+              </ul>
+            </div>
 
-              {/* Col B: Ecosistema */}
-              <div className="space-y-3">
-                <p className="text-[11px] font-bold text-white uppercase tracking-wider">Ecosistema</p>
-                <ul className="space-y-2.5">
-                  <li>
-                    <a 
-                      href="https://play.google.com/store/apps/details?id=net.alimentacionorganica.aloec&hl=es_419" 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="hover:text-emerald-400 transition-colors flex items-center gap-1.5"
-                    >
-                      <span>Google Play</span>
-                      <ExternalLink className="w-2.5 h-2.5 text-slate-500" />
-                    </a>
-                  </li>
-                  <li>
-                    <button 
-                      type="button" 
-                      onClick={() => setShowAppStoreModal(true)} 
-                      className="hover:text-emerald-400 transition-colors text-left"
-                    >
-                      Apple App Store
-                    </button>
-                  </li>
-                  <li>
-                    <a href="https://app.alimentacionorganicaec.com" className="hover:text-emerald-400 transition-colors">
-                      Plataforma Web
-                    </a>
-                  </li>
-                  <li>
-                    <Link href="/register" className="hover:text-emerald-400 transition-colors">
-                      Crear Cuenta
-                    </Link>
-                  </li>
-                </ul>
-              </div>
+            {/* Col 3: RECURSOS */}
+            <div className="space-y-4">
+              <h3 className="text-xs font-bold text-white uppercase tracking-wider">RECURSOS</h3>
+              <ul className="space-y-2.5">
+                <li>
+                  <a href="#calculadora" className="hover:text-emerald-400 transition-colors">
+                    Calculadora IMC Online
+                  </a>
+                </li>
+                <li>
+                  <a href="#recetas" className="hover:text-emerald-400 transition-colors">
+                    Biblioteca de Jugoterapia
+                  </a>
+                </li>
+                <li>
+                  <a href="#protocolos" className="hover:text-emerald-400 transition-colors">
+                    Protocolos Clínicos
+                  </a>
+                </li>
+                <li>
+                  <a href="#faq" className="hover:text-emerald-400 transition-colors">
+                    Guía de Ayuno y Jugos
+                  </a>
+                </li>
+                <li>
+                  <a href="mailto:soporte@alimentacionorganicaec.net" className="hover:text-emerald-400 transition-colors">
+                    Centro de Ayuda
+                  </a>
+                </li>
+                <li>
+                  <span className="text-neutral-500 inline-flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Estado Operativo 99.9%
+                  </span>
+                </li>
+              </ul>
+            </div>
 
-              {/* Col C: Seguridad & Legal */}
-              <div className="space-y-3 col-span-2 sm:col-span-1">
-                <p className="text-[11px] font-bold text-white uppercase tracking-wider">Seguridad & Legal</p>
-                <ul className="space-y-2.5">
-                  <li>
-                    <Link href="/terminos-y-condiciones" className="hover:text-emerald-400 transition-colors">
-                      Términos y Condiciones
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/politicas-de-privacidad" className="hover:text-emerald-400 transition-colors">
-                      Políticas de Privacidad
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/eliminacion-de-datos" className="hover:text-rose-400 transition-colors">
-                      Eliminación de Datos
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/login" className="text-slate-300 hover:text-emerald-400 font-semibold inline-flex items-center gap-1 transition-colors">
-                      <Lock className="w-3 h-3 text-emerald-400" /> Acceso Administrativo
-                    </Link>
-                  </li>
-                  <li className="pt-1 text-slate-500 text-[11px] leading-tight">
-                    <span>Soporte: </span>
-                    <a href="mailto:soporte@alimentacionorganicaec.net" className="text-slate-400 hover:underline">
-                      soporte@alimentacionorganicaec.net
-                    </a>
-                  </li>
-                </ul>
-              </div>
+            {/* Col 4: PARTNERS */}
+            <div className="space-y-4">
+              <h3 className="text-xs font-bold text-white uppercase tracking-wider">PARTNERS</h3>
+              <ul className="space-y-2.5">
+                <li>
+                  <Link href="/referral" className="hover:text-emerald-400 transition-colors">
+                    Programa de Referidos
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/referral" className="hover:text-emerald-400 transition-colors">
+                    Portal de Afiliados
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/referral" className="hover:text-emerald-400 transition-colors">
+                    Ganar Comisiones
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/register" className="hover:text-emerald-400 transition-colors">
+                    Generar Código de Invitación
+                  </Link>
+                </li>
+                <li>
+                  <a href="mailto:soporte@alimentacionorganicaec.net" className="hover:text-emerald-400 transition-colors">
+                    Soporte para Socios
+                  </a>
+                </li>
+              </ul>
+            </div>
 
+            {/* Col 5: EMPRESA */}
+            <div className="space-y-4">
+              <h3 className="text-xs font-bold text-white uppercase tracking-wider">EMPRESA</h3>
+              <ul className="space-y-2.5">
+                <li>
+                  <a href="#libro-app" className="hover:text-emerald-400 transition-colors">
+                    Sobre ALOEC
+                  </a>
+                </li>
+                <li>
+                  <a href="https://webfixsoluciones.net" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 transition-colors inline-flex items-center gap-1">
+                    WebFix Soluciones
+                    <ExternalLink className="w-2.5 h-2.5 text-neutral-600" />
+                  </a>
+                </li>
+                <li>
+                  <Link href="/terminos-y-condiciones" className="hover:text-emerald-400 transition-colors">
+                    Términos y Condiciones
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/politicas-de-privacidad" className="hover:text-emerald-400 transition-colors">
+                    Políticas de Privacidad
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/eliminacion-de-datos" className="hover:text-rose-400 transition-colors">
+                    Eliminación de Datos
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/login" className="hover:text-emerald-400 transition-colors inline-flex items-center gap-1 text-slate-300">
+                    <Lock className="w-3 h-3 text-emerald-400" /> Acceso Administrativo
+                  </Link>
+                </li>
+                <li>
+                  <a href="mailto:soporte@alimentacionorganicaec.net" className="hover:text-emerald-400 transition-colors">
+                    Contacto y Soporte
+                  </a>
+                </li>
+              </ul>
             </div>
 
           </div>
 
-          {/* Bottom Bar: Clean, balanced, modern with direct legal links */}
-          <div className="pt-8 border-t border-slate-900 flex flex-col md:flex-row justify-between items-center gap-4 text-[11px] text-slate-500">
-            <div className="flex items-center gap-2.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <p>© {new Date().getFullYear()} ALOEC — Todos los derechos reservados.</p>
+          {/* Horizontal Divider Rule */}
+          <div className="border-t border-neutral-800/80 my-8"></div>
+
+          {/* Bottom Bar: Horizontally Spread Legal Links & Copyright (exact Brevo layout) */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-neutral-400">
+            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+              <span className="text-neutral-500">Cookies</span>
+              <Link href="/politicas-de-privacidad" className="hover:text-white transition-colors">
+                Política Anti-Spam
+              </Link>
+              <Link href="/politicas-de-privacidad" className="hover:text-white transition-colors">
+                Privacidad
+              </Link>
+              <Link href="/terminos-y-condiciones" className="hover:text-white transition-colors">
+                Términos y condiciones
+              </Link>
+              <Link href="/terminos-y-condiciones#sec-3" className="hover:text-white transition-colors">
+                Aviso legal
+              </Link>
+              <Link href="/eliminacion-de-datos" className="hover:text-rose-400 transition-colors">
+                Eliminación de datos
+              </Link>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-4 text-slate-400">
-              <Link href="/terminos-y-condiciones" className="hover:text-emerald-400 transition-colors font-medium">
-                Términos y Condiciones
-              </Link>
-              <span className="text-slate-700">·</span>
-              <Link href="/politicas-de-privacidad" className="hover:text-emerald-400 transition-colors font-medium">
-                Políticas de Privacidad
-              </Link>
-              <span className="text-slate-700">·</span>
-              <Link href="/eliminacion-de-datos" className="hover:text-emerald-400 transition-colors font-medium">
-                Eliminación de Datos
-              </Link>
+            <div className="text-neutral-400 whitespace-nowrap">
+              © ALOEC {new Date().getFullYear()}. Todos los derechos reservados.
             </div>
-            
-            <p className="flex items-center gap-1 text-slate-500">
-              Desarrollado con excelencia por{' '}
-              <a
-                href="https://webfixsoluciones.net"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-emerald-400 hover:text-emerald-300 font-bold transition-colors"
-              >
-                Web Fix Soluciones
-              </a>
-            </p>
           </div>
 
         </div>

@@ -178,10 +178,28 @@ class _JuicesScreenState extends ConsumerState<JuicesScreen> {
                                     textAlign: TextAlign.center,
                                     style: TextStyle(color: Colors.grey, fontSize: 14),
                                   ),
+                                  const SizedBox(height: 14),
+                                  OutlinedButton.icon(
+                                    onPressed: () {
+                                      _searchCtrl.clear();
+                                      ref.read(recipeSearchQuery.notifier).state = '';
+                                      setState(() => _selectedCategory = null);
+                                    },
+                                    icon: const Icon(Icons.refresh, size: 16),
+                                    label: const Text('Ver todas las recetas'),
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: AppColors.primaryGreen,
+                                      side: const BorderSide(color: AppColors.primaryGreen),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  ),
                                 ],
                               ),
                             )
                           : ListView.separated(
+                              padding: const EdgeInsets.only(bottom: 90),
                               itemCount: filteredRecipes.length,
                               separatorBuilder: (_, __) => const SizedBox(height: 12),
                               itemBuilder: (context, index) {

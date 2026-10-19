@@ -264,6 +264,45 @@ class ProtocolDayNotifier extends StateNotifier<ProtocolDayState> {
     return -1;
   }
 
+  Future<void> toggleBlockCompleted(int index) async {
+    if (index < 0 || index >= state.blocks.length) return;
+
+    final currentBlock = state.blocks[index];
+    final newCompleted = !currentBlock.isCompleted;
+
+    final updatedBlocks = List<ProtocolBlock>.from(state.blocks);
+    updatedBlocks[index] = updatedBlocks[index].copyWith(
+      isCompleted: newCompleted,
+      status: newCompleted ? BlockStatus.completed : BlockStatus.pending,
+    );
+    state = state.copyWith(blocks: updatedBlocks);
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final today = DateTime.now();
+    final todayKey =
+        '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+
+    final completedIndices = updatedBlocks
+        .asMap()
+        .entries
+        .where((e) => e.value.isCompleted)
+        .map((e) => e.key)
+        .toList();
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('protocol_progress')
+        .doc(todayKey)
+        .set({
+      'completedBlocks': completedIndices,
+      'dayNumber': state.currentDay,
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  }
+
   Future<void> markBlockCompleted(int index) async {
     if (index < 0 || index >= state.blocks.length) return;
 

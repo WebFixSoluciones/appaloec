@@ -190,20 +190,20 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
           ref.read(protocolDayProvider.notifier).loadProtocol(),
       child: ListView(
         controller: _scrollController,
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 130),
         children: [
           _buildProtocolHeader(dayState),
-          const SizedBox(height: 20),
+          const SizedBox(height: 18),
           ...dayState.blocks.asMap().entries.map((entry) {
             return TweenAnimationBuilder<double>(
               tween: Tween(begin: 0, end: 1),
-              duration: Duration(milliseconds: 300 + entry.key * 50),
+              duration: Duration(milliseconds: 250 + entry.key * 40),
               curve: Curves.easeOut,
               builder: (context, value, child) {
                 return Opacity(
                   opacity: value,
                   child: Transform.translate(
-                    offset: Offset(0, 20 * (1 - value)),
+                    offset: Offset(0, 16 * (1 - value)),
                     child: child,
                   ),
                 );
@@ -214,11 +214,14 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
                 onComplete: () => ref
                     .read(protocolDayProvider.notifier)
                     .markBlockCompleted(entry.key),
+                onToggle: () => ref
+                    .read(protocolDayProvider.notifier)
+                    .toggleBlockCompleted(entry.key),
               ),
             );
           }),
           if (dayState.notes.isNotEmpty) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             _buildNotesSection(dayState.notes),
           ],
         ],
@@ -228,16 +231,20 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
 
   Widget _buildProtocolHeader(ProtocolDayState dayState) {
     final percent = dayState.completionPercent;
+    final done = dayState.blocks.where((b) => b.isCompleted).length;
+    final total = dayState.blocks.length;
+
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
-            offset: const Offset(0, 2),
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -247,41 +254,72 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Protocolo Dia ${dayState.currentDay} / ${dayState.totalDays}',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textDark,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8F5E9),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Día ${dayState.currentDay} de ${dayState.totalDays}',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF166534),
+                  ),
                 ),
               ),
               Text(
-                '${(percent * 100).toInt()}%',
+                '${(percent * 100).toInt()}% Completado',
                 style: const TextStyle(
                   fontSize: 14,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w800,
                   color: AppColors.primaryGreen,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           ClipRRect(
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(8),
             child: TweenAnimationBuilder<double>(
               tween: Tween(begin: 0, end: percent),
-              duration: const Duration(milliseconds: 600),
+              duration: const Duration(milliseconds: 500),
               curve: Curves.easeOut,
               builder: (context, value, _) {
                 return LinearProgressIndicator(
                   value: value,
-                  minHeight: 8,
-                  backgroundColor: Colors.grey.shade200,
+                  minHeight: 10,
+                  backgroundColor: const Color(0xFFF1F5F9),
                   valueColor: const AlwaysStoppedAnimation<Color>(
-                      AppColors.primaryGreen),
+                    AppColors.primaryGreen,
+                  ),
                 );
               },
             ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Icon(
+                done == total && total > 0
+                    ? Icons.celebration_rounded
+                    : Icons.task_alt_rounded,
+                size: 14,
+                color: const Color(0xFF64748B),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                done == total && total > 0
+                    ? '¡Felicidades! Completaste todos tus horarios de hoy'
+                    : '$done de $total comidas y pautas realizadas',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF64748B),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -292,41 +330,48 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.amber.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.amber.withValues(alpha: 0.2)),
+        color: const Color(0xFFFFFBEB),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFFDE68A)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Row(
             children: [
-              Icon(Icons.push_pin, size: 16, color: Colors.amber),
-              SizedBox(width: 6),
+              Icon(Icons.lightbulb_outline, size: 18, color: Color(0xFFD97706)),
+              SizedBox(width: 8),
               Text(
-                'Notas importantes',
+                'Recomendaciones del Protocolo',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textDark,
+                  color: Color(0xFF92400E),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 10),
           ...notes.map((note) => Padding(
-                padding: const EdgeInsets.only(bottom: 6),
+                padding: const EdgeInsets.only(bottom: 8),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('  ', style: TextStyle(fontSize: 13)),
-                    const SizedBox(width: 6),
+                    const Padding(
+                      padding: EdgeInsets.only(top: 4),
+                      child: Icon(
+                        Icons.fiber_manual_record,
+                        size: 8,
+                        color: Color(0xFFD97706),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         note,
                         style: const TextStyle(
                           fontSize: 13,
-                          color: AppColors.textLight,
+                          color: Color(0xFF78350F),
                           height: 1.4,
                         ),
                       ),
