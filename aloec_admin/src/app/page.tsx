@@ -55,7 +55,7 @@ function GooglePlayButton() {
       href="https://play.google.com/store/apps/details?id=net.alimentacionorganica.aloec&hl=es_419"
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-3 px-5 py-3 bg-slate-950 hover:bg-black text-white rounded-xl border-2 border-emerald-500/60 hover:border-emerald-400 shadow-lg hover:shadow-emerald-500/25 transition-all duration-200 group transform hover:-translate-y-0.5"
+      className="inline-flex items-center gap-3.5 px-6 py-3.5 bg-[#0a1112] hover:bg-[#3e9d51] text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 group transform hover:-translate-y-0.5"
     >
       <svg className="w-7 h-7 shrink-0 transition-transform group-hover:scale-110" viewBox="0 0 512 512" aria-hidden="true">
         <path fill="#410593" d="M325.8 244.6L79.7 490.7c-7.9-5-12.7-13.7-12.7-23.7V45c0-10 4.8-18.7 12.7-23.7l246.1 223.3z"/>
@@ -64,11 +64,8 @@ function GooglePlayButton() {
         <path fill="#FFC107" d="M79.7 490.7l246.1-223.3 60.6 55.6-267.8 152.6c-12 6.8-26.3 5-38.9-4.9z"/>
       </svg>
       <div className="text-left leading-none">
-        <div className="flex items-center gap-1.5">
-          <span className="block text-[10px] uppercase tracking-wider font-extrabold text-emerald-400">DISPONIBLE EN</span>
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-        </div>
-        <span className="block text-base font-extrabold tracking-tight text-white mt-0.5">Google Play</span>
+        <span className="block text-[10px] uppercase tracking-wider font-extrabold text-[#f6f859]">DISPONIBLE EN</span>
+        <span className="block text-base font-black tracking-tight text-white mt-1">Google Play</span>
       </div>
     </a>
   );
@@ -79,11 +76,11 @@ function AndroidAPKButton() {
   return (
     <Link
       href="/register"
-      className="inline-flex items-center gap-3 px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl border border-emerald-500/50 shadow-md hover:shadow-lg transition-all duration-200 group"
+      className="inline-flex items-center gap-3 px-5 py-3 bg-[#3e9d51] hover:bg-[#348745] text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 group"
     >
-      <Download className="w-6 h-6 text-emerald-100 transition-transform group-hover:translate-y-0.5 shrink-0" />
+      <Download className="w-5 h-5 text-white transition-transform group-hover:translate-y-0.5 shrink-0" />
       <div className="text-left leading-none">
-        <span className="block text-[10px] uppercase tracking-wider font-semibold text-emerald-200">DESCARGA DIRECTA</span>
+        <span className="block text-[10px] uppercase tracking-wider font-semibold text-white/80">DESCARGA DIRECTA</span>
         <span className="block text-base font-bold tracking-tight text-white mt-0.5">Android APK</span>
       </div>
     </Link>
@@ -96,14 +93,14 @@ function AppStoreButton({ onClick }: { onClick?: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex items-center gap-3 px-5 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl border border-slate-800 shadow-md hover:shadow-lg transition-all duration-200 group cursor-pointer text-left"
+      className="inline-flex items-center gap-3.5 px-6 py-3.5 bg-white hover:bg-[#0a1112] text-[#0a1112] hover:text-white border-2 border-[#0a1112] rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer text-left transform hover:-translate-y-0.5"
     >
-      <svg className="w-7 h-7 fill-current shrink-0 transition-transform group-hover:scale-105" viewBox="0 0 384 512">
+      <svg className="w-7 h-7 fill-current shrink-0 transition-transform group-hover:scale-110" viewBox="0 0 384 512">
         <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 66.2 32.1 114.7c20.1 30.1 44.1 63.8 75.9 62.6 30.5-1.2 42.6-19.4 79.4-19.4 36.5 0 47.6 19.4 79.4 18.2 32.4-1.2 53.6-30.8 73.1-60.6 15.6-23.7 22.1-47.2 22.5-48.4-1.2-.6-43.7-17-43.7-61.9zM258.6 92.4c15.3-18.6 25.8-44.4 23-70.4-22.3 1-49.1 14.9-64.8 33.3-13.8 16.1-26 42.4-22.7 67.5 24.8 1.9 50-13 64.5-30.4z"/>
       </svg>
       <div className="text-left leading-none">
-        <span className="block text-[10px] uppercase tracking-wider font-semibold text-slate-400">PRÓXIMAMENTE EN</span>
-        <span className="block text-base font-bold tracking-tight text-white mt-0.5">App Store</span>
+        <span className="block text-[10px] uppercase tracking-wider font-extrabold opacity-70 group-hover:opacity-90">PRÓXIMAMENTE EN</span>
+        <span className="block text-base font-black tracking-tight mt-1">App Store</span>
       </div>
     </button>
   );
@@ -236,118 +233,132 @@ function LandingContent() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-emerald-500 selection:text-white">
+    <div className="min-h-screen bg-white text-[#0a1112] font-sans selection:bg-[#3e9d51] selection:text-white">
       
       {/* ── Top Announcement Bar ────────────────────────────────────────────── */}
-      <div className="bg-gradient-to-r from-emerald-700 via-emerald-600 to-green-600 text-white px-4 py-2.5 text-xs font-semibold text-center flex items-center justify-center gap-2 shadow-sm">
-        <span className="inline-flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-[11px] uppercase tracking-wider font-bold">
-          <Sparkles className="w-3.5 h-3.5 text-amber-300" /> OFERTA EXCLUSIVA
+      <div className="bg-[#0a1112] text-white px-4 py-2 text-xs font-semibold text-center flex items-center justify-center gap-2 border-b border-white/10">
+        <span className="inline-flex items-center gap-1 bg-[#f6f859] text-[#0a1112] px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-black">
+          LIBRO + APP
         </span>
-        <span>Adquiere el Libro <strong>"Ama Lo Que Comes"</strong> e incluye acceso total a la <strong>App ALOEC</strong></span>
+        <span className="text-white/90">
+          Adquiere el Libro <strong>"Ama Lo Que Comes"</strong> y obtén acceso total a la <strong>App ALOEC</strong>
+        </span>
         {refCode && (
-          <span className="hidden md:inline-flex items-center gap-1 bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full font-bold ml-2">
-            🎁 Ref: {refCode}
+          <span className="hidden md:inline-flex items-center gap-1 bg-[#3e9d51] text-white px-2 py-0.5 rounded-full text-[11px] font-bold ml-2">
+            Ref: {refCode}
           </span>
         )}
       </div>
 
       {/* ── Navigation Header ───────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-sm transition-all">
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 transition-all">
         <div className="w-[90%] max-w-[1600px] mx-auto px-2 sm:px-4 h-20 flex items-center justify-between">
           
-          {/* Logo Only */}
-          <div className="flex items-center">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2">
             <img src="/logo.png" alt="ALOEC Logo" className="h-10 w-auto object-contain" />
-          </div>
+          </Link>
 
-          <nav className="hidden lg:flex items-center gap-8 text-sm font-semibold text-slate-700">
-            <a href="#libro-app" className="hover:text-emerald-700 transition-colors">Libro + App</a>
-            <a href="#beneficios" className="hover:text-emerald-700 transition-colors">Beneficios</a>
-            <a href="#calculadora" className="hover:text-emerald-700 transition-colors flex items-center gap-1">
-              <Calculator className="w-4 h-4 text-emerald-600" /> Calculadora IMC
+          <nav className="hidden lg:flex items-center gap-8 text-sm font-bold text-[#0a1112]">
+            <a href="#libro-app" className="hover:text-[#3e9d51] transition-colors">Libro + App</a>
+            <a href="#beneficios" className="hover:text-[#3e9d51] transition-colors">Beneficios</a>
+            <a href="#calculadora" className="hover:text-[#3e9d51] transition-colors flex items-center gap-1">
+              <Calculator className="w-4 h-4 text-[#3e9d51]" /> Calculadora IMC
             </a>
-            <a href="#recetas" className="hover:text-emerald-700 transition-colors">Jugos Verdes</a>
-            <a href="#precios" className="hover:text-emerald-700 transition-colors">Planes & Ofertas</a>
-            <a href="#faq" className="hover:text-emerald-700 transition-colors">Preguntas</a>
+            <a href="#recetas" className="hover:text-[#3e9d51] transition-colors">Jugos Verdes</a>
+            <a href="#precios" className="hover:text-[#3e9d51] transition-colors">Planes & Ofertas</a>
+            <a href="#faq" className="hover:text-[#3e9d51] transition-colors">Preguntas</a>
           </nav>
 
           <div className="flex items-center gap-3">
             <Link
               href="/login"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-700 hover:text-emerald-700 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-[#0a1112] hover:text-[#3e9d51] hover:bg-slate-100 rounded-xl transition-colors border border-slate-200"
             >
               <UserCheck className="w-3.5 h-3.5" /> Acceso Admin
             </Link>
             <a
               href="#precios"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-md hover:shadow-lg hover:shadow-emerald-600/20 transition-all transform active:scale-95"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#3e9d51] hover:bg-[#348745] text-white font-extrabold text-sm rounded-xl shadow-md hover:shadow-lg transition-all transform active:scale-95"
             >
-              <BookOpen className="w-4 h-4 text-amber-300" /> Comprar Libro + App
+              <BookOpen className="w-4 h-4 text-[#f6f859]" /> Comprar Libro + App
             </a>
           </div>
         </div>
       </header>
 
-      {/* ── Hero Section (Brevo-Style Redesign for ALOEC) ──────────────────── */}
+      {/* ── Hero Section (Minimalist Fresh Style with #f6f859 and #0a1112) ──── */}
       <div className="bg-white">
-        <section id="libro-app" className="relative pt-12 pb-16 lg:pt-16 lg:pb-24 overflow-hidden bg-[#C0FFA5] rounded-b-[2.5rem] lg:rounded-b-[3.5rem]">
+        <section id="libro-app" className="relative pt-12 pb-16 lg:pt-16 lg:pb-24 overflow-hidden bg-[#f6f859] rounded-b-[2.5rem] lg:rounded-b-[3.5rem]">
           <div className="w-[90%] max-w-[1600px] mx-auto px-2 sm:px-4">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
               
-              {/* Hero Left Content (Matching Brevo style) */}
+              {/* Hero Left Content */}
               <div className="lg:col-span-7 space-y-6 text-left">
                 
                 {/* Main Headline */}
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-950 leading-[1.12]">
-                  Transforma tu salud con el libro <span className="underline decoration-slate-900/25 underline-offset-8">"Ama Lo Que Comes"</span> y la App ALOEC
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-[#0a1112] leading-[1.12]">
+                  Transforma tu salud con el libro <span className="underline decoration-[#0a1112]/20 underline-offset-8">"Ama Lo Que Comes"</span> y la App ALOEC
                 </h1>
 
                 {/* Subtitle */}
-                <p className="text-base sm:text-lg text-slate-800 font-medium leading-relaxed max-w-xl">
-                  Una plataforma única para tu nutrición y medicina integrativa. Recetas de jugoterapia curativa, calculadora biológica de IMC y 9 protocolos guiados día a día por José Rengifo.
+                <p className="text-base sm:text-lg text-[#0a1112]/85 font-medium leading-relaxed max-w-xl">
+                  Una plataforma integral de nutrición y medicina integrativa. Recetas de jugoterapia celular, calculadora biológica de IMC y 9 protocolos guiados día a día por José Rengifo.
                 </p>
 
-                {/* Brevo-Style Solid Black CTA Button */}
-                <div className="pt-2 flex flex-wrap items-center gap-3.5">
+                {/* The Two Main Hero Buttons: Google Play & App Store */}
+                <div className="pt-2 flex flex-wrap items-center gap-4">
+                  
+                  {/* Button 1: Google Play Store (Direct Link) */}
                   <a
-                    href="#precios"
-                    className="inline-flex items-center justify-center px-8 py-4 bg-slate-950 hover:bg-black text-white text-base font-extrabold rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 active:scale-95"
+                    href="https://play.google.com/store/apps/details?id=net.alimentacionorganica.aloec&hl=es_419"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-3.5 px-6 py-4 bg-[#0a1112] hover:bg-[#3e9d51] text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-0.5 group"
                   >
-                    Comprar Libro + App
+                    <svg className="w-7 h-7 shrink-0 transition-transform group-hover:scale-110" viewBox="0 0 512 512" aria-hidden="true">
+                      <path fill="#410593" d="M325.8 244.6L79.7 490.7c-7.9-5-12.7-13.7-12.7-23.7V45c0-10 4.8-18.7 12.7-23.7l246.1 223.3z"/>
+                      <path fill="#00E676" d="M386.4 300.2l-60.6-55.6 60.6-55.6 68.3 38.9c19.5 11.1 19.5 29.2 0 40.3l-68.3 32z"/>
+                      <path fill="#FF3D00" d="M79.7 21.3L325.8 244.6l60.6-55.6-267.8-152.6c-12-6.8-26.3-5-38.9 4.9z"/>
+                      <path fill="#FFC107" d="M79.7 490.7l246.1-223.3 60.6 55.6-267.8 152.6c-12 6.8-26.3 5-38.9-4.9z"/>
+                    </svg>
+                    <div className="text-left leading-none">
+                      <span className="block text-[10px] uppercase tracking-wider font-extrabold text-[#f6f859]">DISPONIBLE EN</span>
+                      <span className="block text-base font-black tracking-tight text-white mt-1">Google Play</span>
+                    </div>
                   </a>
 
-                  <a
-                    href="#calculadora"
-                    className="inline-flex items-center justify-center px-6 py-4 bg-white/85 hover:bg-white text-slate-950 text-sm font-extrabold rounded-2xl border border-black/10 shadow-xs transition-all hover:-translate-y-0.5"
+                  {/* Button 2: Apple App Store (Opens Coming Soon Popup) */}
+                  <button
+                    type="button"
+                    onClick={() => setShowAppStoreModal(true)}
+                    className="inline-flex items-center gap-3.5 px-6 py-4 bg-white hover:bg-[#0a1112] text-[#0a1112] hover:text-white border-2 border-[#0a1112] rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 group cursor-pointer text-left"
                   >
-                    <Calculator className="w-4 h-4 mr-2 text-emerald-800" /> Calcular IMC Gratis
-                  </a>
+                    <svg className="w-7 h-7 fill-current shrink-0 transition-transform group-hover:scale-110" viewBox="0 0 384 512">
+                      <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 66.2 32.1 114.7c20.1 30.1 44.1 63.8 75.9 62.6 30.5-1.2 42.6-19.4 79.4-19.4 36.5 0 47.6 19.4 79.4 18.2 32.4-1.2 53.6-30.8 73.1-60.6 15.6-23.7 22.1-47.2 22.5-48.4-1.2-.6-43.7-17-43.7-61.9zM258.6 92.4c15.3-18.6 25.8-44.4 23-70.4-22.3 1-49.1 14.9-64.8 33.3-13.8 16.1-26 42.4-22.7 67.5 24.8 1.9 50-13 64.5-30.4z"/>
+                    </svg>
+                    <div className="text-left leading-none">
+                      <span className="block text-[10px] uppercase tracking-wider font-extrabold opacity-70 group-hover:opacity-90">PRÓXIMAMENTE EN</span>
+                      <span className="block text-base font-black tracking-tight mt-1">App Store</span>
+                    </div>
+                  </button>
+
                 </div>
 
-                {/* Brevo-Style Trust Indicator & Rating */}
-                <div className="pt-3 space-y-2.5 text-xs text-slate-800 font-medium">
-                  <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                    <span>Atención y soporte en español 🇪🇨</span>
-                    <span>·</span>
-                    <span>Libro digital incluido</span>
-                    <span>·</span>
-                    <span>Disponible en Android, iOS y Web</span>
-                  </p>
-
-                  <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-xs px-3.5 py-1.5 rounded-full border border-black/5 shadow-xs">
-                    <div className="flex items-center text-amber-500">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
-                      ))}
-                    </div>
-                    <span className="font-black text-slate-950 text-xs">4.9 / 5</span>
-                    <span className="text-slate-600 font-medium text-[11px]">(+10,000 lectores y pacientes)</span>
-                  </div>
+                {/* Trust Row */}
+                <div className="pt-2 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-[#0a1112] font-semibold">
+                  <span className="inline-flex items-center gap-1.5 bg-white/80 px-3 py-1.5 rounded-full border border-black/5 shadow-2xs">
+                    🇪🇨 Atención y soporte en español
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 bg-white/80 px-3 py-1.5 rounded-full border border-black/5 shadow-2xs">
+                    <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
+                    <strong>4.9 / 5</strong> (+10,000 lectores y pacientes)
+                  </span>
                 </div>
 
               </div>
 
-              {/* Hero Right Visual: Clean, borderless image without white padding or overlays (Brevo Style) */}
+              {/* Hero Right Visual: Book Cover Clean */}
               <div className="lg:col-span-5 flex justify-center lg:justify-end">
                 <div className="w-full max-w-md lg:max-w-lg">
                   <img 
@@ -364,23 +375,23 @@ function LandingContent() {
       </div>
 
       {/* ── Key Metrics Bar (Clean White Background) ─────────────────────────── */}
-      <section className="bg-white text-slate-900 py-12 sm:py-16 border-b border-slate-200/80">
+      <section className="bg-white text-[#0a1112] py-12 sm:py-16 border-b border-slate-200/80">
         <div className="w-[90%] max-w-[1600px] mx-auto px-2 sm:px-4">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0 lg:divide-x lg:divide-slate-200/80 text-center">
             
             {/* Metric 1 */}
             <div className="px-3 sm:px-6 space-y-2 group">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 mb-1 border border-emerald-100/80 group-hover:bg-emerald-100 group-hover:scale-105 transition-all shadow-xs">
-                <Users className="w-6 h-6 text-emerald-700" />
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-[#3e9d51]/10 text-[#3e9d51] mb-1 border border-[#3e9d51]/20 group-hover:bg-[#3e9d51]/20 group-hover:scale-105 transition-all shadow-xs">
+                <Users className="w-6 h-6 text-[#3e9d51]" />
               </div>
               <div>
-                <p className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-950 tracking-tight">
+                <p className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#0a1112] tracking-tight">
                   +10,000
                 </p>
-                <p className="text-sm sm:text-base font-extrabold text-slate-900 mt-1">
+                <p className="text-sm sm:text-base font-extrabold text-[#0a1112] mt-1">
                   Lectores y Pacientes
                 </p>
-                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                <p className="text-xs text-[#0a1112]/60 font-medium mt-0.5">
                   Transformando su salud celular
                 </p>
               </div>
@@ -388,17 +399,17 @@ function LandingContent() {
 
             {/* Metric 2 */}
             <div className="px-3 sm:px-6 space-y-2 group">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 mb-1 border border-emerald-100/80 group-hover:bg-emerald-100 group-hover:scale-105 transition-all shadow-xs">
-                <Droplet className="w-6 h-6 text-emerald-700" />
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-[#3e9d51]/10 text-[#3e9d51] mb-1 border border-[#3e9d51]/20 group-hover:bg-[#3e9d51]/20 group-hover:scale-105 transition-all shadow-xs">
+                <Droplet className="w-6 h-6 text-[#3e9d51]" />
               </div>
               <div>
-                <p className="text-3xl sm:text-4xl lg:text-5xl font-black text-emerald-700 tracking-tight">
+                <p className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#3e9d51] tracking-tight">
                   +50
                 </p>
-                <p className="text-sm sm:text-base font-extrabold text-slate-900 mt-1">
+                <p className="text-sm sm:text-base font-extrabold text-[#0a1112] mt-1">
                   Recetas de Jugoterapia
                 </p>
-                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                <p className="text-xs text-[#0a1112]/60 font-medium mt-0.5">
                   Fórmulas alcalinizantes con video HD
                 </p>
               </div>
@@ -406,17 +417,17 @@ function LandingContent() {
 
             {/* Metric 3 */}
             <div className="px-3 sm:px-6 space-y-2 group">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 mb-1 border border-emerald-100/80 group-hover:bg-emerald-100 group-hover:scale-105 transition-all shadow-xs">
-                <Activity className="w-6 h-6 text-emerald-700" />
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-[#3e9d51]/10 text-[#3e9d51] mb-1 border border-[#3e9d51]/20 group-hover:bg-[#3e9d51]/20 group-hover:scale-105 transition-all shadow-xs">
+                <Activity className="w-6 h-6 text-[#3e9d51]" />
               </div>
               <div>
-                <p className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-950 tracking-tight">
+                <p className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#0a1112] tracking-tight">
                   9
                 </p>
-                <p className="text-sm sm:text-base font-extrabold text-slate-900 mt-1">
+                <p className="text-sm sm:text-base font-extrabold text-[#0a1112] mt-1">
                   Protocolos según IMC
                 </p>
-                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                <p className="text-xs text-[#0a1112]/60 font-medium mt-0.5">
                   Guías médicas personalizadas
                 </p>
               </div>
@@ -424,17 +435,17 @@ function LandingContent() {
 
             {/* Metric 4 */}
             <div className="px-3 sm:px-6 space-y-2 group">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 mb-1 border border-emerald-100/80 group-hover:bg-emerald-100 group-hover:scale-105 transition-all shadow-xs">
-                <Award className="w-6 h-6 text-emerald-700" />
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-[#3e9d51]/10 text-[#3e9d51] mb-1 border border-[#3e9d51]/20 group-hover:bg-[#3e9d51]/20 group-hover:scale-105 transition-all shadow-xs">
+                <Award className="w-6 h-6 text-[#3e9d51]" />
               </div>
               <div>
-                <p className="text-3xl sm:text-4xl lg:text-5xl font-black text-emerald-700 tracking-tight">
+                <p className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#3e9d51] tracking-tight">
                   100%
                 </p>
-                <p className="text-sm sm:text-base font-extrabold text-slate-900 mt-1">
+                <p className="text-sm sm:text-base font-extrabold text-[#0a1112] mt-1">
                   Orgánico e Internacional
                 </p>
-                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                <p className="text-xs text-[#0a1112]/60 font-medium mt-0.5">
                   Medicina integrativa y respaldo
                 </p>
               </div>
@@ -445,18 +456,18 @@ function LandingContent() {
       </section>
 
       {/* ── Unified Section: IMC Calculator & App Experience ────────────────── */}
-      <section id="calculadora" className="py-16 sm:py-20 bg-slate-100/80 border-b border-slate-200/80">
+      <section id="calculadora" className="py-16 sm:py-20 bg-slate-50 border-b border-slate-200/80">
         <div className="w-[90%] max-w-[1600px] mx-auto px-2 sm:px-4 space-y-10">
           
           {/* Header */}
           <div className="text-center max-w-4xl mx-auto space-y-3">
-            <span className="px-3.5 py-1.5 bg-emerald-100 text-emerald-800 text-xs font-extrabold rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
-              <Calculator className="w-4 h-4 text-emerald-700" /> Diagnóstico Biológico & App ALOEC
+            <span className="px-3.5 py-1.5 bg-[#f6f859] text-[#0a1112] text-xs font-black rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
+              <Calculator className="w-4 h-4 text-[#3e9d51]" /> Diagnóstico Biológico & App ALOEC
             </span>
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 sm:whitespace-nowrap">
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-[#0a1112] sm:whitespace-nowrap">
               Calcula tu IMC y Conoce las Funciones de la App
             </h2>
-            <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg text-[#0a1112]/75 max-w-2xl mx-auto">
               Determina tu rango biológico al instante y descubre cómo la aplicación acompaña tu lectura con planes y hábitos diarios.
             </p>
           </div>
@@ -469,15 +480,15 @@ function LandingContent() {
               
               {/* Gender selector */}
               <div>
-                <label className="text-sm font-bold text-slate-800 block mb-2">Género</label>
+                <label className="text-sm font-bold text-[#0a1112] block mb-2">Género</label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
                     onClick={() => setGender('male')}
                     className={`py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border transition-all ${
                       gender === 'male' 
-                        ? 'bg-emerald-700 text-white border-emerald-700 shadow-sm' 
-                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                        ? 'bg-[#3e9d51] text-white border-[#3e9d51] shadow-sm' 
+                        : 'bg-slate-50 text-[#0a1112] border-slate-200 hover:bg-slate-100'
                     }`}
                   >
                     ♂ Masculino
@@ -487,8 +498,8 @@ function LandingContent() {
                     onClick={() => setGender('female')}
                     className={`py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border transition-all ${
                       gender === 'female' 
-                        ? 'bg-emerald-700 text-white border-emerald-700 shadow-sm' 
-                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                        ? 'bg-[#3e9d51] text-white border-[#3e9d51] shadow-sm' 
+                        : 'bg-slate-50 text-[#0a1112] border-slate-200 hover:bg-slate-100'
                     }`}
                   >
                     ♀ Femenino
@@ -498,8 +509,8 @@ function LandingContent() {
 
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <label className="text-sm font-bold text-slate-800">Estatura (cm)</label>
-                  <span className="text-sm font-mono font-extrabold text-emerald-700">{heightCm} cm</span>
+                  <label className="text-sm font-bold text-[#0a1112]">Estatura (cm)</label>
+                  <span className="text-sm font-mono font-extrabold text-[#3e9d51]">{heightCm} cm</span>
                 </div>
                 <input
                   type="range"
@@ -507,14 +518,14 @@ function LandingContent() {
                   max="210"
                   value={heightCm}
                   onChange={(e) => setHeightCm(Number(e.target.value))}
-                  className="w-full h-2.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+                  className="w-full h-2.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#3e9d51]"
                 />
               </div>
 
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <label className="text-sm font-bold text-slate-800">Peso Actual (kg)</label>
-                  <span className="text-sm font-mono font-extrabold text-emerald-700">{weightKg} kg</span>
+                  <label className="text-sm font-bold text-[#0a1112]">Peso Actual (kg)</label>
+                  <span className="text-sm font-mono font-extrabold text-[#3e9d51]">{weightKg} kg</span>
                 </div>
                 <input
                   type="range"
@@ -522,40 +533,40 @@ function LandingContent() {
                   max="140"
                   value={weightKg}
                   onChange={(e) => setWeightKg(Number(e.target.value))}
-                  className="w-full h-2.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+                  className="w-full h-2.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#3e9d51]"
                 />
               </div>
 
-              <div className="bg-emerald-50/70 p-3.5 rounded-xl border border-emerald-200/80 text-xs text-emerald-900 space-y-1">
-                <p className="font-bold flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-emerald-700" /> Diagnóstico Automatizado
+              <div className="bg-[#f6f859]/30 p-3.5 rounded-xl border border-[#3e9d51]/20 text-xs text-[#0a1112] space-y-1">
+                <p className="font-bold flex items-center gap-1.5 text-[#3e9d51]">
+                  <Sparkles className="w-3.5 h-3.5" /> Diagnóstico Automatizado
                 </p>
-                <p className="text-emerald-800/90 leading-relaxed text-[11px]">
+                <p className="text-[#0a1112]/80 leading-relaxed text-[11px]">
                   El IMC orienta la selección de enzimas, antioxidantes e ingredientes verdes específicos para desbloquear tu metabolismo.
                 </p>
               </div>
             </div>
 
             {/* Results Column */}
-            <div className="md:col-span-6 bg-gradient-to-br from-slate-900 to-emerald-950 text-white rounded-2xl p-6 sm:p-8 text-center space-y-6 shadow-md relative overflow-hidden">
-              <div className="absolute top-0 right-0 -mr-10 -mt-10 w-32 h-32 bg-emerald-500/20 rounded-full blur-xl pointer-events-none"></div>
+            <div className="md:col-span-6 bg-[#0a1112] text-white rounded-2xl p-6 sm:p-8 text-center space-y-6 shadow-md relative overflow-hidden">
+              <div className="absolute top-0 right-0 -mr-10 -mt-10 w-32 h-32 bg-[#3e9d51]/20 rounded-full blur-xl pointer-events-none"></div>
 
               <div>
-                <span className="text-xs uppercase tracking-widest text-emerald-400 font-bold">Tu Resultado IMC</span>
+                <span className="text-xs uppercase tracking-widest text-[#f6f859] font-black">Tu Resultado IMC</span>
                 <p className="text-5xl font-black text-white mt-1 font-mono tracking-tight">{calculatedBmi ?? '--'}</p>
-                <p className="text-sm font-bold text-amber-300 mt-2 px-3 py-1 bg-white/10 rounded-full inline-block">
+                <p className="text-sm font-bold text-[#0a1112] bg-[#f6f859] mt-2 px-3 py-1 rounded-full inline-block">
                   {bmiCategory}
                 </p>
               </div>
 
               <div className="border-t border-white/10 pt-4 text-left">
-                <p className="text-[11px] text-emerald-300 uppercase font-bold tracking-wider mb-1">Protocolo Sugerido por ALOEC:</p>
+                <p className="text-[11px] text-[#3e9d51] uppercase font-bold tracking-wider mb-1">Protocolo Sugerido por ALOEC:</p>
                 <p className="text-sm font-bold text-white leading-snug">{recommendedProtocol}</p>
               </div>
 
               <a
                 href="#precios"
-                className="block w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-sm rounded-xl shadow-md transition-all transform active:scale-95 text-center"
+                className="block w-full py-3.5 bg-[#3e9d51] hover:bg-[#348745] text-white font-extrabold text-sm rounded-xl shadow-md transition-all transform active:scale-95 text-center"
               >
                 Obtener Mi Protocolo Completo →
               </a>
@@ -566,37 +577,37 @@ function LandingContent() {
           {/* Compact Feature Highlights (Racha, Videocursos, Protocolos) */}
           <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
             
-            <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs flex items-start gap-3.5 hover:border-emerald-300 transition-colors">
-              <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+            <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs flex items-start gap-3.5 hover:border-[#3e9d51] transition-colors">
+              <div className="w-10 h-10 rounded-xl bg-[#3e9d51]/10 text-[#3e9d51] flex items-center justify-center shrink-0">
                 <Layers className="w-5 h-5" />
               </div>
               <div className="space-y-1">
-                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">9 Protocolos Médicos</h4>
-                <p className="text-xs text-slate-600 leading-relaxed">
+                <h4 className="text-xs font-bold text-[#0a1112] uppercase tracking-wider">9 Protocolos Médicos</h4>
+                <p className="text-xs text-[#0a1112]/70 leading-relaxed">
                   Asignados al instante según tu diagnóstico para desintoxicación, control de peso y salud celular.
                 </p>
               </div>
             </div>
 
-            <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs flex items-start gap-3.5 hover:border-emerald-300 transition-colors">
-              <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+            <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs flex items-start gap-3.5 hover:border-[#3e9d51] transition-colors">
+              <div className="w-10 h-10 rounded-xl bg-[#f6f859] text-[#0a1112] flex items-center justify-center shrink-0">
                 <Flame className="w-5 h-5 fill-current" />
               </div>
               <div className="space-y-1">
-                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Progreso & Racha</h4>
-                <p className="text-xs text-slate-600 leading-relaxed">
+                <h4 className="text-xs font-bold text-[#0a1112] uppercase tracking-wider">Progreso & Racha</h4>
+                <p className="text-xs text-[#0a1112]/70 leading-relaxed">
                   Registra tus hábitos diarios, cumplimiento semanal de jugos y evolución corporal en tu móvil.
                 </p>
               </div>
             </div>
 
-            <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs flex items-start gap-3.5 hover:border-emerald-300 transition-colors">
-              <div className="w-10 h-10 rounded-xl bg-slate-900 text-emerald-400 flex items-center justify-center shrink-0">
+            <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs flex items-start gap-3.5 hover:border-[#3e9d51] transition-colors">
+              <div className="w-10 h-10 rounded-xl bg-[#0a1112] text-[#f6f859] flex items-center justify-center shrink-0">
                 <Play className="w-5 h-5 fill-current ml-0.5" />
               </div>
               <div className="space-y-1">
-                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Videocursos en HD</h4>
-                <p className="text-xs text-slate-600 leading-relaxed">
+                <h4 className="text-xs font-bold text-[#0a1112] uppercase tracking-wider">Videocursos en HD</h4>
+                <p className="text-xs text-[#0a1112]/70 leading-relaxed">
                   Lecciones guiadas de nutrición, terapia Gerson y preparación correcta de cada jugo verde.
                 </p>
               </div>
@@ -607,88 +618,85 @@ function LandingContent() {
         </div>
       </section>
 
-      {/* ── Feature Pillars (Flat Modern Grid) ──────────────────────────────── */}
-      <section id="beneficios" className="py-20 bg-slate-50 border-b border-slate-200/80">
+      {/* ── Visual Product Showcase (More Images, Less AI Noise) ─────────────── */}
+      <section id="beneficios" className="py-20 bg-white border-b border-slate-200/80">
         <div className="w-[90%] max-w-[1600px] mx-auto px-2 sm:px-4">
           
           <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
-            <span className="px-3.5 py-1.5 bg-emerald-100 text-emerald-800 text-xs font-extrabold rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-emerald-700" /> Libro + App Móvil Unificada
+            <span className="px-3.5 py-1.5 bg-[#f6f859] text-[#0a1112] text-xs font-black rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-[#3e9d51]" /> Ecosistema ALOEC
             </span>
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900">
-              Diseñada para transformar tu alimentación y estilo de vida
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-[#0a1112]">
+              Tres pilares reales para tu salud celular
             </h2>
-            <p className="text-base sm:text-lg text-slate-600">
-              Combina la lectura del libro "Ama Lo Que Comes" con tecnología móvil avanzada para acompañarte diariamente.
+            <p className="text-base sm:text-lg text-[#0a1112]/70">
+              Menos teoría, más herramientas prácticas: el libro físico/digital, la aplicación móvil interactiva y el recetario guiado en video.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             
-            {/* Feature 1 */}
-            <div className="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-xl hover:border-emerald-500/50 transition-all group">
-              <div className="w-14 h-14 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <BookOpen className="w-7 h-7" />
+            {/* Pillar 1: El Libro */}
+            <div className="bg-slate-50 rounded-3xl border border-slate-200 overflow-hidden hover:border-[#3e9d51] transition-all group shadow-xs hover:shadow-lg flex flex-col justify-between">
+              <div className="h-64 overflow-hidden bg-slate-900 relative">
+                <img 
+                  src="/book_hero.jpg" 
+                  alt="Libro Ama Lo Que Comes" 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute top-4 left-4 bg-[#f6f859] text-[#0a1112] text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider">
+                  LIBRO OFICIAL
+                </div>
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Libro "Ama Lo Que Comes"</h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Guía completa de salud integrativa por José Rengifo para comprender la raíz de las inflamaciones y la sanación por alimentos.
-              </p>
+              <div className="p-7 space-y-3">
+                <h3 className="text-xl font-black text-[#0a1112]">"Ama Lo Que Comes"</h3>
+                <p className="text-xs font-bold text-[#3e9d51]">Por José Rengifo · Medicina Integrativa</p>
+                <p className="text-sm text-[#0a1112]/75 leading-relaxed">
+                  Comprende el origen real de la inflamación, la regeneración del hígado y la combinación biológica de alimentos sin dietas restrictivas ni fármacos innecesarios.
+                </p>
+              </div>
             </div>
 
-            {/* Feature 2 */}
-            <div className="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-xl hover:border-emerald-500/50 transition-all group">
-              <div className="w-14 h-14 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Droplet className="w-7 h-7" />
+            {/* Pillar 2: La App Móvil */}
+            <div className="bg-slate-50 rounded-3xl border border-slate-200 overflow-hidden hover:border-[#3e9d51] transition-all group shadow-xs hover:shadow-lg flex flex-col justify-between">
+              <div className="h-64 bg-gradient-to-br from-[#0a1112] to-slate-900 p-6 flex flex-col justify-center items-center text-white relative">
+                <div className="w-16 h-16 rounded-2xl bg-[#3e9d51] flex items-center justify-center text-white shadow-xl mb-3">
+                  <Smartphone className="w-8 h-8" />
+                </div>
+                <p className="text-sm font-black text-white">App ALOEC en tu Celular</p>
+                <p className="text-xs text-[#f6f859] font-semibold mt-1">Android · iOS · Plataforma Web</p>
+                <div className="absolute top-4 left-4 bg-[#3e9d51] text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider">
+                  APP INCLUIDA
+                </div>
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Recetario Terapéutico HD</h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Accede a más de 50 recetas detalladas de jugos verdes curativos, batidos nutricionales y sopas vegetales en la app.
-              </p>
+              <div className="p-7 space-y-3">
+                <h3 className="text-xl font-black text-[#0a1112]">Herramientas en Tiempo Real</h3>
+                <p className="text-xs font-bold text-[#3e9d51]">Diagnóstico, Protocolos & Racha</p>
+                <p className="text-sm text-[#0a1112]/75 leading-relaxed">
+                  Lleva tu diagnóstico biológico en el bolsillo, recibe notificaciones con los horarios de cada jugo y registra tus hábitos diarios con contador de progreso.
+                </p>
+              </div>
             </div>
 
-            {/* Feature 3 */}
-            <div className="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-xl hover:border-emerald-500/50 transition-all group">
-              <div className="w-14 h-14 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Activity className="w-7 h-7" />
+            {/* Pillar 3: Recetas en Video */}
+            <div className="bg-slate-50 rounded-3xl border border-slate-200 overflow-hidden hover:border-[#3e9d51] transition-all group shadow-xs hover:shadow-lg flex flex-col justify-between">
+              <div className="h-64 overflow-hidden bg-slate-900 relative">
+                <img 
+                  src="/juices/jugo-verde.jpg" 
+                  alt="Recetas de Jugoterapia" 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute top-4 left-4 bg-[#0a1112] text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider">
+                  +50 RECETAS EN VIDEO
+                </div>
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Protocolos Médicos por IMC</h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Recibe guías específicas según tu rango corporal para desintoxicación hepática, control metabólico, enemas de café y terapia Gerson.
-              </p>
-            </div>
-
-            {/* Feature 4 */}
-            <div className="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-xl hover:border-emerald-500/50 transition-all group">
-              <div className="w-14 h-14 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Bell className="w-7 h-7" />
+              <div className="p-7 space-y-3">
+                <h3 className="text-xl font-black text-[#0a1112]">Jugoterapia & Videocursos</h3>
+                <p className="text-xs font-bold text-[#3e9d51]">Alta Definición Paso a Paso</p>
+                <p className="text-sm text-[#0a1112]/75 leading-relaxed">
+                  Catálogo con más de 50 recetas curativas, batidos nutricionales, lecciones en video de la Terapia Gerson y preparación exacta de extractos alcalinizantes.
+                </p>
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Recordatorios Inteligentes</h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Notificaciones automáticas en tu celular para consumir cada jugo y cápsula a la hora exacta definida por tu protocolo de salud.
-              </p>
-            </div>
-
-            {/* Feature 5 */}
-            <div className="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-xl hover:border-emerald-500/50 transition-all group">
-              <div className="w-14 h-14 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Share2 className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Programa de Referidos</h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Comparte tu enlace personalizado <code className="bg-slate-100 px-1 py-0.5 rounded text-xs text-emerald-700 font-bold">app.alimentacionorganicaec.com</code> y gana beneficios por cada invitado.
-              </p>
-            </div>
-
-            {/* Feature 6 */}
-            <div className="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-xl hover:border-emerald-500/50 transition-all group">
-              <div className="w-14 h-14 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <ShieldCheck className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Soporte Directo & Checkout Web</h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Realiza tus pagos de forma 100% segura mediante PayPhone con tarjetas de débito o crédito directamente desde la app o web.
-              </p>
             </div>
 
           </div>
@@ -702,12 +710,12 @@ function LandingContent() {
           
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-4">
             <div>
-              <span className="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full uppercase tracking-wider">
+              <span className="px-3 py-1 bg-[#f6f859] text-[#0a1112] text-xs font-black rounded-full uppercase tracking-wider">
                 Recetario Terapéutico
               </span>
-              <h2 className="text-3xl font-black text-slate-900 mt-2">Jugos Verdes Destacados</h2>
+              <h2 className="text-3xl font-black text-[#0a1112] mt-2">Jugos Verdes Destacados</h2>
             </div>
-            <a href="#precios" className="inline-flex items-center gap-2 text-emerald-700 font-bold text-sm hover:underline">
+            <a href="#precios" className="inline-flex items-center gap-2 text-[#3e9d51] font-bold text-sm hover:underline">
               Ver catálogo completo en la app <ArrowRight className="w-4 h-4" />
             </a>
           </div>
@@ -715,7 +723,7 @@ function LandingContent() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             
             {/* Juice Card 1 */}
-            <div className="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-all group">
+            <div className="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:border-[#3e9d51] hover:shadow-md transition-all group">
               <div className="relative h-52 overflow-hidden bg-slate-900">
                 <img 
                   src="/juices/jugo-verde.jpg" 
@@ -724,17 +732,17 @@ function LandingContent() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent flex flex-col justify-end p-5 text-white">
                   <h3 className="text-2xl font-black text-white drop-shadow-sm">Jugo Verde Renovador</h3>
-                  <p className="text-xs text-emerald-300 font-medium mt-0.5">Alcaliniza e impulsa la digestión</p>
+                  <p className="text-xs text-[#f6f859] font-semibold mt-0.5">Alcaliniza e impulsa la digestión</p>
                 </div>
               </div>
               <div className="p-6 space-y-4">
-                <div className="space-y-1.5 text-xs text-slate-600">
-                  <p className="font-bold text-slate-800">Ingredientes Principales:</p>
+                <div className="space-y-1.5 text-xs text-[#0a1112]/75">
+                  <p className="font-black text-[#0a1112]">Ingredientes Principales:</p>
                   <p>• 1 Manzana verde + 2 ramas de Apio</p>
                   <p>• 1 manojo de Espinaca + 1 Pepino</p>
                   <p>• Zumo de 1 Limón fresco</p>
                 </div>
-                <div className="pt-3 border-t border-slate-200 flex justify-between items-center text-xs font-bold text-emerald-700">
+                <div className="pt-3 border-t border-slate-200 flex justify-between items-center text-xs font-bold text-[#3e9d51]">
                   <span>Dificultad: Fácil</span>
                   <span>Tiempo: 5 min</span>
                 </div>
@@ -742,7 +750,7 @@ function LandingContent() {
             </div>
 
             {/* Juice Card 2 */}
-            <div className="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-all group">
+            <div className="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:border-[#3e9d51] hover:shadow-md transition-all group">
               <div className="relative h-52 overflow-hidden bg-slate-900">
                 <img 
                   src="/juices/jugo-zanahoria.jpg" 
@@ -751,17 +759,17 @@ function LandingContent() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent flex flex-col justify-end p-5 text-white">
                   <h3 className="text-2xl font-black text-white drop-shadow-sm">Jugo ZanaFruta</h3>
-                  <p className="text-xs text-amber-300 font-medium mt-0.5">Rico en Betacarotenos y Antioxidantes</p>
+                  <p className="text-xs text-[#f6f859] font-semibold mt-0.5">Rico en Betacarotenos y Antioxidantes</p>
                 </div>
               </div>
               <div className="p-6 space-y-4">
-                <div className="space-y-1.5 text-xs text-slate-600">
-                  <p className="font-bold text-slate-800">Ingredientes Principales:</p>
+                <div className="space-y-1.5 text-xs text-[#0a1112]/75">
+                  <p className="font-black text-[#0a1112]">Ingredientes Principales:</p>
                   <p>• 5 Zanahorias orgánicas</p>
                   <p>• 1 Manzana verde descorazonada</p>
                   <p>• 1 trozo de Jengibre fresco (1 cm)</p>
                 </div>
-                <div className="pt-3 border-t border-slate-200 flex justify-between items-center text-xs font-bold text-amber-700">
+                <div className="pt-3 border-t border-slate-200 flex justify-between items-center text-xs font-bold text-[#3e9d51]">
                   <span>Dificultad: Fácil</span>
                   <span>Tiempo: 7 min</span>
                 </div>
@@ -769,7 +777,7 @@ function LandingContent() {
             </div>
 
             {/* Juice Card 3 */}
-            <div className="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-all group">
+            <div className="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:border-[#3e9d51] hover:shadow-md transition-all group">
               <div className="relative h-52 overflow-hidden bg-slate-900">
                 <img 
                   src="/juices/batido-quinua.jpg" 
@@ -778,17 +786,17 @@ function LandingContent() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent flex flex-col justify-end p-5 text-white">
                   <h3 className="text-2xl font-black text-white drop-shadow-sm">Batido Quinua Dorada</h3>
-                  <p className="text-xs text-emerald-300 font-medium mt-0.5">Proteína vegetal y fuerza celular</p>
+                  <p className="text-xs text-[#f6f859] font-semibold mt-0.5">Proteína vegetal y fuerza celular</p>
                 </div>
               </div>
               <div className="p-6 space-y-4">
-                <div className="space-y-1.5 text-xs text-slate-600">
-                  <p className="font-bold text-slate-800">Ingredientes Principales:</p>
+                <div className="space-y-1.5 text-xs text-[#0a1112]/75">
+                  <p className="font-black text-[#0a1112]">Ingredientes Principales:</p>
                   <p>• Quinua cocida + Leche de almendras</p>
                   <p>• Cúrcuma + Pizca de pimienta negra</p>
                   <p>• 1 Cápsula de Hígado / Pancreatina</p>
                 </div>
-                <div className="pt-3 border-t border-slate-200 flex justify-between items-center text-xs font-bold text-teal-700">
+                <div className="pt-3 border-t border-slate-200 flex justify-between items-center text-xs font-bold text-[#3e9d51]">
                   <span>Dificultad: Intermedio</span>
                   <span>Tiempo: 10 min</span>
                 </div>
@@ -801,18 +809,17 @@ function LandingContent() {
       </section>
 
       {/* ── Pricing / Memberships Section (Dynamic Firestore Plans) ─────────── */}
-      <section id="precios" className="py-20 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-white relative">
+      <section id="precios" className="py-20 bg-[#0a1112] text-white relative">
         <div className="w-[90%] max-w-[1600px] mx-auto px-2 sm:px-4">
           
           <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
-            <span className="px-3.5 py-1.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-extrabold rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
-              <Award className="w-4 h-4 text-emerald-400" /> PLANES DISPONIBLES
+            <span className="px-3.5 py-1.5 bg-[#f6f859] text-[#0a1112] text-xs font-black rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
+              <Award className="w-4 h-4 text-[#3e9d51]" /> PLANES DISPONIBLES
             </span>
-            {/* Title formatted in a single line as requested */}
             <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white whitespace-nowrap">
               Planes de Suscripción ALOEC
             </h2>
-            <p className="text-base sm:text-lg text-slate-400">
+            <p className="text-base sm:text-lg text-slate-300">
               Elige el plan ideal para adquirir el libro "Ama Lo Que Comes" y acceder a todas las herramientas de la app ALOEC.
             </p>
           </div>
@@ -820,7 +827,7 @@ function LandingContent() {
           {/* Dynamic Memberships Grid */}
           {loadingMemberships ? (
             <div className="flex justify-center items-center py-16">
-              <div className="flex items-center gap-3 text-emerald-400 font-bold text-sm">
+              <div className="flex items-center gap-3 text-[#3e9d51] font-bold text-sm">
                 <RefreshCw className="w-6 h-6 animate-spin" /> Cargando planes desde el sistema...
               </div>
             </div>
@@ -829,42 +836,42 @@ function LandingContent() {
               {memberships.map((m, idx) => (
                 <div 
                   key={m.id}
-                  className="bg-slate-900 border-2 border-emerald-500/80 hover:border-emerald-400 rounded-3xl p-8 shadow-2xl flex flex-col justify-between relative overflow-hidden transition-all duration-300 group"
+                  className="bg-[#0a1112] border-2 border-[#3e9d51] hover:border-[#f6f859] rounded-3xl p-8 shadow-2xl flex flex-col justify-between relative overflow-hidden transition-all duration-300 group"
                 >
                   {idx === 0 && (
-                    <div className="absolute top-0 right-0 bg-emerald-500 text-slate-950 font-black text-[10px] uppercase tracking-wider px-4 py-1 rounded-bl-xl shadow-xs">
+                    <div className="absolute top-0 right-0 bg-[#f6f859] text-[#0a1112] font-black text-[10px] uppercase tracking-wider px-4 py-1 rounded-bl-xl shadow-xs">
                       OFERTA RECOMENDADA
                     </div>
                   )}
 
                   <div className="space-y-6">
-                    <div className="text-center space-y-3 pb-6 border-b border-slate-800">
+                    <div className="text-center space-y-3 pb-6 border-b border-white/10">
                       <h3 className="text-2xl font-extrabold text-white">{m.name}</h3>
                       <div className="flex items-baseline justify-center gap-1">
                         <span className="text-5xl font-black text-white font-mono">${m.price.toFixed(2)}</span>
                         <span className="text-xs font-bold text-slate-400">USD / {m.durationDays} días</span>
                       </div>
-                      <p className="text-xs text-emerald-400 font-medium">Incluye Libro + App ALOEC · Sin cargos ocultos</p>
+                      <p className="text-xs text-[#f6f859] font-medium">Incluye Libro + App ALOEC · Sin cargos ocultos</p>
                     </div>
 
                     <div className="space-y-3 text-sm text-slate-300">
                       {(m.features && m.features.length > 0 ? m.features : defaultFeatures).map((feat, fIdx) => (
                         <div key={fIdx} className="flex items-start gap-2.5">
-                          <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                          <Check className="w-4 h-4 text-[#3e9d51] shrink-0 mt-0.5" />
                           <span className="text-xs sm:text-sm text-slate-300 leading-snug">{feat}</span>
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  <div className="space-y-3 pt-8 mt-6 border-t border-slate-800">
+                  <div className="space-y-3 pt-8 mt-6 border-t border-white/10">
                     <Link
                       href={`/checkout?plan=${m.id}`}
-                      className="block w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-sm rounded-xl shadow-lg transition-all text-center transform active:scale-95 flex items-center justify-center gap-2"
+                      className="block w-full py-3.5 bg-[#3e9d51] hover:bg-[#348745] text-white font-black text-sm rounded-xl shadow-lg transition-all text-center transform active:scale-95 flex items-center justify-center gap-2"
                     >
-                      <BookOpen className="w-4 h-4" /> Comprar Libro + App ALOEC →
+                      <BookOpen className="w-4 h-4 text-[#f6f859]" /> Comprar Libro + App ALOEC →
                     </Link>
-                    <p className="text-center text-[10px] text-slate-500 flex items-center justify-center gap-1">
+                    <p className="text-center text-[10px] text-slate-400 flex items-center justify-center gap-1">
                       <Lock className="w-3 h-3 text-slate-400" /> Transacción internacional segura (PayPhone)
                     </p>
                   </div>
@@ -874,39 +881,39 @@ function LandingContent() {
             </div>
           ) : (
             /* Fallback Card if no active membership documents exist yet */
-            <div className="max-w-lg mx-auto bg-slate-900 border-2 border-emerald-500 rounded-3xl p-8 sm:p-10 shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 bg-emerald-500 text-slate-950 font-black text-[10px] uppercase tracking-wider px-4 py-1 rounded-bl-xl shadow-xs">
+            <div className="max-w-lg mx-auto bg-[#0a1112] border-2 border-[#3e9d51] rounded-3xl p-8 sm:p-10 shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-[#f6f859] text-[#0a1112] font-black text-[10px] uppercase tracking-wider px-4 py-1 rounded-bl-xl shadow-xs">
                 OFERTA RECOMENDADA
               </div>
               
-              <div className="text-center space-y-3 pb-6 border-b border-slate-800">
+              <div className="text-center space-y-3 pb-6 border-b border-white/10">
                 <h3 className="text-2xl font-extrabold text-white">Plan único</h3>
                 <div className="flex items-baseline justify-center gap-1">
                   <span className="text-5xl font-black text-white font-mono">$49.99</span>
                   <span className="text-xs font-bold text-slate-400">USD / 3000 días</span>
                 </div>
-                <p className="text-xs text-emerald-400 font-medium">Incluye Libro + App ALOEC · Sin cargos ocultos</p>
+                <p className="text-xs text-[#f6f859] font-medium">Incluye Libro + App ALOEC · Sin cargos ocultos</p>
               </div>
 
               <div className="py-8 space-y-3 text-sm text-slate-300">
                 <div className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-[#3e9d51] shrink-0 mt-0.5" />
                   <span className="text-xs sm:text-sm text-slate-300 leading-snug">Acceso ilimitado a jugos y recetas</span>
                 </div>
                 <div className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-[#3e9d51] shrink-0 mt-0.5" />
                   <span className="text-xs sm:text-sm text-slate-300 leading-snug">Todos los protocolos de salud</span>
                 </div>
                 <div className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-[#3e9d51] shrink-0 mt-0.5" />
                   <span className="text-xs sm:text-sm text-slate-300 leading-snug">Notificaciones de horarios</span>
                 </div>
                 <div className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-[#3e9d51] shrink-0 mt-0.5" />
                   <span className="text-xs sm:text-sm text-slate-300 leading-snug">Manual de Jugos Verdes</span>
                 </div>
                 <div className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-[#3e9d51] shrink-0 mt-0.5" />
                   <span className="text-xs sm:text-sm text-slate-300 leading-snug">Video Tutoriales</span>
                 </div>
               </div>
@@ -914,11 +921,11 @@ function LandingContent() {
               <div className="space-y-4 pt-2">
                 <Link
                   href="/checkout?plan=plan-nico"
-                  className="block w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-base rounded-xl shadow-lg transition-all text-center transform active:scale-95 flex items-center justify-center gap-2"
+                  className="block w-full py-4 bg-[#3e9d51] hover:bg-[#348745] text-white font-black text-base rounded-xl shadow-lg transition-all text-center transform active:scale-95 flex items-center justify-center gap-2"
                 >
-                  <BookOpen className="w-5 h-5" /> Adquirir Libro + App ALOEC →
+                  <BookOpen className="w-5 h-5 text-[#f6f859]" /> Adquirir Libro + App ALOEC →
                 </Link>
-                <p className="text-center text-[11px] text-slate-500 flex items-center justify-center gap-1.5">
+                <p className="text-center text-[11px] text-slate-400 flex items-center justify-center gap-1.5">
                   <Lock className="w-3.5 h-3.5 text-slate-400" /> Transacción encriptada a través de PayPhone
                 </p>
               </div>
@@ -929,14 +936,17 @@ function LandingContent() {
       </section>
 
       {/* ── App Downloads Section ───────────────────────────────────────────── */}
-      <section id="download" className="py-20 bg-emerald-700 text-white relative overflow-hidden">
+      <section id="download" className="py-20 bg-[#0a1112] border-t border-white/10 text-white relative overflow-hidden">
         <div className="w-[90%] max-w-[1600px] mx-auto px-2 sm:px-4 text-center space-y-8 relative z-10">
           
           <div className="max-w-4xl mx-auto space-y-4">
+            <span className="px-3.5 py-1.5 bg-[#f6f859] text-[#0a1112] text-xs font-black rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
+              INSTALA LA APLICACIÓN
+            </span>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight sm:whitespace-nowrap">
               Descarga la App ALOEC
             </h2>
-            <p className="text-base sm:text-lg text-emerald-100 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto">
               Acompaña la lectura del libro "Ama Lo Que Comes" con la app oficial. Disponible globalmente para Android e iOS.
             </p>
           </div>
@@ -947,8 +957,8 @@ function LandingContent() {
           </div>
 
           <div className="pt-6">
-            <p className="text-xs text-emerald-200">
-              ¿Prefieres usar la versión web? Visita <strong className="underline">app.alimentacionorganicaec.com</strong> desde cualquier navegador.
+            <p className="text-xs text-slate-400">
+              ¿Prefieres usar la versión web? Visita <strong className="underline text-[#f6f859]">app.alimentacionorganicaec.com</strong> desde cualquier navegador.
             </p>
           </div>
 
@@ -960,10 +970,10 @@ function LandingContent() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
           
           <div className="text-center space-y-4">
-            <span className="px-3.5 py-1.5 bg-emerald-100 text-emerald-800 text-xs font-extrabold rounded-full uppercase tracking-wider">
+            <span className="px-3.5 py-1.5 bg-[#f6f859] text-[#0a1112] text-xs font-black rounded-full uppercase tracking-wider">
               Resuelve tus dudas
             </span>
-            <h2 className="text-3xl sm:text-4xl font-black text-slate-900">Preguntas Frecuentes</h2>
+            <h2 className="text-3xl sm:text-4xl font-black text-[#0a1112]">Preguntas Frecuentes</h2>
           </div>
 
           <div className="space-y-4">
@@ -976,13 +986,13 @@ function LandingContent() {
                 >
                   <button
                     onClick={() => setOpenFaq(isOpen ? null : idx)}
-                    className="w-full p-6 text-left font-bold text-slate-900 flex justify-between items-center gap-4 hover:bg-slate-100 transition-colors"
+                    className="w-full p-6 text-left font-bold text-[#0a1112] flex justify-between items-center gap-4 hover:bg-slate-100 transition-colors"
                   >
                     <span className="text-base sm:text-lg">{faq.q}</span>
-                    <ChevronDown className={`w-5 h-5 text-emerald-600 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-5 h-5 text-[#3e9d51] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
                   </button>
                   {isOpen && (
-                    <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-200/60 pt-4">
+                    <div className="px-6 pb-6 text-sm text-[#0a1112]/75 leading-relaxed border-t border-slate-200/60 pt-4">
                       {faq.a}
                     </div>
                   )}
@@ -1005,7 +1015,7 @@ function LandingContent() {
                 <img src="/logo.png" alt="ALOEC Logo" className="h-7 w-auto object-contain" />
               </div>
               <span className="text-xl font-black text-white tracking-tight">
-                ALOEC<span className="text-emerald-500">.</span>
+                ALOEC<span className="text-[#3e9d51]">.</span>
               </span>
             </Link>
 
@@ -1044,7 +1054,7 @@ function LandingContent() {
                     href="https://play.google.com/store/apps/details?id=net.alimentacionorganica.aloec&hl=es_419"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hover:text-emerald-400 transition-colors inline-flex items-center gap-1.5"
+                    className="hover:text-[#3e9d51] transition-colors inline-flex items-center gap-1.5"
                   >
                     App Android (Google Play)
                     <ExternalLink className="w-2.5 h-2.5 text-neutral-600" />
@@ -1054,38 +1064,38 @@ function LandingContent() {
                   <button
                     type="button"
                     onClick={() => setShowAppStoreModal(true)}
-                    className="hover:text-emerald-400 transition-colors text-left"
+                    className="hover:text-[#3e9d51] transition-colors text-left"
                   >
                     App iOS (App Store)
                   </button>
                 </li>
                 <li>
-                  <a href="/appaloecv16.apk" download="appaloecv16.apk" className="hover:text-emerald-400 transition-colors">
+                  <a href="/appaloecv16.apk" download="appaloecv16.apk" className="hover:text-[#3e9d51] transition-colors">
                     Descarga APK Directo (v16)
                   </a>
                 </li>
                 <li>
-                  <a href="https://app.alimentacionorganicaec.com" className="hover:text-emerald-400 transition-colors">
+                  <a href="https://app.alimentacionorganicaec.com" className="hover:text-[#3e9d51] transition-colors">
                     Plataforma Web ALOEC
                   </a>
                 </li>
                 <li>
-                  <a href="#calculadora" className="hover:text-emerald-400 transition-colors">
+                  <a href="#calculadora" className="hover:text-[#3e9d51] transition-colors">
                     Calculadora de IMC
                   </a>
                 </li>
                 <li>
-                  <a href="#recetas" className="hover:text-emerald-400 transition-colors">
+                  <a href="#recetas" className="hover:text-[#3e9d51] transition-colors">
                     Catálogo de Jugoterapia
                   </a>
                 </li>
                 <li>
-                  <a href="#protocolos" className="hover:text-emerald-400 transition-colors">
+                  <a href="#protocolos" className="hover:text-[#3e9d51] transition-colors">
                     9 Protocolos Médicos
                   </a>
                 </li>
                 <li>
-                  <a href="#precios" className="hover:text-emerald-400 transition-colors">
+                  <a href="#precios" className="hover:text-[#3e9d51] transition-colors">
                     Planes & Membresías
                   </a>
                 </li>
@@ -1097,37 +1107,37 @@ function LandingContent() {
               <h3 className="text-xs font-bold text-white uppercase tracking-wider">PARA EMPEZAR</h3>
               <ul className="space-y-2.5">
                 <li>
-                  <a href="#libro-app" className="hover:text-emerald-400 transition-colors">
+                  <a href="#libro-app" className="hover:text-[#3e9d51] transition-colors">
                     Libro "Ama Lo Que Comes"
                   </a>
                 </li>
                 <li>
-                  <a href="#libro-app" className="hover:text-emerald-400 transition-colors">
+                  <a href="#libro-app" className="hover:text-[#3e9d51] transition-colors">
                     Autor José Rengifo
                   </a>
                 </li>
                 <li>
-                  <a href="#beneficios" className="hover:text-emerald-400 transition-colors">
+                  <a href="#beneficios" className="hover:text-[#3e9d51] transition-colors">
                     Nutrición Basada en Plantas
                   </a>
                 </li>
                 <li>
-                  <a href="#beneficios" className="hover:text-emerald-400 transition-colors">
+                  <a href="#beneficios" className="hover:text-[#3e9d51] transition-colors">
                     Beneficios del Jugo Verde
                   </a>
                 </li>
                 <li>
-                  <a href="#calculadora" className="hover:text-emerald-400 transition-colors">
+                  <a href="#calculadora" className="hover:text-[#3e9d51] transition-colors">
                     Diagnóstico Nutricional
                   </a>
                 </li>
                 <li>
-                  <a href="#faq" className="hover:text-emerald-400 transition-colors">
+                  <a href="#faq" className="hover:text-[#3e9d51] transition-colors">
                     Preguntas Frecuentes
                   </a>
                 </li>
                 <li>
-                  <Link href="/register" className="hover:text-emerald-400 transition-colors">
+                  <Link href="/register" className="hover:text-[#3e9d51] transition-colors">
                     Crear Cuenta Gratuita
                   </Link>
                 </li>
@@ -1139,33 +1149,33 @@ function LandingContent() {
               <h3 className="text-xs font-bold text-white uppercase tracking-wider">RECURSOS</h3>
               <ul className="space-y-2.5">
                 <li>
-                  <a href="#calculadora" className="hover:text-emerald-400 transition-colors">
+                  <a href="#calculadora" className="hover:text-[#3e9d51] transition-colors">
                     Calculadora IMC Online
                   </a>
                 </li>
                 <li>
-                  <a href="#recetas" className="hover:text-emerald-400 transition-colors">
+                  <a href="#recetas" className="hover:text-[#3e9d51] transition-colors">
                     Biblioteca de Jugoterapia
                   </a>
                 </li>
                 <li>
-                  <a href="#protocolos" className="hover:text-emerald-400 transition-colors">
+                  <a href="#protocolos" className="hover:text-[#3e9d51] transition-colors">
                     Protocolos Clínicos
                   </a>
                 </li>
                 <li>
-                  <a href="#faq" className="hover:text-emerald-400 transition-colors">
+                  <a href="#faq" className="hover:text-[#3e9d51] transition-colors">
                     Guía de Ayuno y Jugos
                   </a>
                 </li>
                 <li>
-                  <a href="mailto:soporte@alimentacionorganicaec.net" className="hover:text-emerald-400 transition-colors">
+                  <a href="mailto:soporte@alimentacionorganicaec.net" className="hover:text-[#3e9d51] transition-colors">
                     Centro de Ayuda
                   </a>
                 </li>
                 <li>
                   <span className="text-neutral-500 inline-flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#3e9d51]"></span>
                     Estado Operativo 99.9%
                   </span>
                 </li>
@@ -1177,27 +1187,27 @@ function LandingContent() {
               <h3 className="text-xs font-bold text-white uppercase tracking-wider">PARTNERS</h3>
               <ul className="space-y-2.5">
                 <li>
-                  <Link href="/referral" className="hover:text-emerald-400 transition-colors">
+                  <Link href="/referral" className="hover:text-[#3e9d51] transition-colors">
                     Programa de Referidos
                   </Link>
                 </li>
                 <li>
-                  <Link href="/referral" className="hover:text-emerald-400 transition-colors">
+                  <Link href="/referral" className="hover:text-[#3e9d51] transition-colors">
                     Portal de Afiliados
                   </Link>
                 </li>
                 <li>
-                  <Link href="/referral" className="hover:text-emerald-400 transition-colors">
+                  <Link href="/referral" className="hover:text-[#3e9d51] transition-colors">
                     Ganar Comisiones
                   </Link>
                 </li>
                 <li>
-                  <Link href="/register" className="hover:text-emerald-400 transition-colors">
+                  <Link href="/register" className="hover:text-[#3e9d51] transition-colors">
                     Generar Código de Invitación
                   </Link>
                 </li>
                 <li>
-                  <a href="mailto:soporte@alimentacionorganicaec.net" className="hover:text-emerald-400 transition-colors">
+                  <a href="mailto:soporte@alimentacionorganicaec.net" className="hover:text-[#3e9d51] transition-colors">
                     Soporte para Socios
                   </a>
                 </li>
@@ -1209,23 +1219,23 @@ function LandingContent() {
               <h3 className="text-xs font-bold text-white uppercase tracking-wider">EMPRESA</h3>
               <ul className="space-y-2.5">
                 <li>
-                  <a href="#libro-app" className="hover:text-emerald-400 transition-colors">
+                  <a href="#libro-app" className="hover:text-[#3e9d51] transition-colors">
                     Sobre ALOEC
                   </a>
                 </li>
                 <li>
-                  <a href="https://webfixsoluciones.net" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 transition-colors inline-flex items-center gap-1">
+                  <a href="https://webfixsoluciones.net" target="_blank" rel="noopener noreferrer" className="hover:text-[#3e9d51] transition-colors inline-flex items-center gap-1">
                     WebFix Soluciones
                     <ExternalLink className="w-2.5 h-2.5 text-neutral-600" />
                   </a>
                 </li>
                 <li>
-                  <Link href="/terminos-y-condiciones" className="hover:text-emerald-400 transition-colors">
+                  <Link href="/terminos-y-condiciones" className="hover:text-[#3e9d51] transition-colors">
                     Términos y Condiciones
                   </Link>
                 </li>
                 <li>
-                  <Link href="/politicas-de-privacidad" className="hover:text-emerald-400 transition-colors">
+                  <Link href="/politicas-de-privacidad" className="hover:text-[#3e9d51] transition-colors">
                     Políticas de Privacidad
                   </Link>
                 </li>
@@ -1235,12 +1245,12 @@ function LandingContent() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/login" className="hover:text-emerald-400 transition-colors inline-flex items-center gap-1 text-slate-300">
-                    <Lock className="w-3 h-3 text-emerald-400" /> Acceso Administrativo
+                  <Link href="/login" className="hover:text-[#3e9d51] transition-colors inline-flex items-center gap-1 text-slate-300">
+                    <Lock className="w-3 h-3 text-[#3e9d51]" /> Acceso Administrativo
                   </Link>
                 </li>
                 <li>
-                  <a href="mailto:soporte@alimentacionorganicaec.net" className="hover:text-emerald-400 transition-colors">
+                  <a href="mailto:soporte@alimentacionorganicaec.net" className="hover:text-[#3e9d51] transition-colors">
                     Contacto y Soporte
                   </a>
                 </li>
@@ -1284,7 +1294,7 @@ function LandingContent() {
       {/* ── App Store Coming Soon Modal ────────────────────────────────────── */}
       {showAppStoreModal && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0a1112]/80 backdrop-blur-sm animate-in fade-in duration-200"
           onClick={() => setShowAppStoreModal(false)}
         >
           <div 
@@ -1294,35 +1304,35 @@ function LandingContent() {
             <button
               type="button"
               onClick={() => setShowAppStoreModal(false)}
-              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-[#0a1112] hover:bg-slate-100 rounded-full transition-colors"
               aria-label="Cerrar modal"
             >
               <X className="w-5 h-5" />
             </button>
 
-            <div className="w-16 h-16 bg-slate-900 text-white rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-slate-900/20">
+            <div className="w-16 h-16 bg-[#0a1112] text-white rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-black/20">
               <svg className="w-8 h-8 fill-current" viewBox="0 0 384 512">
                 <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 66.2 32.1 114.7c20.1 30.1 44.1 63.8 75.9 62.6 30.5-1.2 42.6-19.4 79.4-19.4 36.5 0 47.6 19.4 79.4 18.2 32.4-1.2 53.6-30.8 73.1-60.6 15.6-23.7 22.1-47.2 22.5-48.4-1.2-.6-43.7-17-43.7-61.9zM258.6 92.4c15.3-18.6 25.8-44.4 23-70.4-22.3 1-49.1 14.9-64.8 33.3-13.8 16.1-26 42.4-22.7 67.5 24.8 1.9 50-13 64.5-30.4z"/>
               </svg>
             </div>
 
             <div className="space-y-2">
-              <span className="inline-block px-3 py-1 bg-amber-100 text-amber-800 text-xs font-black rounded-full uppercase tracking-wider">
+              <span className="inline-block px-3 py-1 bg-[#f6f859] text-[#0a1112] text-xs font-black rounded-full uppercase tracking-wider">
                 Próximamente
               </span>
-              <h3 className="text-2xl font-black text-slate-900">
+              <h3 className="text-2xl font-black text-[#0a1112]">
                 ¡Muy pronto en App Store!
               </h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Estamos finalizando el proceso de revisión con Apple. Muy pronto podrás descargar la aplicación oficial de <strong>ALOEC</strong> directamente en tu iPhone o iPad.
+              <p className="text-sm text-[#0a1112]/75 leading-relaxed">
+                Estamos finalizando el proceso de publicación con Apple. Muy pronto podrás descargar la aplicación oficial de <strong>ALOEC</strong> en tu iPhone o iPad.
               </p>
             </div>
 
-            <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 text-left space-y-1">
-              <p className="text-xs font-bold text-emerald-900">
+            <div className="p-4 bg-[#3e9d51]/10 rounded-2xl border border-[#3e9d51]/20 text-left space-y-1">
+              <p className="text-xs font-bold text-[#0a1112]">
                 ¿Tienes un dispositivo Android o deseas usar la versión Web?
               </p>
-              <p className="text-xs text-emerald-700">
+              <p className="text-xs text-[#0a1112]/80">
                 Ya puedes instalar ALOEC desde <strong>Google Play Store</strong> o ingresar a la plataforma web directamente.
               </p>
             </div>
@@ -1332,14 +1342,14 @@ function LandingContent() {
                 href="https://play.google.com/store/apps/details?id=net.alimentacionorganica.aloec&hl=es_419"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-md transition-colors"
+                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 bg-[#3e9d51] hover:bg-[#348745] text-white font-black text-sm rounded-xl shadow-md transition-colors"
               >
                 Ver en Google Play Store →
               </a>
               <button
                 type="button"
                 onClick={() => setShowAppStoreModal(false)}
-                className="w-full px-5 py-2.5 text-xs font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors"
+                className="w-full px-5 py-2.5 text-xs font-semibold text-slate-500 hover:text-[#0a1112] hover:bg-slate-100 rounded-xl transition-colors"
               >
                 Entendido, cerrar
               </button>

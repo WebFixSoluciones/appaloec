@@ -33,6 +33,11 @@ const config: Config = {
           800: '#333333', // Secondary text
           900: '#1a1a1a', // Primary text
         },
+        aloec: {
+          green: '#3e9d51', // VERDE ALOEC
+          black: '#0a1112', // NEGRO ALOEC
+          light: '#f6f859', // VERDE CLARO
+        },
         surface: '#ffffff',
         background: '#ffffff',
       },
