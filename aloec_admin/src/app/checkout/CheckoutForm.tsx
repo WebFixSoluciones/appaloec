@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../lib/firebase/config';
 import { 
@@ -11,7 +12,11 @@ import {
   ShieldCheck, 
   RefreshCw, 
   ArrowRight,
-  BookOpen
+  BookOpen,
+  CheckCircle2,
+  Gift,
+  Sparkles,
+  CreditCard
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -126,36 +131,69 @@ export default function CheckoutForm({ planId, planName, price, durationDays }: 
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-4">
-        <img src="/logo.png" alt="ALOEC Logo" className="h-12 w-auto mx-auto object-contain" />
-        <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-3">
+        <Link href="/" className="inline-block transition-transform hover:scale-105">
+          <img src="/logo.png" alt="ALOEC Logo" className="h-12 w-auto mx-auto object-contain" />
+        </Link>
+        <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
           Completa tu Compra
         </h2>
-        <p className="text-sm text-slate-600">
-          Estás adquiriendo el libro oficial e incluyendo acceso premium a la app ALOEC.
+        <p className="text-sm text-slate-600 max-w-sm mx-auto">
+          Adquiere el libro oficial <strong>&ldquo;Ama Lo Que Comes&rdquo;</strong> e incluye acceso completo a la app ALOEC.
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+      <div className="mt-7 sm:mx-auto sm:w-full sm:max-w-md">
         
-        {/* Plan Summary Card */}
-        <div className="bg-slate-900 text-white p-6 rounded-2xl border border-slate-800 shadow-lg mb-6 flex justify-between items-center relative overflow-hidden">
-          <div className="absolute top-0 right-0 -mr-10 -mt-10 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl pointer-events-none"></div>
-          <div>
-            <span className="text-[10px] bg-emerald-500 text-slate-950 font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
-              PLAN SELECCIONADO
-            </span>
-            <h3 className="text-lg font-bold text-white mt-1.5">{planName}</h3>
-            <p className="text-xs text-slate-400 mt-0.5">Acceso premium durante {durationDays} días</p>
+        {/* Referral Badge if present */}
+        {referredByCode && (
+          <div className="bg-amber-50 border border-amber-200 text-amber-900 px-4 py-3 rounded-2xl mb-4 flex items-center gap-3 text-xs shadow-xs animate-in fade-in duration-200">
+            <Gift className="w-5 h-5 text-amber-600 shrink-0" />
+            <div>
+              <p className="text-amber-950 font-black">Invitación de Referido Aplicada</p>
+              <p className="text-[11px] text-amber-700">
+                Código: <span className="font-mono font-bold bg-amber-200/70 px-1.5 py-0.5 rounded">{referredByCode}</span> · ¡Tu cuenta recibirá todos los beneficios!
+              </p>
+            </div>
           </div>
-          <div className="text-right">
-            <p className="text-3xl font-black text-emerald-400 font-mono">${price.toFixed(2)}</p>
-            <span className="text-[10px] text-slate-500 font-bold uppercase">USD</span>
+        )}
+
+        {/* Plan Summary Card */}
+        <div className="bg-slate-900 text-white p-6 rounded-3xl border border-slate-800 shadow-xl mb-6 relative overflow-hidden">
+          <div className="absolute top-0 right-0 -mr-12 -mt-12 w-32 h-32 bg-emerald-500/15 rounded-full blur-2xl pointer-events-none"></div>
+          
+          <div className="flex justify-between items-start">
+            <div>
+              <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-500 text-slate-950 font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                <Sparkles className="w-3 h-3" /> COMBO LIBRO + APP
+              </span>
+              <h3 className="text-lg sm:text-xl font-bold text-white mt-2 leading-tight">{planName}</h3>
+              <p className="text-xs text-slate-400 mt-0.5">Acceso premium durante {durationDays} días</p>
+            </div>
+            <div className="text-right">
+              <p className="text-3xl font-black text-emerald-400 font-mono tracking-tight">${price.toFixed(2)}</p>
+              <span className="text-[10px] text-slate-400 font-bold uppercase">USD / Pago Único</span>
+            </div>
+          </div>
+
+          <div className="border-t border-slate-800/80 mt-4 pt-3.5 space-y-2">
+            <div className="flex items-center gap-2 text-xs text-slate-300">
+              <BookOpen className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>Libro Digital <strong>&ldquo;Ama Lo Que Comes&rdquo;</strong> (José Rengifo)</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-slate-300">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>9 Protocolos Médicos y Calculadora IMC inteligente</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-slate-300">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>Catálogo completo con +50 recetas de jugoterapia curativa</span>
+            </div>
           </div>
         </div>
 
         {/* Form Card */}
-        <div className="bg-white py-8 px-6 shadow-xl rounded-3xl border border-slate-200">
+        <div className="bg-white py-7 px-6 sm:px-8 shadow-xl rounded-3xl border border-slate-200">
           
           {/* Tab Selector */}
           <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1.5 rounded-xl mb-6">
@@ -183,11 +221,11 @@ export default function CheckoutForm({ planId, planName, price, durationDays }: 
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             
             {isRegister && (
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                   Nombre Completo
                 </label>
                 <div className="relative">
@@ -208,7 +246,7 @@ export default function CheckoutForm({ planId, planName, price, durationDays }: 
             )}
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                 Correo Electrónico
               </label>
               <div className="relative">
@@ -228,7 +266,7 @@ export default function CheckoutForm({ planId, planName, price, durationDays }: 
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                 Contraseña
               </label>
               <div className="relative">
@@ -249,7 +287,7 @@ export default function CheckoutForm({ planId, planName, price, durationDays }: 
 
             {isRegister && (
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                   Confirmar Contraseña
                 </label>
                 <div className="relative">
@@ -272,7 +310,7 @@ export default function CheckoutForm({ planId, planName, price, durationDays }: 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm rounded-xl shadow-md hover:shadow-lg transition-all flex justify-center items-center gap-2 transform active:scale-95 mt-2"
+              className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm rounded-xl shadow-md hover:shadow-emerald-600/25 transition-all flex justify-center items-center gap-2 transform active:scale-95 mt-2 cursor-pointer"
             >
               {loading ? (
                 <>
@@ -280,7 +318,7 @@ export default function CheckoutForm({ planId, planName, price, durationDays }: 
                 </>
               ) : (
                 <>
-                  <span>Proceder al Pago</span>
+                  <span>Proceder al Pago Seguro</span>
                   <ArrowRight size={16} />
                 </>
               )}
@@ -288,10 +326,23 @@ export default function CheckoutForm({ planId, planName, price, durationDays }: 
 
           </form>
 
-          <div className="mt-6 border-t border-slate-100 pt-4 text-center">
-            <p className="text-[11px] text-slate-500 flex items-center justify-center gap-1.5 leading-snug max-w-xs mx-auto">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              Esta cuenta te servirá para ingresar a la App ALOEC una vez completado el pago.
+          {/* PayPhone Trust Indicators */}
+          <div className="mt-6 border-t border-slate-100 pt-5 space-y-3 text-center">
+            <div className="flex items-center justify-center gap-2 text-slate-600 text-xs font-semibold">
+              <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>Pago 100% protegido con cifrado SSL de 256 bits</span>
+            </div>
+            
+            <div className="flex items-center justify-center gap-3 text-slate-400 text-[11px]">
+              <span className="px-2 py-0.5 bg-slate-100 rounded font-semibold text-slate-600">Visa</span>
+              <span className="px-2 py-0.5 bg-slate-100 rounded font-semibold text-slate-600">Mastercard</span>
+              <span className="px-2 py-0.5 bg-slate-100 rounded font-semibold text-slate-600">Diners</span>
+              <span className="px-2 py-0.5 bg-slate-100 rounded font-semibold text-slate-600">Discover</span>
+              <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded font-bold">PayPhone</span>
+            </div>
+
+            <p className="text-[11px] text-slate-400 max-w-xs mx-auto leading-relaxed">
+              Esta cuenta te servirá para ingresar de inmediato a la App ALOEC y a la plataforma web una vez completado el pago.
             </p>
           </div>
 

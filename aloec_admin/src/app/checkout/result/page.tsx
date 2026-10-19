@@ -12,7 +12,10 @@ import {
   RefreshCw,
   Lock,
   ChevronRight,
-  X
+  X,
+  BookOpen,
+  Sparkles,
+  Globe
 } from 'lucide-react';
 
 // Google Play Official Store Button Component
@@ -84,76 +87,90 @@ function ResultContent() {
 
   if (status === 'paid') {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-4">
+      <div className="min-h-screen bg-gradient-to-b from-emerald-50/50 via-slate-50 to-slate-100 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans">
+        <div className="sm:mx-auto sm:w-full sm:max-w-lg text-center space-y-3">
           <img src="/logo.png" alt="ALOEC Logo" className="h-12 w-auto mx-auto object-contain" />
         </div>
 
-        <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-lg">
-          <div className="bg-white py-10 px-8 shadow-xl rounded-3xl border border-slate-200 text-center space-y-6">
+        <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-lg">
+          <div className="bg-white py-10 px-6 sm:px-8 shadow-xl rounded-3xl border border-slate-200/90 text-center space-y-6">
             
-            <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-sm">
-              <CheckCircle2 className="w-10 h-10" />
-            </div>
-
-            <div className="space-y-2">
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight">¡Pago Confirmado con Éxito!</h1>
-              <p className="text-sm text-slate-600">
-                Tu membresía y acceso al libro digital se han activado inmediatamente.
+            {/* Success icon & badge */}
+            <div className="space-y-3">
+              <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-sm ring-8 ring-emerald-50">
+                <CheckCircle2 className="w-9 h-9" />
+              </div>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-emerald-100 text-emerald-800 uppercase tracking-wider">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-600" /> ¡Membresía Activada!
+              </span>
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                ¡Bienvenido a ALOEC!
+              </h1>
+              <p className="text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
+                Tu pago ha sido procesado exitosamente por PayPhone. Tu cuenta ya cuenta con acceso completo e ilimitado.
               </p>
             </div>
 
-            {/* Steps to start */}
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 text-left space-y-4">
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">¿Cómo empezar a usar ALOEC?</h3>
-              
-              <div className="flex gap-3">
-                <div className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
-                  1
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-slate-900">Descarga la aplicación en tu smartphone</p>
-                  <p className="text-xs text-slate-500">Utiliza los botones de descarga de abajo.</p>
-                </div>
-              </div>
-
-              <div className="flex gap-3">
-                <div className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
-                  2
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-slate-900">Inicia sesión con tus credenciales</p>
-                  <p className="text-xs text-slate-500">
-                    Abre la aplicación e introduce el correo y la contraseña que creaste durante el registro.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-3">
-                <div className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
-                  3
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-slate-900">¡Comienza tu transformación!</p>
-                  <p className="text-xs text-slate-500">
-                    Accede a tu plan de IMC, los 9 protocolos y el recetario de jugoterapia de inmediato.
-                  </p>
-                </div>
-              </div>
+            {/* Included Benefits Card */}
+            <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 sm:p-5 text-left space-y-2.5">
+              <p className="text-xs font-black text-emerald-950 uppercase tracking-wider">
+                Beneficios Desbloqueados en tu Cuenta:
+              </p>
+              <ul className="text-xs text-emerald-900 space-y-2">
+                <li className="flex items-start gap-2">
+                  <BookOpen className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+                  <span><strong>Libro Oficial "Ama Lo Que Comes"</strong> disponible en formato digital.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+                  <span><strong>9 Protocolos Médicos</strong> adaptados a tu diagnóstico de IMC.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+                  <span><strong>Catálogo HD de +50 Recetas</strong> de jugoterapia y batidos curativos.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Smartphone className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+                  <span><strong>Acceso Multiplataforma</strong> en App Android, App iOS y Plataforma Web.</span>
+                </li>
+              </ul>
             </div>
 
-            {/* Store Download Badges */}
-            <div className="space-y-3 pt-2">
-              <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Descargar la App:</p>
+            {/* Primary Action: Direct Web App Access */}
+            <div className="space-y-3 pt-1">
+              <a
+                href="https://app.alimentacionorganicaec.com"
+                className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm rounded-xl shadow-lg hover:shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 transform active:scale-95"
+              >
+                <Globe className="w-4 h-4" />
+                <span>Ingresar a la Plataforma Web Ahora</span>
+                <ArrowRight className="w-4 h-4" />
+              </a>
+              <p className="text-[11px] text-slate-500">
+                Inicia sesión con tu correo registrado y tu contraseña para comenzar de inmediato.
+              </p>
+            </div>
+
+            {/* Mobile App Downloads */}
+            <div className="border-t border-slate-100 pt-5 space-y-3">
+              <div className="flex items-center justify-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wider">
+                <Smartphone className="w-4 h-4 text-emerald-600" />
+                <span>O descarga la App en tu smartphone:</span>
+              </div>
               <div className="flex flex-wrap items-center justify-center gap-3">
                 <GooglePlayButton />
                 <AppStoreButton onClick={() => setShowAppStoreModal(true)} />
               </div>
             </div>
 
-            <div className="border-t border-slate-100 pt-4">
-              <p className="text-xs text-slate-400">
-                ¿Prefieres usar la versión web? Visita <strong className="text-emerald-600 underline">app.alimentacionorganicaec.com</strong>.
+            {/* Order note & support */}
+            <div className="pt-2 text-xs text-slate-400 space-y-1">
+              <p>Te hemos enviado la confirmación de compra a tu correo electrónico.</p>
+              <p>
+                ¿Dudas o soporte? Escríbenos a{' '}
+                <a href="mailto:soporte@alimentacionorganicaec.net" className="text-emerald-600 font-bold hover:underline">
+                  soporte@alimentacionorganicaec.net
+                </a>
               </p>
             </div>
 
@@ -238,20 +255,50 @@ function ResultContent() {
         </div>
 
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-8 px-6 shadow-xl rounded-3xl border border-red-100 text-center space-y-5">
-            <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto shadow-sm">
+          <div className="bg-white py-10 px-6 sm:px-8 shadow-xl rounded-3xl border border-red-100 text-center space-y-6">
+            <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto shadow-sm ring-8 ring-red-50">
               <AlertTriangle className="w-8 h-8" />
             </div>
-            <h1 className="text-xl font-black text-slate-900">Pago Rechazado</h1>
-            <p className="text-sm text-slate-600 leading-relaxed">
-              No pudimos procesar la transacción. Vuelve a intentarlo ingresando un método de pago alternativo.
+
+            <div className="space-y-2">
+              <h1 className="text-2xl font-black text-slate-900">Transacción No Completada</h1>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                La pasarela de pago PayPhone no pudo procesar el cobro. Esto suele ocurrir por fondos insuficientes, límites en compras online o bloqueo temporal de tu banco emisor.
+              </p>
+            </div>
+
+            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-left text-xs text-slate-600 space-y-2">
+              <p className="font-bold text-slate-800">Sugerencias para resolverlo:</p>
+              <ul className="list-disc list-inside space-y-1 text-slate-500">
+                <li>Verifica que tu tarjeta tenga habilitadas compras online internacionales.</li>
+                <li>Intenta nuevamente con otra tarjeta de crédito o débito.</li>
+                <li>Comunícate con tu banco para autorizar la transacción de PayPhone.</li>
+              </ul>
+            </div>
+
+            <div className="space-y-3 pt-2">
+              <a
+                href="/#precios"
+                className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span>Reintentar Compra de Membresía</span>
+              </a>
+
+              <a
+                href="/"
+                className="inline-block w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors"
+              >
+                Volver al Inicio
+              </a>
+            </div>
+
+            <p className="text-xs text-slate-400">
+              ¿Persiste el inconveniente? Contáctanos a{' '}
+              <a href="mailto:soporte@alimentacionorganicaec.net" className="text-emerald-600 font-bold hover:underline">
+                soporte@alimentacionorganicaec.net
+              </a>
             </p>
-            <a
-              href="/"
-              className="inline-block w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm rounded-xl transition-all shadow-md"
-            >
-              Reintentar Compra
-            </a>
           </div>
         </div>
       </div>
@@ -266,14 +313,40 @@ function ResultContent() {
         </div>
 
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-8 px-6 shadow-xl rounded-3xl border border-yellow-100 text-center space-y-5">
-            <div className="w-16 h-16 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mx-auto shadow-sm">
-              <RefreshCw className="w-8 h-8 animate-spin" />
+          <div className="bg-white py-10 px-6 sm:px-8 shadow-xl rounded-3xl border border-amber-100 text-center space-y-6">
+            <div className="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto shadow-sm ring-8 ring-amber-50">
+              <RefreshCw className="w-8 h-8 animate-spin text-amber-600" />
             </div>
-            <h1 className="text-xl font-black text-slate-900">Pago en Proceso</h1>
-            <p className="text-sm text-slate-600 leading-relaxed">
-              Tu pago está en proceso de verificación por la pasarela de pagos. Te notificaremos por correo electrónico una vez confirmado.
-            </p>
+
+            <div className="space-y-2">
+              <h1 className="text-2xl font-black text-slate-900">Verificando tu Pago</h1>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                PayPhone está confirmando los fondos con tu entidad bancaria. Esta validación suele tardar entre 1 y 3 minutos.
+              </p>
+            </div>
+
+            <div className="p-4 bg-amber-50 rounded-2xl border border-amber-200 text-left text-xs text-amber-900 space-y-1">
+              <p className="font-bold">No te preocupes:</p>
+              <p>Tu cuenta se activará automáticamente apenas recibamos la confirmación del banco y te enviaremos un correo de bienvenida.</p>
+            </div>
+
+            <div className="space-y-3 pt-2">
+              <button
+                type="button"
+                onClick={() => window.location.reload()}
+                className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span>Actualizar Estado</span>
+              </button>
+
+              <a
+                href="/"
+                className="inline-block w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors"
+              >
+                Volver al Inicio
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -287,16 +360,28 @@ function ResultContent() {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-6 shadow-xl rounded-3xl border border-slate-200 text-center space-y-5">
-          <div className="text-red-500 text-5xl">✕</div>
-          <h1 className="text-lg font-bold text-slate-900">Error de Pago</h1>
-          <p className="text-sm text-slate-600">Ocurrió un error inesperado al verificar tu transacción.</p>
-          <a
-            href="/"
-            className="inline-block w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl border border-slate-200 transition-colors"
-          >
-            Volver al Inicio
-          </a>
+        <div className="bg-white py-10 px-6 sm:px-8 shadow-xl rounded-3xl border border-slate-200 text-center space-y-6">
+          <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto shadow-sm ring-8 ring-red-50">
+            <X className="w-8 h-8" />
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-xl font-black text-slate-900">Estado de Transacción No Válido</h1>
+            <p className="text-sm text-slate-600">No pudimos identificar el estado de tu pago o el enlace ha caducado.</p>
+          </div>
+          <div className="space-y-3 pt-2">
+            <a
+              href="/#precios"
+              className="inline-block w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-colors shadow-md"
+            >
+              Ver Planes Disponibles
+            </a>
+            <a
+              href="/"
+              className="inline-block w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors"
+            >
+              Volver al Inicio
+            </a>
+          </div>
         </div>
       </div>
     </div>
