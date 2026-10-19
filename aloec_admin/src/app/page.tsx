@@ -289,99 +289,103 @@ function LandingContent() {
       </header>
 
       {/* ── Hero Section (Book + App Offer) ────────────────────────────────── */}
-      <section id="libro-app" className="relative pt-12 pb-20 lg:pt-20 lg:pb-32 overflow-hidden bg-gradient-to-b from-emerald-50/50 via-white to-slate-50">
-        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-emerald-200/40 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-96 h-96 bg-green-200/30 rounded-full blur-3xl pointer-events-none"></div>
+      <section id="libro-app" className="relative pt-14 pb-20 lg:pt-24 lg:pb-32 overflow-hidden bg-gradient-to-b from-[#E6F4B6] via-[#DCF0A4] to-[#D4E894]">
+        {/* Subtle organic ambient blooms */}
+        <div className="absolute top-0 right-0 -mr-24 -mt-24 w-[36rem] h-[36rem] bg-[#C2C432]/25 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 -ml-24 -mb-24 w-[36rem] h-[36rem] bg-[#A5CA44]/20 rounded-full blur-3xl pointer-events-none"></div>
 
         <div className="w-[90%] max-w-[1600px] mx-auto px-2 sm:px-4 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-10 items-center">
             
             {/* Hero Left Content */}
-            <div className="lg:col-span-7 space-y-8 text-center lg:text-left">
+            <div className="lg:col-span-7 space-y-7 text-center lg:text-left">
               
-              {/* Domain & Offer Pill */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-100/80 border border-emerald-300/60 rounded-full text-emerald-800 text-xs font-bold shadow-xs">
-                <BookOpen className="w-4 h-4 text-emerald-700 animate-bounce" />
-                <span>Libro Best-Seller + Acceso Completo a la App ALOEC</span>
-              </div>
-
               {/* Main Headline */}
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.15]">
-                Transforma tu salud con el Libro <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-700 via-green-600 to-emerald-500 font-black">"Ama Lo Que Comes"</span> y la App ALOEC.
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-950 leading-[1.12]">
+                Transforma tu salud con el Libro <span className="text-slate-900 underline decoration-[#8F9916]/50 decoration-wavy">"Ama Lo Que Comes"</span> y la App ALOEC.
               </h1>
 
               {/* Subtitle */}
-              <p className="text-lg sm:text-xl text-slate-600 font-normal leading-relaxed max-w-2xl mx-auto lg:mx-0">
+              <p className="text-base sm:text-lg text-slate-800 font-medium leading-relaxed max-w-2xl mx-auto lg:mx-0">
                 Al adquirir el libro oficial de medicina integrativa y jugoterapia (por José Rengifo), obtienes de forma automatizada tu cuenta de acceso a la <strong>App ALOEC</strong> para calcular tu IMC, recibir tu protocolo médico personalizado y acceder a videocursos y recetas.
               </p>
 
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
-                <a
-                  href="#precios"
-                  className="w-full sm:w-auto px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-base rounded-2xl shadow-xl hover:shadow-emerald-600/30 transition-all flex items-center justify-center gap-3 transform active:scale-95"
-                >
-                  <BookOpen className="w-5 h-5 text-amber-300" /> Adquirir Libro + App Incluida →
-                </a>
-              </div>
-
-              {/* Download Store Badges */}
+              {/* Action Buttons: Store Badges + Direct Buy Button */}
               <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-3">
                 <GooglePlayButton />
                 <AppStoreButton onClick={() => setShowAppStoreModal(true)} />
+                <a
+                  href="#precios"
+                  className="inline-flex items-center gap-2.5 px-6 py-3.5 bg-slate-950 hover:bg-black text-white font-extrabold text-sm rounded-xl border border-slate-800 shadow-md hover:shadow-lg transition-all duration-200 group transform hover:-translate-y-0.5"
+                >
+                  <BookOpen className="w-4 h-4 text-amber-300 transition-transform group-hover:scale-110" />
+                  <span>Comprar Libro + App</span>
+                </a>
               </div>
 
               {/* Trust Indicators */}
-              <div className="pt-4 border-t border-slate-200/80 flex flex-wrap items-center justify-center lg:justify-start gap-6 text-xs text-slate-600 font-medium">
-                <div className="flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              <div className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs font-semibold text-slate-800">
+                <div className="inline-flex items-center gap-1.5 bg-white/80 backdrop-blur-xs px-3.5 py-1.5 rounded-full border border-slate-300/60 shadow-xs">
+                  <Star className="w-4 h-4 text-amber-500 fill-amber-400" />
+                  <span className="font-extrabold text-slate-950">4.9 / 5</span>
+                  <span className="text-slate-600 font-medium">(+10,000 lectores y pacientes)</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-slate-800">
+                  <ShieldCheck className="w-4 h-4 text-emerald-800" />
                   <span>Pago Internacional Seguro (PayPhone)</span>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                  <span>4.9 / 5 Valoración de Lectores</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <div className="flex items-center gap-1.5 text-slate-800">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-800" />
                   <span>Acceso Inmediato en Smartphone y Web</span>
                 </div>
               </div>
 
             </div>
 
-            {/* Hero Right Visual: Book Cover Photo + App Interactive Mockup */}
+            {/* Hero Right Visual: Clean, borderless image with floating SaaS cards */}
             <div className="lg:col-span-5 flex justify-center">
               <div className="relative w-full max-w-md">
                 
-                {/* Decorative glow background */}
-                <div className="absolute -inset-4 bg-gradient-to-tr from-emerald-500 to-green-300 rounded-[3rem] blur-2xl opacity-40 animate-pulse"></div>
-
-                {/* Unified Book Photo Card */}
-                <div className="relative bg-white rounded-3xl p-3 shadow-2xl border border-slate-200 overflow-hidden group">
-                  <div className="relative rounded-2xl overflow-hidden aspect-square bg-slate-100">
-                    <img 
-                      src="/book_hero.jpg" 
-                      alt="Libro Ama Lo Que Comes y App ALOEC" 
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    
-                    {/* Floating Offer Badge */}
-                    <div className="absolute bottom-4 left-4 right-4 bg-slate-900/90 backdrop-blur-md text-white p-3 rounded-2xl border border-white/20 shadow-lg flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-emerald-500 text-slate-950 rounded-xl flex items-center justify-center font-black text-lg shrink-0">
-                          📖
-                        </div>
-                        <div>
-                          <p className="text-xs font-black text-white">Ama Lo Que Comes</p>
-                          <p className="text-[10px] text-emerald-300 font-bold">Por José Rengifo · Incluye App ALOEC</p>
-                        </div>
+                {/* Image without white padding or frame */}
+                <div className="relative rounded-3xl overflow-hidden shadow-2xl group border border-black/5 bg-slate-900/5 aspect-square">
+                  <img 
+                    src="/book_hero.jpg" 
+                    alt="Libro Ama Lo Que Comes y App ALOEC" 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  
+                  {/* Floating Bottom Offer Card */}
+                  <div className="absolute bottom-4 left-4 right-4 bg-slate-950/90 backdrop-blur-md text-white p-3.5 rounded-2xl border border-white/15 shadow-2xl flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-[#C2C432] text-slate-950 rounded-xl flex items-center justify-center font-black text-lg shrink-0 shadow-sm">
+                        📖
                       </div>
-                      <span className="bg-emerald-500 text-slate-950 font-black text-[10px] px-2.5 py-1 rounded-full uppercase">
-                        OFERTA
-                      </span>
+                      <div>
+                        <p className="text-xs font-black text-white">Ama Lo Que Comes</p>
+                        <p className="text-[10px] text-[#DCEFA8] font-bold">Por José Rengifo · Incluye App ALOEC</p>
+                      </div>
                     </div>
-
+                    <span className="bg-[#C2C432] text-slate-950 font-black text-[10px] px-3 py-1 rounded-full uppercase tracking-wider shadow-xs">
+                      OFERTA
+                    </span>
                   </div>
+                </div>
+
+                {/* Floating SaaS Card: Top Right */}
+                <div className="absolute -top-3 -right-3 sm:-top-4 sm:-right-4 bg-white/95 backdrop-blur-md px-3.5 py-2.5 rounded-2xl border border-slate-200/80 shadow-xl flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-700">
+                    <CheckCircle2 className="w-5 h-5" />
+                  </div>
+                  <div className="text-left leading-tight">
+                    <p className="text-[11px] font-extrabold text-slate-900">Protocolo Asignado</p>
+                    <p className="text-[10px] text-emerald-700 font-bold">100% Personalizado por IMC</p>
+                  </div>
+                </div>
+
+                {/* Floating SaaS Card: Bottom Left */}
+                <div className="hidden sm:flex absolute -bottom-3 -left-3 bg-white/95 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-slate-200/80 shadow-xl items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span className="text-[11px] font-extrabold text-slate-900">+50 Recetas de Jugos Verdes</span>
                 </div>
 
               </div>
