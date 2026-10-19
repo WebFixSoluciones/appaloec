@@ -288,106 +288,72 @@ function LandingContent() {
         </div>
       </header>
 
-      {/* ── Hero Section (Book + App Offer) ────────────────────────────────── */}
-      <section id="libro-app" className="relative pt-14 pb-20 lg:pt-24 lg:pb-32 overflow-hidden bg-gradient-to-b from-[#E6F4B6] via-[#DCF0A4] to-[#D4E894]">
-        {/* Subtle organic ambient blooms */}
-        <div className="absolute top-0 right-0 -mr-24 -mt-24 w-[36rem] h-[36rem] bg-[#C2C432]/25 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 -ml-24 -mb-24 w-[36rem] h-[36rem] bg-[#A5CA44]/20 rounded-full blur-3xl pointer-events-none"></div>
-
-        <div className="w-[90%] max-w-[1600px] mx-auto px-2 sm:px-4 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-10 items-center">
+      {/* ── Hero Section (Brevo-Style Redesign for ALOEC) ──────────────────── */}
+      <section id="libro-app" className="relative pt-12 pb-16 lg:pt-16 lg:pb-24 overflow-hidden bg-[#C0FFA5] rounded-b-[2.5rem] lg:rounded-b-[3.5rem]">
+        <div className="w-[90%] max-w-[1600px] mx-auto px-2 sm:px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
             
-            {/* Hero Left Content */}
-            <div className="lg:col-span-7 space-y-7 text-center lg:text-left">
+            {/* Hero Left Content (Matching Brevo style) */}
+            <div className="lg:col-span-7 space-y-6 text-left">
               
               {/* Main Headline */}
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-950 leading-[1.12]">
-                Transforma tu salud con el Libro <span className="text-slate-900 underline decoration-[#8F9916]/50 decoration-wavy">"Ama Lo Que Comes"</span> y la App ALOEC.
+                Transforma tu salud con el libro <span className="underline decoration-slate-900/25 underline-offset-8">"Ama Lo Que Comes"</span> y la App ALOEC
               </h1>
 
               {/* Subtitle */}
-              <p className="text-base sm:text-lg text-slate-800 font-medium leading-relaxed max-w-2xl mx-auto lg:mx-0">
-                Al adquirir el libro oficial de medicina integrativa y jugoterapia (por José Rengifo), obtienes de forma automatizada tu cuenta de acceso a la <strong>App ALOEC</strong> para calcular tu IMC, recibir tu protocolo médico personalizado y acceder a videocursos y recetas.
+              <p className="text-base sm:text-lg text-slate-800 font-medium leading-relaxed max-w-xl">
+                Una plataforma única para tu nutrición y medicina integrativa. Recetas de jugoterapia curativa, calculadora biológica de IMC y 9 protocolos guiados día a día por José Rengifo.
               </p>
 
-              {/* Action Buttons: Store Badges + Direct Buy Button */}
-              <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-3">
-                <GooglePlayButton />
-                <AppStoreButton onClick={() => setShowAppStoreModal(true)} />
+              {/* Brevo-Style Solid Black CTA Button */}
+              <div className="pt-2 flex flex-wrap items-center gap-3.5">
                 <a
                   href="#precios"
-                  className="inline-flex items-center gap-2.5 px-6 py-3.5 bg-slate-950 hover:bg-black text-white font-extrabold text-sm rounded-xl border border-slate-800 shadow-md hover:shadow-lg transition-all duration-200 group transform hover:-translate-y-0.5"
+                  className="inline-flex items-center justify-center px-8 py-4 bg-slate-950 hover:bg-black text-white text-base font-extrabold rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 active:scale-95"
                 >
-                  <BookOpen className="w-4 h-4 text-amber-300 transition-transform group-hover:scale-110" />
-                  <span>Comprar Libro + App</span>
+                  Comprar Libro + App
+                </a>
+
+                <a
+                  href="#calculadora"
+                  className="inline-flex items-center justify-center px-6 py-4 bg-white/85 hover:bg-white text-slate-950 text-sm font-extrabold rounded-2xl border border-black/10 shadow-xs transition-all hover:-translate-y-0.5"
+                >
+                  <Calculator className="w-4 h-4 mr-2 text-emerald-800" /> Calcular IMC Gratis
                 </a>
               </div>
 
-              {/* Trust Indicators */}
-              <div className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs font-semibold text-slate-800">
-                <div className="inline-flex items-center gap-1.5 bg-white/80 backdrop-blur-xs px-3.5 py-1.5 rounded-full border border-slate-300/60 shadow-xs">
-                  <Star className="w-4 h-4 text-amber-500 fill-amber-400" />
-                  <span className="font-extrabold text-slate-950">4.9 / 5</span>
-                  <span className="text-slate-600 font-medium">(+10,000 lectores y pacientes)</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-slate-800">
-                  <ShieldCheck className="w-4 h-4 text-emerald-800" />
-                  <span>Pago Internacional Seguro (PayPhone)</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-slate-800">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-800" />
-                  <span>Acceso Inmediato en Smartphone y Web</span>
+              {/* Brevo-Style Trust Indicator & Rating */}
+              <div className="pt-3 space-y-2.5 text-xs text-slate-800 font-medium">
+                <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <span>Atención y soporte en español 🇪🇨</span>
+                  <span>·</span>
+                  <span>Libro digital incluido</span>
+                  <span>·</span>
+                  <span>Disponible en Android, iOS y Web</span>
+                </p>
+
+                <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-xs px-3.5 py-1.5 rounded-full border border-black/5 shadow-xs">
+                  <div className="flex items-center text-amber-500">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
+                    ))}
+                  </div>
+                  <span className="font-black text-slate-950 text-xs">4.9 / 5</span>
+                  <span className="text-slate-600 font-medium text-[11px]">(+10,000 lectores y pacientes)</span>
                 </div>
               </div>
 
             </div>
 
-            {/* Hero Right Visual: Clean, borderless image with floating SaaS cards */}
-            <div className="lg:col-span-5 flex justify-center">
-              <div className="relative w-full max-w-md">
-                
-                {/* Image without white padding or frame */}
-                <div className="relative rounded-3xl overflow-hidden shadow-2xl group border border-black/5 bg-slate-900/5 aspect-square">
-                  <img 
-                    src="/book_hero.jpg" 
-                    alt="Libro Ama Lo Que Comes y App ALOEC" 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  
-                  {/* Floating Bottom Offer Card */}
-                  <div className="absolute bottom-4 left-4 right-4 bg-slate-950/90 backdrop-blur-md text-white p-3.5 rounded-2xl border border-white/15 shadow-2xl flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-[#C2C432] text-slate-950 rounded-xl flex items-center justify-center font-black text-lg shrink-0 shadow-sm">
-                        📖
-                      </div>
-                      <div>
-                        <p className="text-xs font-black text-white">Ama Lo Que Comes</p>
-                        <p className="text-[10px] text-[#DCEFA8] font-bold">Por José Rengifo · Incluye App ALOEC</p>
-                      </div>
-                    </div>
-                    <span className="bg-[#C2C432] text-slate-950 font-black text-[10px] px-3 py-1 rounded-full uppercase tracking-wider shadow-xs">
-                      OFERTA
-                    </span>
-                  </div>
-                </div>
-
-                {/* Floating SaaS Card: Top Right */}
-                <div className="absolute -top-3 -right-3 sm:-top-4 sm:-right-4 bg-white/95 backdrop-blur-md px-3.5 py-2.5 rounded-2xl border border-slate-200/80 shadow-xl flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-700">
-                    <CheckCircle2 className="w-5 h-5" />
-                  </div>
-                  <div className="text-left leading-tight">
-                    <p className="text-[11px] font-extrabold text-slate-900">Protocolo Asignado</p>
-                    <p className="text-[10px] text-emerald-700 font-bold">100% Personalizado por IMC</p>
-                  </div>
-                </div>
-
-                {/* Floating SaaS Card: Bottom Left */}
-                <div className="hidden sm:flex absolute -bottom-3 -left-3 bg-white/95 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-slate-200/80 shadow-xl items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <span className="text-[11px] font-extrabold text-slate-900">+50 Recetas de Jugos Verdes</span>
-                </div>
-
+            {/* Hero Right Visual: Clean, borderless image without white padding or overlays (Brevo Style) */}
+            <div className="lg:col-span-5 flex justify-center lg:justify-end">
+              <div className="w-full max-w-md lg:max-w-lg">
+                <img 
+                  src="/book_hero.jpg" 
+                  alt="Libro Ama Lo Que Comes y App ALOEC" 
+                  className="w-full h-auto rounded-3xl shadow-2xl object-cover"
+                />
               </div>
             </div>
 
