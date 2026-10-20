@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/services/version_service.dart';
 import '../../../juices/presentation/screens/juices_screen.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
 import '../../../progress/presentation/screens/progress_screen.dart';
@@ -20,11 +21,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    if (widget.initialIndex != 1) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.initialIndex != 1) {
         ref.read(homeTabProvider.notifier).state = widget.initialIndex;
-      });
-    }
+      }
+      // Verificar si hay actualización opcional en tienda o novedades tras actualizar
+      VersionService.checkAppUpdateAndWhatsNew(context);
+    });
   }
 
   final List<Widget> _screens = const [

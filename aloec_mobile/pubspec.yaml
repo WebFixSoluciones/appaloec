@@ -2,7 +2,7 @@ name: aloec_mobile
 description: "ALOEC - Aplicación Móvil de Dieta de Jugos Verdes, Planes e IMC"
 publish_to: 'none'
 
-version: 1.3.1+19
+version: 1.4.0+20
 
 environment:
   sdk: '>=3.2.0 <4.0.0'
@@ -45,6 +45,7 @@ dependencies:
   image_picker: ^1.0.7
   webview_flutter: ^4.4.2
   webview_flutter_android: ^4.13.0
+  shared_preferences: ^2.5.6
 
 dev_dependencies:
   flutter_test:
