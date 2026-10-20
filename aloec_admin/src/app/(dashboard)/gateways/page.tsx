@@ -20,7 +20,8 @@ import {
   Mail, 
   Check, 
   X, 
-  Copy 
+  Copy,
+  CreditCard 
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -55,6 +56,9 @@ export interface BankTransferConfig {
 export default function GatewaysPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  // Tab State ('cards' | 'transfers')
+  const [activeTab, setActiveTab] = useState<'cards' | 'transfers'>('cards');
 
   // PayPhone Config State
   const [payphonePublic, setPayphonePublic] = useState('');
@@ -365,7 +369,44 @@ export default function GatewaysPage() {
         <p className="text-sm text-ink-500 mt-1">Configura las credenciales seguras para procesar cobros de membresías.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      {/* Tab Navigation */}
+      <div className="flex border-b border-ink-200 gap-2">
+        <button
+          type="button"
+          onClick={() => setActiveTab('cards')}
+          className={`px-5 py-3 text-sm font-bold flex items-center gap-2 border-b-2 transition-all ${
+            activeTab === 'cards'
+              ? 'border-[#008000] text-[#008000] bg-white'
+              : 'border-transparent text-ink-500 hover:text-ink-900 hover:border-ink-300'
+          }`}
+        >
+          <CreditCard size={17} />
+          Tarjetas de crédito
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('transfers')}
+          className={`px-5 py-3 text-sm font-bold flex items-center gap-2 border-b-2 transition-all ${
+            activeTab === 'transfers'
+              ? 'border-[#008000] text-[#008000] bg-white'
+              : 'border-transparent text-ink-500 hover:text-ink-900 hover:border-ink-300'
+          }`}
+        >
+          <Building2 size={17} />
+          Transferencias bancarias
+          {bankAccounts.length > 0 && (
+            <span className="text-[10px] px-2 py-0.5 rounded-full font-extrabold bg-[#008000]/10 text-[#008000]">
+              {bankAccounts.length}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {/* Tab 1: Tarjetas de crédito */}
+      {activeTab === 'cards' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         
         {/* PayPhone Card */}
         <div className="border border-ink-200 bg-white p-6 flex flex-col justify-between">
@@ -595,7 +636,19 @@ export default function GatewaysPage() {
 
       </div>
 
-      {/* Transferencia Bancaria (Ecuador) Section */}
+      <div className="bg-amber-50 border border-amber-200 p-4 text-xs text-amber-800 flex items-start gap-3">
+        <ShieldAlert size={18} className="shrink-0 mt-0.5 text-amber-600" />
+        <div>
+          <span className="font-bold block mb-1">Nota de Seguridad de Firebase:</span>
+          Las claves secretas guardadas aquí se almacenan de manera encriptada en tránsito hacia Firestore. 
+          Asegúrate de restringir las reglas de seguridad en Firebase Firestore para la colección <code className="font-mono bg-amber-100 px-1 py-0.5 font-bold">gateways</code> para que solo los administradores puedan leer y escribir estas credenciales.
+        </div>
+      </div>
+    </div>
+  )}
+
+  {/* Tab 2: Transferencias bancarias */}
+  {activeTab === 'transfers' && (
       <div className="border border-ink-200 bg-white p-6 shadow-xs">
         <form onSubmit={handleSaveBankTransfer} className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-ink-100 gap-4">
@@ -758,6 +811,7 @@ export default function GatewaysPage() {
           </div>
         </form>
       </div>
+    )}
 
       {/* Account Modal (Create / Edit) */}
       {isAccountModalOpen && (
@@ -892,15 +946,6 @@ export default function GatewaysPage() {
           </div>
         </div>
       )}
-
-      <div className="bg-amber-50 border border-amber-200 p-4 text-xs text-amber-800 flex items-start gap-3">
-        <ShieldAlert size={18} className="shrink-0 mt-0.5 text-amber-600" />
-        <div>
-          <span className="font-bold block mb-1">Nota de Seguridad de Firebase:</span>
-          Las claves secretas guardadas aquí se almacenan de manera encriptada en tránsito hacia Firestore. 
-          Asegúrate de restringir las reglas de seguridad en Firebase Firestore para la colección <code className="font-mono bg-amber-100 px-1 py-0.5 font-bold">gateways</code> para que solo los administradores puedan leer y escribir estas credenciales.
-        </div>
-      </div>
     </div>
   );
 }
