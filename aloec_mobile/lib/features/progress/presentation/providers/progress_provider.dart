@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../bmi/data/bmi_repository.dart';
+import '../../../bmi/domain/bmi_entity.dart';
 
 class DailyCompliance {
   final DateTime date;
@@ -25,8 +27,14 @@ class ProgressState {
   final double? latestBmi;
   final String? bmiCategory;
   final DateTime? bmiDate;
+  final double? latestWeightKg;
+  final double? latestHeightCm;
   final int streak;
   final List<DailyCompliance> weeklyCompliance;
+  final int weeklyJuices;
+  final String? activeProtocolTitle;
+  final int activeProtocolCurrentDay;
+  final int activeProtocolTotalDays;
   final bool isLoading;
   final String? error;
 
@@ -34,8 +42,14 @@ class ProgressState {
     this.latestBmi,
     this.bmiCategory,
     this.bmiDate,
+    this.latestWeightKg,
+    this.latestHeightCm,
     this.streak = 0,
     this.weeklyCompliance = const [],
+    this.weeklyJuices = 0,
+    this.activeProtocolTitle,
+    this.activeProtocolCurrentDay = 1,
+    this.activeProtocolTotalDays = 21,
     this.isLoading = true,
     this.error,
   });
@@ -51,8 +65,14 @@ class ProgressState {
     double? latestBmi,
     String? bmiCategory,
     DateTime? bmiDate,
+    double? latestWeightKg,
+    double? latestHeightCm,
     int? streak,
     List<DailyCompliance>? weeklyCompliance,
+    int? weeklyJuices,
+    String? activeProtocolTitle,
+    int? activeProtocolCurrentDay,
+    int? activeProtocolTotalDays,
     bool? isLoading,
     String? error,
   }) {
@@ -60,8 +80,16 @@ class ProgressState {
       latestBmi: latestBmi ?? this.latestBmi,
       bmiCategory: bmiCategory ?? this.bmiCategory,
       bmiDate: bmiDate ?? this.bmiDate,
+      latestWeightKg: latestWeightKg ?? this.latestWeightKg,
+      latestHeightCm: latestHeightCm ?? this.latestHeightCm,
       streak: streak ?? this.streak,
       weeklyCompliance: weeklyCompliance ?? this.weeklyCompliance,
+      weeklyJuices: weeklyJuices ?? this.weeklyJuices,
+      activeProtocolTitle: activeProtocolTitle ?? this.activeProtocolTitle,
+      activeProtocolCurrentDay:
+          activeProtocolCurrentDay ?? this.activeProtocolCurrentDay,
+      activeProtocolTotalDays:
+          activeProtocolTotalDays ?? this.activeProtocolTotalDays,
       isLoading: isLoading ?? this.isLoading,
       error: error,
     );
@@ -91,11 +119,11 @@ class ProgressNotifier extends StateNotifier<ProgressState> {
       final results = await Future.wait([
         _loadBmi(user.uid).timeout(
           const Duration(seconds: 8),
-          onTimeout: () => _BmiResult(null, null, null),
+          onTimeout: () => const _BmiResult(null, null, null, null, null),
         ),
         _loadWeeklyAndStreak(user.uid).timeout(
           const Duration(seconds: 10),
-          onTimeout: () => _WeeklyResult(0, <DailyCompliance>[]),
+          onTimeout: () => const _WeeklyResult(0, <DailyCompliance>[], 0, null, 1, 21),
         ),
       ]);
 
@@ -106,8 +134,14 @@ class ProgressNotifier extends StateNotifier<ProgressState> {
         latestBmi: bmiResult.bmi,
         bmiCategory: bmiResult.category,
         bmiDate: bmiResult.date,
+        latestWeightKg: bmiResult.weightKg,
+        latestHeightCm: bmiResult.heightCm,
         streak: weeklyResult.streak,
         weeklyCompliance: weeklyResult.compliance,
+        weeklyJuices: weeklyResult.weeklyJuices,
+        activeProtocolTitle: weeklyResult.protocolTitle,
+        activeProtocolCurrentDay: weeklyResult.currentDay,
+        activeProtocolTotalDays: weeklyResult.totalDays,
         isLoading: false,
       );
     } catch (e) {
@@ -118,6 +152,19 @@ class ProgressNotifier extends StateNotifier<ProgressState> {
 
   Future<_BmiResult> _loadBmi(String uid) async {
     try {
+      // 1. Buscar en la colección central 'imc_records' mediante BmiRepository
+      final latest = await BmiRepository().getLatest(uid);
+      if (latest != null) {
+        return _BmiResult(
+          latest.bmiValue,
+          BmiEntity.categoryLabelFromValue(latest.bmiValue),
+          latest.createdAt,
+          latest.weightKg,
+          latest.heightCm,
+        );
+      }
+
+      // 2. Fallback a subcolección 'bmi_records' por si existían registros previos
       final bmiSnapshot = await FirebaseFirestore.instance
           .collection('users')
           .doc(uid)
@@ -126,17 +173,26 @@ class ProgressNotifier extends StateNotifier<ProgressState> {
           .limit(1)
           .get();
 
-      if (bmiSnapshot.docs.isEmpty) return const _BmiResult(null, null, null);
+      if (bmiSnapshot.docs.isEmpty) {
+        return const _BmiResult(null, null, null, null, null);
+      }
 
       final data = bmiSnapshot.docs.first.data();
-      return _BmiResult(
-        (data['bmi'] as num?)?.toDouble(),
-        data['category'] as String?,
-        (data['date'] as Timestamp?)?.toDate(),
-      );
+      final val = (data['bmi'] as num?)?.toDouble() ??
+          (data['bmiValue'] as num?)?.toDouble();
+      final cat = data['category'] as String? ??
+          (val != null ? BmiEntity.categoryLabelFromValue(val) : null);
+      final dt = (data['date'] as Timestamp?)?.toDate() ??
+          (data['createdAt'] as Timestamp?)?.toDate();
+      final w = (data['weight'] as num?)?.toDouble() ??
+          (data['weightKg'] as num?)?.toDouble();
+      final h = (data['height'] as num?)?.toDouble() ??
+          (data['heightCm'] as num?)?.toDouble();
+
+      return _BmiResult(val, cat, dt, w, h);
     } catch (e) {
       debugPrint('_loadBmi error: $e');
-      return const _BmiResult(null, null, null);
+      return const _BmiResult(null, null, null, null, null);
     }
   }
 
@@ -147,8 +203,10 @@ class ProgressNotifier extends StateNotifier<ProgressState> {
           .doc(uid)
           .get();
 
-      final activeProtocolId = userDoc.data()?['activeProtocolId'] as String?;
-      int totalBlocks = 0;
+      final userData = userDoc.data();
+      final activeProtocolId = userData?['activeProtocolId'] as String?;
+      int totalBlocks = 4;
+      String? protocolTitle;
 
       if (activeProtocolId != null) {
         final protocolDoc = await FirebaseFirestore.instance
@@ -158,7 +216,10 @@ class ProgressNotifier extends StateNotifier<ProgressState> {
 
         if (protocolDoc.exists) {
           final schedule = protocolDoc.data()?['schedule'] as List<dynamic>?;
-          totalBlocks = schedule?.length ?? 0;
+          if (schedule != null && schedule.isNotEmpty) {
+            totalBlocks = schedule.length;
+          }
+          protocolTitle = protocolDoc.data()?['title'] as String?;
         }
       }
 
@@ -183,17 +244,19 @@ class ProgressNotifier extends StateNotifier<ProgressState> {
           .get();
 
       final Map<String, int> completedMap = {};
+      int totalJuices = 0;
       for (final doc in progressSnap.docs) {
         final blocks = doc.data()['completedBlocks'] as List<dynamic>?;
         if (blocks != null && blocks.isNotEmpty) {
           completedMap[doc.id] = blocks.length;
+          totalJuices += blocks.length;
         }
       }
 
       final compliance = <DailyCompliance>[];
       for (var i = 0; i < dateKeys.length; i++) {
         final completed = completedMap[dateKeys[i]] ?? 0;
-        final total = totalBlocks > 0 ? totalBlocks : 0;
+        final total = totalBlocks > 0 ? totalBlocks : 4;
         final pct = total > 0 ? (completed / total * 100).clamp(0, 100).toDouble() : 0.0;
         compliance.add(DailyCompliance(
           date: dates[i],
@@ -206,10 +269,19 @@ class ProgressNotifier extends StateNotifier<ProgressState> {
 
       final streak = _computeStreak(completedMap, now);
 
-      return _WeeklyResult(streak, compliance);
+      int currentDayNumber = (completedMap.length).clamp(1, 21);
+
+      return _WeeklyResult(
+        streak,
+        compliance,
+        totalJuices,
+        protocolTitle,
+        currentDayNumber,
+        21,
+      );
     } catch (e) {
       debugPrint('_loadWeeklyAndStreak error: $e');
-      return const _WeeklyResult(0, <DailyCompliance>[]);
+      return const _WeeklyResult(0, <DailyCompliance>[], 0, null, 1, 21);
     }
   }
 
@@ -251,7 +323,7 @@ class ProgressNotifier extends StateNotifier<ProgressState> {
       case 2:
         return 'M';
       case 3:
-        return 'X';
+        return 'M';
       case 4:
         return 'J';
       case 5:
@@ -270,13 +342,32 @@ class _BmiResult {
   final double? bmi;
   final String? category;
   final DateTime? date;
+  final double? weightKg;
+  final double? heightCm;
 
-  const _BmiResult(this.bmi, this.category, this.date);
+  const _BmiResult(
+    this.bmi,
+    this.category,
+    this.date,
+    this.weightKg,
+    this.heightCm,
+  );
 }
 
 class _WeeklyResult {
   final int streak;
   final List<DailyCompliance> compliance;
+  final int weeklyJuices;
+  final String? protocolTitle;
+  final int currentDay;
+  final int totalDays;
 
-  const _WeeklyResult(this.streak, this.compliance);
+  const _WeeklyResult(
+    this.streak,
+    this.compliance,
+    this.weeklyJuices,
+    this.protocolTitle,
+    this.currentDay,
+    this.totalDays,
+  );
 }
