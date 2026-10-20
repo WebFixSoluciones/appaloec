@@ -1,7 +1,7 @@
 import { verifyCheckoutToken } from '../../lib/checkout/token';
 import { getAdminDb } from '../../lib/firebase/admin';
 import { getPayphoneConfig } from '../../lib/payphone/client';
-import PayphoneBox from './PayphoneBox';
+import CheckoutView from './CheckoutView';
 import CheckoutForm from './CheckoutForm';
 import Link from 'next/link';
 
@@ -27,17 +27,45 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
     let amountCents = 0;
     let userEmail = 'cliente@aloec.com';
 
+    let userCountry = 'EC';
+    let bankConfig: any = null;
+
     try {
       const db = getAdminDb();
-      const [planSnap, userSnap] = await Promise.all([
+      const [planSnap, userSnap, bankSnap] = await Promise.all([
         db.collection('memberships').doc(planId).get(),
         db.collection('users').doc(userId).get(),
+        db.collection('gateways').doc('bank_transfer').get(),
       ]);
       if (!planSnap.exists) return <ErrorView message="Plan de suscripción no encontrado." />;
       const plan = planSnap.data()!;
       planName = plan.name ?? '';
       amountCents = Math.round((plan.price ?? 0) * 100);
-      if (userSnap.exists) userEmail = userSnap.data()!.email ?? userEmail;
+      if (userSnap.exists) {
+        const uData = userSnap.data()!;
+        userEmail = uData.email ?? userEmail;
+        userCountry = uData.country || (uData.phone?.startsWith('+593') || uData.phone?.startsWith('09') ? 'EC' : 'EC');
+      }
+
+      if (bankSnap.exists) {
+        const bData = bankSnap.data()!;
+        bankConfig = {
+          isActive: bData.isActive !== false,
+          whatsappNumber: bData.whatsappNumber || '593999504321',
+          supportEmail: bData.supportEmail || 'pagos@aloec.com',
+          instructions: bData.instructions || '',
+          accounts: (bData.accounts || []).map((acc: any) => ({
+            id: acc.id || 'acc_1',
+            bankName: acc.bankName || 'Banco Pichincha',
+            accountType: acc.accountType || 'Ahorros',
+            accountNumber: acc.accountNumber || '',
+            holderName: acc.holderName || '',
+            idNumber: acc.idNumber || '',
+            email: acc.email || '',
+            isActive: acc.isActive !== false,
+          })),
+        };
+      }
     } catch (err) {
       console.error('Error fetching plan/user details:', err);
       return <ErrorView message="Error al cargar los datos del plan." />;
@@ -45,12 +73,13 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
 
     const clientTransactionId = `AL${userId.slice(0, 5)}${Date.now().toString().slice(-8)}`;
     const orderId = `order_${Date.now()}`;
+    const now = new Date();
+    const datePart = now.toISOString().slice(0, 10).replace(/-/g, '');
+    const randPart = Date.now().toString().slice(-4);
+    const invoiceNumber = `ALOEC-${datePart}-${randPart}`;
 
     try {
       const db = getAdminDb();
-      const now = new Date();
-      const datePart = now.toISOString().slice(0, 10).replace(/-/g, '');
-      const randPart = Date.now().toString().slice(-4);
       await db.collection('orders').doc(orderId).set({
         userId,
         userEmail,
@@ -58,10 +87,11 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
         membershipName: planName,
         amount: amountCents / 100,
         status: 'pending',
-        paymentMethod: 'PayPhone',
+        paymentMethod: userCountry === 'EC' ? 'bank_transfer' : 'PayPhone',
         transactionId: '',
         clientTransactionId,
-        invoiceNumber: `ALOEC-${datePart}-${randPart}`,
+        invoiceNumber,
+        country: userCountry,
         createdAt: now,
         updatedAt: now,
       });
@@ -82,29 +112,20 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
     }
 
     return (
-      <div className="min-h-screen flex flex-col bg-gray-50">
-        <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-3 shadow-xs">
-          <div className="h-8 w-8 bg-[#008000]/10 flex items-center justify-center font-bold text-[#008000] text-xs rounded">
-            PP
-          </div>
-          <div>
-            <p className="text-sm font-bold text-gray-900">Pago seguro — ALOEC</p>
-            <p className="text-xs text-gray-500">
-              {planName} · ${(amountCents / 100).toFixed(2)}
-            </p>
-          </div>
-        </div>
-        <div className="flex-1 w-full">
-          <PayphoneBox
-            token={ppToken}
-            storeId={ppStoreId}
-            amountCents={amountCents}
-            clientTransactionId={clientTransactionId}
-            planName={planName}
-            email={userEmail}
-          />
-        </div>
-      </div>
+      <CheckoutView
+        orderId={orderId}
+        invoiceNumber={invoiceNumber}
+        clientTransactionId={clientTransactionId}
+        token={token}
+        userId={userId}
+        planName={planName}
+        amountCents={amountCents}
+        email={userEmail}
+        initialCountry={userCountry}
+        ppToken={ppToken}
+        ppStoreId={ppStoreId}
+        bankConfig={bankConfig}
+      />
     );
   }
 

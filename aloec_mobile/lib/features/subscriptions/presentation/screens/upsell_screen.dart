@@ -378,11 +378,11 @@ class _UpsellScreenState extends State<UpsellScreen>
                               Icon(Icons.chat, color: Colors.white, size: 20),
                               SizedBox(width: 8),
                               Text(
-                                'Comprar en Efectivo',
+                                'Transferencia Bancaria / WhatsApp',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 16,
+                                  fontSize: 15,
                                 ),
                               ),
                             ],
@@ -393,7 +393,7 @@ class _UpsellScreenState extends State<UpsellScreen>
                     if (_memberships.isNotEmpty)
                       const Center(
                         child: Text(
-                          'Un asesor te atendera por WhatsApp',
+                          'Paga por transferencia o efectivo con asesor vía WhatsApp',
                           style: TextStyle(fontSize: 11, color: AppColors.textLight),
                         ),
                       ),

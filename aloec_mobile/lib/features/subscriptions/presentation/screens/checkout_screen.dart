@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../data/gateway_repository.dart';
 import '../../data/memberships_repository.dart';
@@ -88,7 +89,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         onPageStarted: (url) => debugPrint('[checkout] navigating: $url'),
         onWebResourceError: (e) =>
             debugPrint('[checkout] web error: ${e.description}'),
-        onNavigationRequest: (req) => NavigationDecision.navigate,
+        onNavigationRequest: (req) {
+          final uri = Uri.parse(req.url);
+          if (req.url.startsWith('whatsapp:') ||
+              req.url.startsWith('https://wa.me') ||
+              req.url.startsWith('https://api.whatsapp.com')) {
+            launchUrl(uri, mode: LaunchMode.externalApplication);
+            return NavigationDecision.prevent;
+          }
+          return NavigationDecision.navigate;
+        },
       ))
       ..loadRequest(Uri.parse(url));
 

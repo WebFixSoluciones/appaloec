@@ -254,7 +254,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       onPressed: _openWhatsApp,
                       icon: const Icon(Icons.chat,
                           color: Color(0xFF25D366)),
-                      label: const Text('Comprar en Efectivo',
+                      label: const Text('Pagar por Transferencia / WhatsApp',
                           style: TextStyle(
                               color: Color(0xFF25D366),
                               fontWeight: FontWeight.bold)),
