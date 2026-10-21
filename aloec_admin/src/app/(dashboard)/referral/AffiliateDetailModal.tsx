@@ -4,7 +4,8 @@ import React, { useEffect, useState } from 'react';
 import {
   X, User, Mail, Phone, Calendar, CreditCard, Building,
   DollarSign, Copy, Check, ExternalLink, AlertCircle,
-  Clock, ShieldCheck, ArrowUpRight, MessageCircle, RefreshCw, Send
+  Clock, ShieldCheck, ArrowUpRight, MessageCircle, RefreshCw, Send,
+  Coins, CheckCircle2
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -33,6 +34,7 @@ export default function AffiliateDetailModal({
   const [payoutReference, setPayoutReference] = useState('');
   const [payoutNotes, setPayoutNotes] = useState('');
   const [submittingPayout, setSubmittingPayout] = useState(false);
+  const [releasingPending, setReleasingPending] = useState(false);
 
   useEffect(() => {
     if (isOpen && uid) {
@@ -53,14 +55,23 @@ export default function AffiliateDetailModal({
       setData(json);
 
       const appr = Number(json.user?.affiliateBalance?.approvedUSD) || 0;
-      setPayoutAmount(appr);
+      const pend = Number(json.user?.affiliateBalance?.pendingUSD) || 0;
+      const initialPay = appr > 0 ? appr : pend;
+      setPayoutAmount(initialPay);
 
-      // Preseleccionar método por defecto si existe
+      // Preseleccionar método
       if (json.payoutMethods && json.payoutMethods.length > 0) {
         const first = json.payoutMethods[0];
-        setPayoutMethodLabel(first.label || `${first.type} - ${first.details?.bankName || ''}`);
+        const details = first.details || {};
+        if (first.type === 'binance' || details.payId) {
+          setPayoutMethodLabel(`Binance Pay (Pay ID: ${details.payId || first.label || ''})`);
+        } else if (first.type === 'paypal' || details.paypalEmail || details.email) {
+          setPayoutMethodLabel(`PayPal (${details.paypalEmail || details.email || first.label})`);
+        } else {
+          setPayoutMethodLabel(first.label || `${details.bank || details.bankName || 'Banco Ecuador'}`);
+        }
       } else {
-        setPayoutMethodLabel('Transferencia Bancaria Ecuador');
+        setPayoutMethodLabel('Transferencia Bancaria');
       }
     } catch (err: any) {
       toast.error(err.message || 'Error al cargar detalles');
@@ -73,10 +84,35 @@ export default function AffiliateDetailModal({
     if (!text) return;
     navigator.clipboard.writeText(text);
     setCopiedKey(key);
-    toast.success('Copiado al portapapeles');
+    toast.success('Copiado');
     setTimeout(() => setCopiedKey(null), 2000);
   }
 
+  // Liberar comisiones pendientes con 1 clic
+  async function handleReleasePending() {
+    if (!uid) return;
+    setReleasingPending(true);
+    const toastId = toast.loading('Liberando comisiones pendientes...');
+    try {
+      const res = await fetch('/api/admin/referral/release-pending', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Error al liberar comisiones');
+
+      toast.success(`¡$${Number(json.releasedUSD || 0).toFixed(2)} liberados a Disponible!`, { id: toastId });
+      await loadDetail();
+      onRefreshParent();
+    } catch (err: any) {
+      toast.error(err.message || 'Error al liberar comisiones', { id: toastId });
+    } finally {
+      setReleasingPending(false);
+    }
+  }
+
+  // Registrar pago directo
   async function handleDirectPayout(e: React.FormEvent) {
     e.preventDefault();
     if (!uid) return;
@@ -86,9 +122,11 @@ export default function AffiliateDetailModal({
       return;
     }
 
-    const available = Number(data?.user?.affiliateBalance?.approvedUSD) || 0;
-    if (payoutAmount > available) {
-      toast.error(`El monto no puede superar el disponible de $${available.toFixed(2)}`);
+    const available = (Number(data?.user?.affiliateBalance?.approvedUSD) || 0) +
+                      (Number(data?.user?.affiliateBalance?.pendingUSD) || 0);
+
+    if (payoutAmount > available + 0.01) {
+      toast.error(`El monto no puede superar el saldo total de $${available.toFixed(2)}`);
       return;
     }
 
@@ -103,8 +141,8 @@ export default function AffiliateDetailModal({
           uid,
           amountUSD: payoutAmount,
           methodSnapshot: {
-            label: payoutMethodLabel || 'Transferencia Bancaria',
-            type: 'bank_transfer',
+            label: payoutMethodLabel || 'Pago de Afiliado',
+            type: payoutMethodLabel.toLowerCase().includes('binance') ? 'binance' : 'direct',
           },
           transactionReference: payoutReference.trim(),
           notes: payoutNotes.trim(),
@@ -114,7 +152,7 @@ export default function AffiliateDetailModal({
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Error al procesar pago');
 
-      toast.success(`¡Pago de $${payoutAmount.toFixed(2)} registrado exitosamente!`, { id: toastId });
+      toast.success(`Pago de $${payoutAmount.toFixed(2)} registrado exitosamente`, { id: toastId });
       setShowPayoutForm(false);
       setPayoutReference('');
       setPayoutNotes('');
@@ -138,273 +176,249 @@ export default function AffiliateDetailModal({
   const pendingUSD = Number(user?.affiliateBalance?.pendingUSD) || 0;
   const approvedUSD = Number(user?.affiliateBalance?.approvedUSD) || 0;
   const paidUSD = Number(user?.affiliateBalance?.paidUSD) || 0;
+  const totalEarned = pendingUSD + approvedUSD;
 
   const refLink = user?.referralCode
     ? `https://app.alimentacionorganicaec.net/?ref=${user.referralCode}`
     : '';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-slate-900/40 backdrop-blur-xs">
       <div
-        className="bg-white w-full max-w-3xl max-h-[92vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-200"
+        className="bg-white w-full max-w-2xl max-h-[90vh] rounded-xl shadow-xl flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="px-6 py-5 border-b border-slate-100 flex items-start justify-between bg-slate-50/70">
-          <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-800 font-black text-lg flex items-center justify-center shadow-xs border border-emerald-200">
+        {/* Header - Flat Minimalist */}
+        <div className="px-6 py-4 flex items-center justify-between bg-slate-50">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-900 font-bold text-sm flex items-center justify-center">
               {user?.displayName ? user.displayName.slice(0, 2).toUpperCase() : 'AF'}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-black text-slate-900 tracking-tight">
-                  {loading ? 'Cargando afiliado...' : user?.displayName || 'Sin nombre registrado'}
+                <h3 className="text-base font-bold text-slate-900">
+                  {loading ? 'Cargando afiliado...' : user?.displayName || 'Sin nombre'}
                 </h3>
                 {user?.isPremium && (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-200">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900">
                     Premium
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
-                <span>{user?.email || 'Sin email'}</span>
-                {user?.phone && (
-                  <>
-                    <span>•</span>
-                    <a
-                      href={`https://wa.me/${user.phone.replace(/[^0-9]/g, '')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-emerald-700 hover:text-emerald-800 font-bold inline-flex items-center gap-1"
-                    >
-                      <MessageCircle size={12} /> {user.phone}
-                    </a>
-                  </>
-                )}
+              <p className="text-xs text-slate-500">
+                {user?.email || 'Sin correo'}
+                {user?.phone && ` • ${user.phone}`}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-xl transition-colors"
+            className="p-2 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-200/50 transition-colors"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
-        {/* Content Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        {/* Body Content */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-5">
           {loading ? (
-            <div className="py-20 flex flex-col items-center justify-center text-slate-400 space-y-3">
-              <RefreshCw className="animate-spin text-emerald-600" size={32} />
-              <p className="text-sm font-medium">Consultando perfil y datos bancarios...</p>
+            <div className="py-16 text-center text-slate-400 space-y-2">
+              <RefreshCw className="animate-spin mx-auto text-emerald-700" size={24} />
+              <p className="text-xs">Cargando datos del afiliado...</p>
             </div>
           ) : !user ? (
-            <div className="py-16 text-center text-slate-500">
-              <AlertCircle className="mx-auto mb-2 text-rose-500" size={36} />
-              <p className="font-bold">No se pudo encontrar la información del usuario.</p>
+            <div className="py-12 text-center text-slate-500">
+              <p className="font-bold text-sm">No se encontró el afiliado.</p>
             </div>
           ) : (
             <>
-              {/* Balances Hero Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200/70">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-amber-800">
-                    Saldo Pendiente
-                  </span>
-                  <p className="text-2xl font-black text-amber-900 mt-1">
+              {/* Balances - Flat Clean Surfaces (No Borders) */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="p-3.5 rounded-lg bg-amber-50">
+                  <span className="text-[11px] font-semibold text-amber-800">Saldo Pendiente</span>
+                  <p className="text-xl font-bold text-amber-950 mt-0.5">
                     ${pendingUSD.toFixed(2)}
                   </p>
-                  <p className="text-[11px] text-amber-700 mt-0.5">En periodo de garantía</p>
+                  <span className="text-[10px] text-amber-700">Por compras recientes</span>
                 </div>
 
-                <div className="p-4 rounded-xl bg-emerald-50/80 border border-emerald-300">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-800">
-                    Disponible para Pago
-                  </span>
-                  <p className="text-2xl font-black text-emerald-900 mt-1">
+                <div className="p-3.5 rounded-lg bg-emerald-50">
+                  <span className="text-[11px] font-semibold text-emerald-800">Disponible para Pago</span>
+                  <p className="text-xl font-bold text-emerald-950 mt-0.5">
                     ${approvedUSD.toFixed(2)}
                   </p>
-                  <p className="text-[11px] text-emerald-700 mt-0.5">Listo para transferir</p>
+                  <span className="text-[10px] text-emerald-700">Listo para liquidar</span>
                 </div>
 
-                <div className="p-4 rounded-xl bg-blue-50/70 border border-blue-200/70">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-blue-800">
-                    Total Pagado
-                  </span>
-                  <p className="text-2xl font-black text-blue-900 mt-1">
+                <div className="p-3.5 rounded-lg bg-blue-50">
+                  <span className="text-[11px] font-semibold text-blue-800">Total Pagado</span>
+                  <p className="text-xl font-bold text-blue-950 mt-0.5">
                     ${paidUSD.toFixed(2)}
                   </p>
-                  <p className="text-[11px] text-blue-700 mt-0.5">Transferido históricamente</p>
+                  <span className="text-[10px] text-blue-700">Histórico transferido</span>
                 </div>
               </div>
 
-              {/* Referral Code & Link Box */}
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+              {/* Botón de acción rápida si tiene saldo pendiente */}
+              {pendingUSD > 0 && approvedUSD === 0 && (
+                <div className="p-3 bg-amber-50 rounded-lg flex items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-2 text-amber-900">
+                    <AlertCircle size={16} className="text-amber-700 shrink-0" />
+                    <span>
+                      Tiene <strong>${pendingUSD.toFixed(2)}</strong> pendiente. ¿Deseas liberarlo para pagarle ahora?
+                    </span>
+                  </div>
+                  <button
+                    onClick={handleReleasePending}
+                    disabled={releasingPending}
+                    className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded text-xs transition-colors shrink-0 disabled:opacity-50"
+                  >
+                    {releasingPending ? 'Liberando...' : 'Aprobar Saldo'}
+                  </button>
+                </div>
+              )}
+
+              {/* Código de Afiliado - Flat Minimal */}
+              <div className="p-3 bg-slate-50 rounded-lg flex items-center justify-between text-xs">
                 <div>
-                  <span className="font-bold text-slate-500 uppercase text-[10px] tracking-wider">
-                    Código de Afiliado
-                  </span>
-                  <p className="font-mono font-black text-base text-emerald-800">
-                    {user.referralCode || 'Sin código asignado'}
-                  </p>
-                  {refLink && (
-                    <p className="text-slate-500 text-[11px] truncate max-w-sm font-mono mt-0.5">
-                      {refLink}
-                    </p>
-                  )}
+                  <span className="text-slate-500 text-[11px]">Código de referido:</span>
+                  <span className="font-mono font-bold text-slate-900 ml-2">{user.referralCode || '-'}</span>
                 </div>
                 {refLink && (
                   <button
                     onClick={() => handleCopy(refLink, 'link')}
-                    className="px-3 py-1.5 bg-white border border-slate-300 hover:border-slate-400 font-bold text-slate-700 rounded-lg flex items-center gap-1.5 transition-colors shadow-2xs"
+                    className="px-2.5 py-1 bg-white text-slate-700 hover:bg-slate-100 font-semibold rounded text-xs transition-colors"
                   >
-                    {copiedKey === 'link' ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
-                    {copiedKey === 'link' ? '¡Copiado!' : 'Copiar Link'}
+                    {copiedKey === 'link' ? 'Copiado' : 'Copiar enlace'}
                   </button>
                 )}
               </div>
 
-              {/* Botón Destacado: Registrar Pago Directo */}
-              <div className="bg-gradient-to-r from-emerald-900 via-emerald-800 to-emerald-950 p-5 rounded-2xl text-white shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              {/* Barra de Pago Directo - Flat Minimal */}
+              <div className="p-4 bg-emerald-800 rounded-lg text-white flex items-center justify-between">
                 <div>
-                  <h4 className="font-black text-base flex items-center gap-2">
-                    <CreditCard size={18} className="text-emerald-300" />
-                    Pagar Comisiones al Afiliado
-                  </h4>
-                  <p className="text-xs text-emerald-100/90 mt-1 max-w-md">
-                    Transfiere el dinero a su cuenta bancaria o PayPal y registra el comprobante aquí para liquidar su saldo disponible.
+                  <p className="font-bold text-sm">Pagar Comisiones</p>
+                  <p className="text-xs text-emerald-100">
+                    Saldo total para liquidar:{' '}
+                    <strong>${totalEarned.toFixed(2)} USD</strong>
                   </p>
                 </div>
                 <button
                   onClick={() => setShowPayoutForm(!showPayoutForm)}
-                  disabled={approvedUSD <= 0}
-                  className="px-4 py-2.5 bg-emerald-400 hover:bg-emerald-300 text-emerald-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                  disabled={totalEarned <= 0}
+                  className="px-4 py-2 bg-white text-emerald-900 hover:bg-emerald-50 font-bold text-xs rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {showPayoutForm ? 'Ocultar Formulario' : approvedUSD > 0 ? 'Registrar Pago Realizado' : 'Sin Saldo Disponible'}
+                  {showPayoutForm ? 'Cerrar Formulario' : totalEarned > 0 ? 'Registrar Pago' : 'Sin saldo'}
                 </button>
               </div>
 
-              {/* Formulario Desplegable de Pago Directo */}
+              {/* Formulario de Pago Plano */}
               {showPayoutForm && (
                 <form
                   onSubmit={handleDirectPayout}
-                  className="bg-emerald-50/50 border-2 border-emerald-500/30 p-5 rounded-2xl space-y-4 animate-in slide-in-from-top-3 duration-200"
+                  className="p-4 bg-slate-50 rounded-lg space-y-3 text-xs"
                 >
-                  <div className="flex items-center justify-between">
-                    <h5 className="font-bold text-slate-900 text-sm flex items-center gap-2">
-                      <Send size={15} className="text-emerald-700" />
-                      Registrar Transferencia / Pago Realizado
-                    </h5>
-                    <span className="text-xs text-slate-500">
-                      Disponible: <strong className="text-emerald-800 font-mono">${approvedUSD.toFixed(2)}</strong>
-                    </span>
-                  </div>
+                  <p className="font-bold text-slate-900 text-sm">
+                    Registrar Pago al Afiliado
+                  </p>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block font-bold text-slate-700 mb-1">Monto a Liquidar (USD) *</label>
+                      <label className="block text-slate-600 font-semibold mb-1">Monto a pagar (USD) *</label>
                       <input
                         type="number"
                         step="0.01"
                         min="0.01"
-                        max={approvedUSD}
+                        max={totalEarned}
                         required
                         value={payoutAmount}
                         onChange={(e) => setPayoutAmount(parseFloat(e.target.value) || 0)}
-                        className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg font-mono font-bold text-slate-900 outline-none focus:border-emerald-600"
+                        className="w-full px-3 py-2 bg-white rounded font-mono font-bold text-slate-900 outline-none"
                       />
                     </div>
 
                     <div>
-                      <label className="block font-bold text-slate-700 mb-1">Método / Banco Usado *</label>
+                      <label className="block text-slate-600 font-semibold mb-1">Cuenta o Método Destino *</label>
                       <input
                         type="text"
                         required
                         value={payoutMethodLabel}
                         onChange={(e) => setPayoutMethodLabel(e.target.value)}
-                        placeholder="Ej. Transferencia Banco Pichincha, PayPal, etc."
-                        className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 outline-none focus:border-emerald-600"
+                        placeholder="Ej. Binance Pay ID 11931006"
+                        className="w-full px-3 py-2 bg-white rounded text-slate-900 outline-none"
                       />
                     </div>
 
                     <div>
-                      <label className="block font-bold text-slate-700 mb-1">Nº Comprobante / Referencia Bancaria</label>
+                      <label className="block text-slate-600 font-semibold mb-1">Nº Comprobante / ID Transacción *</label>
                       <input
                         type="text"
+                        required
                         value={payoutReference}
                         onChange={(e) => setPayoutReference(e.target.value)}
-                        placeholder="Ej. TRF-1928402 / Recibo 5482"
-                        className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 outline-none focus:border-emerald-600"
+                        placeholder="Ej. ID de orden Binance Pay / Nº de transferencia"
+                        className="w-full px-3 py-2 bg-white rounded text-slate-900 outline-none"
                       />
                     </div>
 
                     <div>
-                      <label className="block font-bold text-slate-700 mb-1">Notas u Observaciones (opcional)</label>
+                      <label className="block text-slate-600 font-semibold mb-1">Notas (opcional)</label>
                       <input
                         type="text"
                         value={payoutNotes}
                         onChange={(e) => setPayoutNotes(e.target.value)}
-                        placeholder="Ej. Transferido desde cuenta corporativa"
-                        className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 outline-none focus:border-emerald-600"
+                        placeholder="Observación interna"
+                        className="w-full px-3 py-2 bg-white rounded text-slate-900 outline-none"
                       />
                     </div>
                   </div>
 
-                  <div className="flex justify-end gap-2 pt-2">
+                  <div className="flex justify-end gap-2 pt-1">
                     <button
                       type="button"
                       onClick={() => setShowPayoutForm(false)}
-                      className="px-3.5 py-2 text-xs font-bold text-slate-600 hover:bg-slate-200/50 rounded-lg transition-colors"
+                      className="px-3 py-1.5 text-slate-600 hover:text-slate-900 font-semibold rounded"
                     >
                       Cancelar
                     </button>
                     <button
                       type="submit"
                       disabled={submittingPayout}
-                      className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-lg flex items-center gap-1.5 transition-colors shadow-xs disabled:opacity-50"
+                      className="px-4 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded transition-colors disabled:opacity-50"
                     >
-                      {submittingPayout ? (
-                        <>
-                          <RefreshCw size={13} className="animate-spin" /> Guardando...
-                        </>
-                      ) : (
-                        <>
-                          <Check size={14} /> Confirmar y Descontar Saldo
-                        </>
-                      )}
+                      {submittingPayout ? 'Guardando...' : 'Confirmar y Guardar Pago'}
                     </button>
                   </div>
                 </form>
               )}
 
-              {/* Sub-tabs */}
-              <div className="border-b border-slate-200 flex gap-4 text-xs font-bold">
+              {/* Tabs de Detalle */}
+              <div className="flex gap-4 border-b border-slate-100 text-xs font-bold pt-1">
                 <button
                   onClick={() => setActiveTab('methods')}
-                  className={`pb-2.5 transition-colors border-b-2 -mb-[1px] ${
+                  className={`pb-2 transition-colors border-b-2 -mb-[1px] ${
                     activeTab === 'methods'
-                      ? 'border-emerald-600 text-emerald-800'
+                      ? 'border-emerald-700 text-emerald-800'
                       : 'border-transparent text-slate-500 hover:text-slate-800'
                   }`}
                 >
-                  Datos Bancarios ({methods.length})
+                  Métodos de Pago ({methods.length})
                 </button>
                 <button
                   onClick={() => setActiveTab('referred')}
-                  className={`pb-2.5 transition-colors border-b-2 -mb-[1px] ${
+                  className={`pb-2 transition-colors border-b-2 -mb-[1px] ${
                     activeTab === 'referred'
-                      ? 'border-emerald-600 text-emerald-800'
+                      ? 'border-emerald-700 text-emerald-800'
                       : 'border-transparent text-slate-500 hover:text-slate-800'
                   }`}
                 >
-                  Usuarios Referidos ({referred.length})
+                  Referidos ({referred.length})
                 </button>
                 <button
                   onClick={() => setActiveTab('commissions')}
-                  className={`pb-2.5 transition-colors border-b-2 -mb-[1px] ${
+                  className={`pb-2 transition-colors border-b-2 -mb-[1px] ${
                     activeTab === 'commissions'
-                      ? 'border-emerald-600 text-emerald-800'
+                      ? 'border-emerald-700 text-emerald-800'
                       : 'border-transparent text-slate-500 hover:text-slate-800'
                   }`}
                 >
@@ -412,9 +426,9 @@ export default function AffiliateDetailModal({
                 </button>
                 <button
                   onClick={() => setActiveTab('payouts')}
-                  className={`pb-2.5 transition-colors border-b-2 -mb-[1px] ${
+                  className={`pb-2 transition-colors border-b-2 -mb-[1px] ${
                     activeTab === 'payouts'
-                      ? 'border-emerald-600 text-emerald-800'
+                      ? 'border-emerald-700 text-emerald-800'
                       : 'border-transparent text-slate-500 hover:text-slate-800'
                   }`}
                 >
@@ -422,132 +436,136 @@ export default function AffiliateDetailModal({
                 </button>
               </div>
 
-              {/* TAB 1: DATOS BANCARIOS */}
+              {/* CONTENIDO TAB 1: MÉTODOS DE PAGO */}
               {activeTab === 'methods' && (
                 <div className="space-y-3">
                   {methods.length === 0 ? (
-                    <div className="p-6 rounded-xl border border-dashed border-amber-300 bg-amber-50/50 text-center">
-                      <AlertCircle className="mx-auto mb-2 text-amber-600" size={28} />
-                      <p className="font-bold text-sm text-amber-900">
-                        Sin datos bancarios registrados aún
-                      </p>
-                      <p className="text-xs text-amber-700 max-w-md mx-auto mt-1">
-                        El afiliado todavía no ha guardado su cuenta bancaria desde la App Móvil en{' '}
-                        <em>Gestión de Afiliado → Métodos de Pago / Cobro</em>.
-                      </p>
-                      {user.phone && (
-                        <div className="mt-3">
-                          <a
-                            href={`https://wa.me/${user.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
-                              `Hola ${user.displayName || ''}, te saluda ALOEC. Tienes comisiones disponibles para cobro. Por favor ingresa a la app móvil y registra tu cuenta bancaria para transferirte tus fondos.`
-                            )}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-lg shadow-2xs"
-                          >
-                            <MessageCircle size={14} /> Solicitar Datos por WhatsApp
-                          </a>
-                        </div>
-                      )}
+                    <div className="p-4 bg-slate-50 rounded-lg text-center text-xs text-slate-500">
+                      El afiliado aún no ha configurado sus métodos de cobro en la app móvil.
                     </div>
                   ) : (
                     methods.map((m: any, idx: number) => {
                       const details = m.details || {};
-                      const isBank = m.type === 'bank_ec' || m.type === 'bank' || details.bankName;
-                      const isPaypal = m.type === 'paypal' || details.paypalEmail;
+                      const isBinance = m.type === 'binance' || details.payId;
+                      const isBank = m.type === 'bank_ec' || m.type === 'bank' || details.bank || details.bankName;
+                      const isPaypal = m.type === 'paypal' || details.paypalEmail || details.email;
 
                       return (
                         <div
                           key={m.id || idx}
-                          className="p-4 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition-colors shadow-2xs space-y-3"
+                          className="p-4 bg-slate-50 rounded-lg space-y-2 text-xs"
                         >
                           <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <div className="p-2 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-100">
-                                {isBank ? <Building size={16} /> : <CreditCard size={16} />}
+                            <span className="font-bold text-slate-900 uppercase text-[11px] tracking-wider">
+                              {isBinance
+                                ? 'Cuenta Binance Pay'
+                                : isBank
+                                ? 'Transferencia Bancaria Ecuador'
+                                : 'PayPal'}
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-mono">
+                              {m.label || ''}
+                            </span>
+                          </div>
+
+                          {/* CASO BINANCE */}
+                          {isBinance && (
+                            <div className="p-3 bg-white rounded space-y-2">
+                              <div className="flex items-center justify-between">
+                                <span className="text-slate-500 text-[11px]">Binance Pay ID:</span>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-mono font-bold text-emerald-800 text-sm">
+                                    {details.payId || '-'}
+                                  </span>
+                                  {details.payId && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleCopy(details.payId, `binance_${idx}`)}
+                                      className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded text-[10px] flex items-center gap-1"
+                                      title="Copiar Pay ID"
+                                    >
+                                      {copiedKey === `binance_${idx}` ? <Check size={11} className="text-emerald-700" /> : <Copy size={11} />}
+                                      {copiedKey === `binance_${idx}` ? 'Copiado' : 'Copiar'}
+                                    </button>
+                                  )}
+                                </div>
                               </div>
-                              <div>
-                                <h5 className="font-black text-slate-900 text-xs">
-                                  {m.label || (isBank ? 'Transferencia Bancaria Ecuador' : 'PayPal')}
-                                </h5>
-                                <span className="text-[10px] text-slate-400 uppercase tracking-wider font-mono">
-                                  {m.type} {m.isDefault && '• Predeterminado'}
-                                </span>
+
+                              {m.label && (
+                                <div className="flex items-center justify-between text-slate-600">
+                                  <span>Nombre / Alias:</span>
+                                  <span className="font-semibold text-slate-800">{m.label}</span>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* CASO BANCO ECUADOR */}
+                          {isBank && (
+                            <div className="p-3 bg-white rounded space-y-1.5">
+                              <div className="flex justify-between">
+                                <span className="text-slate-500">Banco:</span>
+                                <span className="font-bold text-slate-800">{details.bank || details.bankName || 'No especificado'}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-slate-500">Tipo de Cuenta:</span>
+                                <span className="font-bold text-slate-800">{details.accountType || 'Ahorros'}</span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-slate-500">Número de Cuenta:</span>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-mono font-bold text-slate-900">{details.accountNumber || '-'}</span>
+                                  {details.accountNumber && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleCopy(details.accountNumber, `acc_${idx}`)}
+                                      className="px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px]"
+                                    >
+                                      {copiedKey === `acc_${idx}` ? 'Copiado' : 'Copiar'}
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-slate-500">Titular:</span>
+                                <span className="font-bold text-slate-800">{details.holderName || user.displayName}</span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-slate-500">Cédula / RUC:</span>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-mono font-bold text-slate-900">{details.idNumber || '-'}</span>
+                                  {details.idNumber && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleCopy(details.idNumber, `id_${idx}`)}
+                                      className="px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px]"
+                                    >
+                                      {copiedKey === `id_${idx}` ? 'Copiado' : 'Copiar'}
+                                    </button>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          </div>
+                          )}
 
-                          {/* Grid con detalles bancarios */}
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs bg-slate-50/70 p-3 rounded-lg border border-slate-100">
-                            {isBank && (
-                              <>
-                                <div>
-                                  <span className="text-slate-400 text-[10px] uppercase font-bold">Banco:</span>
-                                  <p className="font-bold text-slate-800">{details.bankName || 'No especificado'}</p>
-                                </div>
-                                <div>
-                                  <span className="text-slate-400 text-[10px] uppercase font-bold">Tipo de Cuenta:</span>
-                                  <p className="font-bold text-slate-800">{details.accountType || 'Ahorros'}</p>
-                                </div>
-                                <div>
-                                  <span className="text-slate-400 text-[10px] uppercase font-bold">Número de Cuenta:</span>
-                                  <div className="flex items-center gap-2">
-                                    <p className="font-mono font-bold text-slate-900">{details.accountNumber || '-'}</p>
-                                    {details.accountNumber && (
-                                      <button
-                                        type="button"
-                                        onClick={() => handleCopy(details.accountNumber, `acc_${idx}`)}
-                                        className="text-slate-400 hover:text-slate-700"
-                                        title="Copiar número"
-                                      >
-                                        {copiedKey === `acc_${idx}` ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
-                                      </button>
-                                    )}
-                                  </div>
-                                </div>
-                                <div>
-                                  <span className="text-slate-400 text-[10px] uppercase font-bold">Titular:</span>
-                                  <p className="font-bold text-slate-800">{details.holderName || user.displayName}</p>
-                                </div>
-                                <div>
-                                  <span className="text-slate-400 text-[10px] uppercase font-bold">Cédula / RUC:</span>
-                                  <div className="flex items-center gap-2">
-                                    <p className="font-mono font-bold text-slate-900">{details.idNumber || '-'}</p>
-                                    {details.idNumber && (
-                                      <button
-                                        type="button"
-                                        onClick={() => handleCopy(details.idNumber, `id_${idx}`)}
-                                        className="text-slate-400 hover:text-slate-700"
-                                        title="Copiar cédula"
-                                      >
-                                        {copiedKey === `id_${idx}` ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
-                                      </button>
-                                    )}
-                                  </div>
-                                </div>
-                                <div>
-                                  <span className="text-slate-400 text-[10px] uppercase font-bold">Email Notificación:</span>
-                                  <p className="text-slate-700 truncate">{details.email || user.email}</p>
-                                </div>
-                              </>
-                            )}
-
-                            {isPaypal && (
-                              <div className="sm:col-span-2">
-                                <span className="text-slate-400 text-[10px] uppercase font-bold">Correo de PayPal:</span>
-                                <div className="flex items-center gap-2">
-                                  <p className="font-mono font-bold text-slate-900">{details.paypalEmail || details.email || user.email}</p>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleCopy(details.paypalEmail || details.email || user.email, `pp_${idx}`)}
-                                    className="text-slate-400 hover:text-slate-700"
-                                  >
-                                    {copiedKey === `pp_${idx}` ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
-                                  </button>
-                                </div>
+                          {/* CASO PAYPAL */}
+                          {isPaypal && (
+                            <div className="p-3 bg-white rounded flex justify-between items-center">
+                              <span className="text-slate-500">Correo PayPal:</span>
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono font-bold text-slate-900">
+                                  {details.paypalEmail || details.email || user.email}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleCopy(details.paypalEmail || details.email || user.email, `pp_${idx}`)}
+                                  className="px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px]"
+                                >
+                                  {copiedKey === `pp_${idx}` ? 'Copiado' : 'Copiar'}
+                                </button>
                               </div>
-                            )}
-                          </div>
+                            </div>
+                          )}
                         </div>
                       );
                     })
@@ -555,71 +573,55 @@ export default function AffiliateDetailModal({
                 </div>
               )}
 
-              {/* TAB 2: USUARIOS REFERIDOS */}
+              {/* CONTENIDO TAB 2: USUARIOS REFERIDOS */}
               {activeTab === 'referred' && (
-                <div className="space-y-2">
+                <div className="space-y-2 text-xs">
                   {referred.length === 0 ? (
-                    <p className="text-center py-8 text-xs text-slate-400">
-                      Este afiliado aún no tiene usuarios registrados con su enlace.
-                    </p>
+                    <p className="text-center py-6 text-slate-400">Sin referidos registrados.</p>
                   ) : (
                     referred.map((r: any) => (
-                      <div
-                        key={r.uid}
-                        className="p-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between text-xs"
-                      >
+                      <div key={r.uid} className="p-3 bg-slate-50 rounded flex justify-between items-center">
                         <div>
-                          <p className="font-bold text-slate-900">{r.displayName}</p>
-                          <p className="text-slate-500 text-[11px]">{r.email}</p>
+                          <p className="font-bold text-slate-800">{r.displayName}</p>
+                          <p className="text-slate-400 text-[11px]">{r.email}</p>
                         </div>
-                        <div className="text-right">
-                          <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                              r.isPremium ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700'
-                            }`}
-                          >
-                            {r.isPremium ? 'Comprador (Premium)' : 'Registrado'}
-                          </span>
-                        </div>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                          r.isPremium ? 'bg-amber-100 text-amber-900' : 'bg-slate-200 text-slate-700'
+                        }`}>
+                          {r.isPremium ? 'Premium (Compró)' : 'Registrado'}
+                        </span>
                       </div>
                     ))
                   )}
                 </div>
               )}
 
-              {/* TAB 3: COMISIONES */}
+              {/* CONTENIDO TAB 3: COMISIONES */}
               {activeTab === 'commissions' && (
-                <div className="space-y-2">
+                <div className="space-y-2 text-xs">
                   {comms.length === 0 ? (
-                    <p className="text-center py-8 text-xs text-slate-400">
-                      Sin comisiones registradas para este afiliado.
-                    </p>
+                    <p className="text-center py-6 text-slate-400">Sin comisiones registradas.</p>
                   ) : (
                     comms.map((c: any) => (
-                      <div
-                        key={c.id}
-                        className="p-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between text-xs"
-                      >
+                      <div key={c.id} className="p-3 bg-slate-50 rounded flex justify-between items-center">
                         <div>
                           <p className="font-bold text-slate-900">
                             ${Number(c.amountUSD || 0).toFixed(2)} USD
-                            <span className="text-slate-500 font-normal ml-2">
-                              • {c.triggerType === 'first_purchase' ? '1ra Compra' : c.triggerType || 'Compra'}
+                            <span className="text-slate-400 font-normal ml-2">
+                              • {c.triggerType === 'first_purchase' ? '1ra Compra' : c.triggerType}
                             </span>
                           </p>
-                          <p className="text-slate-400 text-[11px]">
-                            Comprador: {c.referredName || c.referredEmail || 'Usuario'}
+                          <p className="text-slate-500 text-[11px]">
+                            Comprador: {c.referredName || c.referredEmail}
                           </p>
                         </div>
-                        <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                            c.status === 'approved'
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : c.status === 'paid'
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-amber-100 text-amber-800'
-                          }`}
-                        >
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                          c.status === 'approved'
+                            ? 'bg-emerald-100 text-emerald-900'
+                            : c.status === 'paid'
+                            ? 'bg-blue-100 text-blue-900'
+                            : 'bg-amber-100 text-amber-900'
+                        }`}>
                           {c.status}
                         </span>
                       </div>
@@ -628,29 +630,22 @@ export default function AffiliateDetailModal({
                 </div>
               )}
 
-              {/* TAB 4: HISTORIAL DE PAGOS */}
+              {/* CONTENIDO TAB 4: HISTORIAL DE PAGOS */}
               {activeTab === 'payouts' && (
-                <div className="space-y-2">
+                <div className="space-y-2 text-xs">
                   {payouts.length === 0 ? (
-                    <p className="text-center py-8 text-xs text-slate-400">
-                      No se han liquidado pagos anteriormente a este afiliado.
-                    </p>
+                    <p className="text-center py-6 text-slate-400">Sin pagos registrados previamente.</p>
                   ) : (
                     payouts.map((p: any) => (
-                      <div
-                        key={p.id}
-                        className="p-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between text-xs"
-                      >
+                      <div key={p.id} className="p-3 bg-slate-50 rounded flex justify-between items-center">
                         <div>
-                          <p className="font-black text-slate-900">
-                            ${Number(p.amountUSD || 0).toFixed(2)} USD
-                          </p>
+                          <p className="font-bold text-slate-900">${Number(p.amountUSD || 0).toFixed(2)} USD</p>
                           <p className="text-slate-500 text-[11px]">
-                            {p.methodSnapshot?.label || p.methodSnapshot?.type || 'Transferencia'}
-                            {p.transactionReference ? ` • Ref: ${p.transactionReference}` : ''}
+                            {p.methodSnapshot?.label || 'Transferencia'}
+                            {p.transactionReference && ` • Ref: ${p.transactionReference}`}
                           </p>
                         </div>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800 uppercase">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-900 uppercase">
                           {p.status || 'Completado'}
                         </span>
                       </div>
@@ -662,11 +657,11 @@ export default function AffiliateDetailModal({
           )}
         </div>
 
-        {/* Modal Footer */}
-        <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end">
+        {/* Footer */}
+        <div className="px-6 py-3 bg-slate-50 flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-slate-200 hover:bg-slate-300 font-bold text-slate-700 text-xs rounded-xl transition-colors"
+            className="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 font-bold text-slate-700 text-xs rounded transition-colors"
           >
             Cerrar
           </button>

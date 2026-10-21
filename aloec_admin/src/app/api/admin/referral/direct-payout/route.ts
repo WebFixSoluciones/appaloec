@@ -26,14 +26,48 @@ export async function POST(req: NextRequest) {
     const curPending = Number(curBal.pendingUSD) || 0;
     const curRejected = Number(curBal.rejectedUSD) || 0;
 
-    if (payAmount > curApproved + 0.01) {
+    const totalEarned = curApproved + curPending;
+    if (payAmount > totalEarned + 0.01) {
       return NextResponse.json(
-        { error: `El monto a pagar ($${payAmount.toFixed(2)}) supera el saldo disponible ($${curApproved.toFixed(2)})` },
+        { error: `El monto a pagar ($${payAmount.toFixed(2)}) supera el saldo total del afiliado ($${totalEarned.toFixed(2)})` },
         { status: 400 }
       );
     }
 
     const batch = db.batch();
+
+    // Si el monto a pagar excede lo aprobado, liberar automáticamente de lo pendiente
+    let newPending = curPending;
+    let newApproved = curApproved;
+    const neededFromPending = Math.max(0, Math.round((payAmount - curApproved) * 100) / 100);
+
+    if (neededFromPending > 0) {
+      newPending = Math.max(0, Math.round((curPending - neededFromPending) * 100) / 100);
+      newApproved = 0;
+
+      // Actualizar las comisiones pendientes a aprobadas
+      const pendingCommsSnap = await db
+        .collection('commissions')
+        .where('referrerUid', '==', uid)
+        .where('status', '==', 'pending')
+        .get();
+
+      let remainingToRelease = neededFromPending;
+      for (const cDoc of pendingCommsSnap.docs) {
+        if (remainingToRelease <= 0) break;
+        const cAmt = Number(cDoc.data().amountUSD) || 0;
+        batch.update(cDoc.ref, {
+          status: 'approved',
+          releasedAt: FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp(),
+        });
+        remainingToRelease -= cAmt;
+      }
+    } else {
+      newApproved = Math.max(0, Math.round((curApproved - payAmount) * 100) / 100);
+    }
+
+    const newPaid = Math.round((curPaid + payAmount) * 100) / 100;
 
     // 1. Crear documento en 'payouts' como completado
     const payoutRef = db.collection('payouts').doc();
@@ -43,7 +77,7 @@ export async function POST(req: NextRequest) {
       userEmail: userData.email || '',
       amountUSD: payAmount,
       status: 'completed',
-      methodSnapshot: methodSnapshot || { type: 'manual_transfer', label: 'Transferencia Directa' },
+      methodSnapshot: methodSnapshot || { type: 'binance', label: 'Binance Pay' },
       transactionReference: transactionReference ? String(transactionReference).trim() : '',
       notes: notes ? String(notes).trim() : '',
       processedBy: 'admin',
@@ -53,14 +87,11 @@ export async function POST(req: NextRequest) {
     });
 
     // 2. Actualizar balances del afiliado
-    const newApproved = Math.max(0, Math.round((curApproved - payAmount) * 100) / 100);
-    const newPaid = Math.round((curPaid + payAmount) * 100) / 100;
-
     batch.set(
       userRef,
       {
         affiliateBalance: {
-          pendingUSD: curPending,
+          pendingUSD: newPending,
           approvedUSD: newApproved,
           paidUSD: newPaid,
           rejectedUSD: curRejected,
