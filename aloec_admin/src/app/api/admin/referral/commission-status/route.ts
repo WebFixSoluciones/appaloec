@@ -46,25 +46,47 @@ export async function POST(req: NextRequest) {
 
     batch.update(commRef, updatePayload);
 
-    // Ajustar balances del afiliado
+    // Ajustar balances del afiliado de forma limpia y consistente
     if (referrerUid && amountUSD > 0) {
       const userRef = db.collection('users').doc(referrerUid);
-      const balanceUpdates: any = {
-        'affiliateBalance.updatedAt': FieldValue.serverTimestamp(),
+      const userSnap = await userRef.get();
+      const userData = userSnap.data() || {};
+      const currentBalance = userData.affiliateBalance || {
+        pendingUSD: 0,
+        approvedUSD: 0,
+        paidUSD: 0,
+        rejectedUSD: 0,
       };
 
+      let newPending = Number(currentBalance.pendingUSD) || 0;
+      let newApproved = Number(currentBalance.approvedUSD) || 0;
+      let newPaid = Number(currentBalance.paidUSD) || 0;
+      let newRejected = Number(currentBalance.rejectedUSD) || 0;
+
       if (prevStatus === 'pending' && status === 'approved') {
-        balanceUpdates['affiliateBalance.pendingUSD'] = FieldValue.increment(-amountUSD);
-        balanceUpdates['affiliateBalance.approvedUSD'] = FieldValue.increment(amountUSD);
+        newPending = Math.max(0, newPending - amountUSD);
+        newApproved = newApproved + amountUSD;
       } else if (prevStatus === 'pending' && status === 'rejected') {
-        balanceUpdates['affiliateBalance.pendingUSD'] = FieldValue.increment(-amountUSD);
-        balanceUpdates['affiliateBalance.rejectedUSD'] = FieldValue.increment(amountUSD);
+        newPending = Math.max(0, newPending - amountUSD);
+        newRejected = newRejected + amountUSD;
       } else if (prevStatus === 'approved' && status === 'rejected') {
-        balanceUpdates['affiliateBalance.approvedUSD'] = FieldValue.increment(-amountUSD);
-        balanceUpdates['affiliateBalance.rejectedUSD'] = FieldValue.increment(amountUSD);
+        newApproved = Math.max(0, newApproved - amountUSD);
+        newRejected = newRejected + amountUSD;
       }
 
-      batch.set(userRef, balanceUpdates, { merge: true });
+      batch.set(
+        userRef,
+        {
+          affiliateBalance: {
+            pendingUSD: Math.round(newPending * 100) / 100,
+            approvedUSD: Math.round(newApproved * 100) / 100,
+            paidUSD: Math.round(newPaid * 100) / 100,
+            rejectedUSD: Math.round(newRejected * 100) / 100,
+            updatedAt: FieldValue.serverTimestamp(),
+          },
+        },
+        { merge: true }
+      );
     }
 
     // Registrar en auditoría

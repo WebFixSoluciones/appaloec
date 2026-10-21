@@ -55,8 +55,47 @@ export async function processOrderReferralCommission(orderId: string): Promise<C
     }
 
     const userData = userDoc.data()!;
-    const referrerUid = userData.referral?.referredByUid || userData.referredByUid;
-    const referralCode = userData.referral?.referredByCode || userData.referredByCode;
+    let referrerUid = userData.referral?.referredByUid || userData.referredByUid;
+    let referralCode = userData.referral?.referredByCode || userData.referredByCode || orderData.referralCode;
+
+    // Rescate inteligente: Si no tiene referrerUid pero sí referralCode, buscar en referral_codes y users
+    if (!referrerUid && referralCode) {
+      try {
+        const cleanCode = String(referralCode).trim().toUpperCase();
+        const codeSnap = await db.collection('referral_codes').doc(cleanCode).get();
+        if (codeSnap.exists) {
+          referrerUid = codeSnap.data()?.uid;
+        } else {
+          const userWithCodeSnap = await db
+            .collection('users')
+            .where('referral.code', '==', cleanCode)
+            .limit(1)
+            .get();
+          if (!userWithCodeSnap.empty) {
+            referrerUid = userWithCodeSnap.docs[0].id;
+          }
+        }
+
+        // Si se encontró al afiliado, persistirlo en el usuario comprador para que quede formalmente vinculado
+        if (referrerUid) {
+          await userDoc.ref.set(
+            {
+              referredByUid: referrerUid,
+              referredByCode: cleanCode,
+              referral: {
+                ...(userData.referral || {}),
+                referredByUid: referrerUid,
+                referredByCode: cleanCode,
+                status: userData.referral?.status || 'referred',
+              },
+            },
+            { merge: true }
+          );
+        }
+      } catch (lookupErr) {
+        console.warn('[commissions] Error al resolver referralCode:', lookupErr);
+      }
+    }
 
     if (!referrerUid) {
       return { success: false, reason: 'El usuario no fue referido por nadie' };

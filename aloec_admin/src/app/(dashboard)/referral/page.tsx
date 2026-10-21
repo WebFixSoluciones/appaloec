@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../../../lib/firebase/config';
 import { logAdminAction } from '../../../lib/firebase/audit';
+import AffiliateDetailModal from './AffiliateDetailModal';
 import {
   collection, getDocs, doc, setDoc, updateDoc, query,
   where, orderBy, limit, Timestamp
@@ -104,6 +105,16 @@ export default function ReferralPage() {
   const [filterStatus, setFilterStatus] = useState('');
   const [saving, setSaving] = useState(false);
   const [syncing, setSyncing] = useState(false);
+
+  // Modal detalle de afiliado y pagos
+  const [selectedAffiliateUid, setSelectedAffiliateUid] = useState<string | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+  function openAffiliateDetail(uid: string) {
+    if (!uid) return;
+    setSelectedAffiliateUid(uid);
+    setIsDetailModalOpen(true);
+  }
 
   // Dashboard KPIs
   const [kpi, setKpi] = useState({ totalAffiliates: 0, totalCommissions: 0, pendingUSD: 0, paidUSD: 0, approvedUSD: 0 });
@@ -496,18 +507,41 @@ export default function ReferralPage() {
                         <th className="p-3 font-bold">Pagado</th>
                         <th className="p-3 font-bold">Referidos</th>
                         <th className="p-3 font-bold">Fecha</th>
+                        <th className="p-3 font-bold">Acción</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-ink-100">
                       {affiliates.filter(a => !search || a.displayName.toLowerCase().includes(search.toLowerCase()) || a.referralCode.toLowerCase().includes(search.toLowerCase())).map(a => (
                         <tr key={a.uid} className="hover:bg-ink-50">
-                          <td className="p-3"><span className="font-bold text-ink-900">{a.displayName}</span><br /><span className="text-xs text-ink-500">{a.email}</span></td>
+                          <td className="p-3">
+                            <button
+                              onClick={() => openAffiliateDetail(a.uid)}
+                              className="text-left group block"
+                              title="Ver datos completos, cuenta bancaria y liquidar comisiones"
+                            >
+                              <span className="font-bold text-ink-900 group-hover:text-emerald-700 transition-colors flex items-center gap-1.5">
+                                {a.displayName || 'Sin nombre'}
+                                <Eye size={13} className="text-slate-400 group-hover:text-emerald-700 transition-colors" />
+                              </span>
+                              <span className="text-xs text-ink-500">{a.email}</span>
+                            </button>
+                          </td>
                           <td className="p-3 font-mono text-xs font-bold text-[#008000]">{a.referralCode}</td>
                           <td className="p-3 text-yellow-600 font-bold">${a.balance.pendingUSD.toFixed(2)}</td>
                           <td className="p-3 text-green-600 font-bold">${a.balance.approvedUSD.toFixed(2)}</td>
                           <td className="p-3 text-blue-600 font-bold">${a.balance.paidUSD.toFixed(2)}</td>
                           <td className="p-3">{a.referredCount}</td>
                           <td className="p-3 text-xs text-ink-500">{a.createdAt?.toDate?.() ? new Date(a.createdAt.toDate()).toLocaleDateString() : '-'}</td>
+                          <td className="p-3">
+                            <button
+                              onClick={() => openAffiliateDetail(a.uid)}
+                              className="px-2.5 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 font-bold text-xs rounded transition-colors flex items-center gap-1"
+                              title="Ver datos bancarios y registrar pago"
+                            >
+                              <CreditCard size={12} />
+                              <span>Datos / Pagar</span>
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -553,7 +587,16 @@ export default function ReferralPage() {
                     <tbody className="divide-y divide-ink-100">
                       {commissions.filter(c => !filterStatus || c.status === filterStatus).map(c => (
                         <tr key={c.id} className="hover:bg-ink-50">
-                          <td className="p-3"><span className="font-bold text-ink-900">{c.referrerName || c.referrerUid.slice(0, 8)}</span></td>
+                          <td className="p-3">
+                            <button
+                              onClick={() => openAffiliateDetail(c.referrerUid)}
+                              className="font-bold text-ink-900 hover:text-emerald-700 text-left transition-colors flex items-center gap-1 group"
+                              title="Ver datos bancarios del referente"
+                            >
+                              <span>{c.referrerName || c.referrerUid.slice(0, 8)}</span>
+                              <Eye size={12} className="text-slate-400 group-hover:text-emerald-700" />
+                            </button>
+                          </td>
                           <td className="p-3 font-mono text-xs font-bold text-[#008000]">{c.referrerCode}</td>
                           <td className="p-3 text-xs">{triggerLabel(c.triggerType)}</td>
                           <td className="p-3 font-bold">${c.amountUSD.toFixed(2)}</td>
@@ -583,7 +626,7 @@ export default function ReferralPage() {
                 <div className="border border-ink-200 p-12 text-center text-ink-500 bg-white">
                   <CreditCard className="mx-auto mb-4 text-ink-300" size={48} />
                   <p className="font-bold text-lg text-ink-700 mb-1">Sin solicitudes de pago</p>
-                  <p className="text-sm">Los retiros aparecerán cuando los afiliados soliciten el cobro de sus comisiones.</p>
+                  <p className="text-sm">Los retiros aparecerán cuando los afiliados soliciten el cobro de sus comisiones o registres pagos directos.</p>
                 </div>
               ) : (
                 <div className="overflow-x-auto border border-ink-200">
@@ -601,7 +644,16 @@ export default function ReferralPage() {
                     <tbody className="divide-y divide-ink-100">
                       {payouts.map(p => (
                         <tr key={p.id} className="hover:bg-ink-50">
-                          <td className="p-3"><span className="font-bold text-ink-900">{p.userName || p.uid.slice(0, 8)}</span></td>
+                          <td className="p-3">
+                            <button
+                              onClick={() => openAffiliateDetail(p.uid)}
+                              className="font-bold text-ink-900 hover:text-emerald-700 text-left transition-colors flex items-center gap-1 group"
+                              title="Ver datos del afiliado"
+                            >
+                              <span>{p.userName || p.uid.slice(0, 8)}</span>
+                              <Eye size={12} className="text-slate-400 group-hover:text-emerald-700" />
+                            </button>
+                          </td>
                           <td className="p-3 font-bold">${p.amountUSD.toFixed(2)}</td>
                           <td className="p-3 text-xs">{p.methodSnapshot?.label || p.methodSnapshot?.type || '-'}</td>
                           <td className="p-3">{statusBadge(p.status)}</td>
@@ -632,6 +684,17 @@ export default function ReferralPage() {
           )}
         </>
       )}
+
+      {/* Modal Detalle de Afiliado y Pago Directo */}
+      <AffiliateDetailModal
+        uid={selectedAffiliateUid}
+        isOpen={isDetailModalOpen}
+        onClose={() => {
+          setIsDetailModalOpen(false);
+          setSelectedAffiliateUid(null);
+        }}
+        onRefreshParent={loadAll}
+      />
     </div>
   );
 }

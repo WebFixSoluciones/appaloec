@@ -164,6 +164,21 @@ export default function BillingPage() {
         newValues: { status: 'paid', approvedAt: now }
       });
 
+      // 4.5. Procesar comisión de afiliados / referidos si aplica
+      try {
+        const refRes = await fetch('/api/admin/referral/process-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId: order.id }),
+        });
+        const refData = await refRes.json();
+        if (refData.success && refData.commissionId) {
+          console.log(`[Billing] Comisión de referidos generada automáticamente: $${refData.amountUSD}`);
+        }
+      } catch (refErr) {
+        console.warn('Error al procesar comisión de referidos tras aprobación:', refErr);
+      }
+
       // 5. Update local state
       setOrders(orders.map(o => o.id === order.id ? { ...o, status: 'paid', approvedAt: now } : o));
       if (selectedOrder?.id === order.id) {

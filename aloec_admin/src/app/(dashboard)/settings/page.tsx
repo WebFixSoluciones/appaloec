@@ -12,6 +12,9 @@ interface SystemSettings {
   maintenanceMode: boolean;
   minAppVersionAndroid: string;
   minAppVersionIos: string;
+  latestAppVersionAndroid?: string;
+  updateTitle?: string;
+  updateMessage?: string;
 }
 
 export default function SettingsPage() {
@@ -22,6 +25,9 @@ export default function SettingsPage() {
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [minAppVersionAndroid, setMinAppVersionAndroid] = useState('1.0.0');
   const [minAppVersionIos, setMinAppVersionIos] = useState('1.0.0');
+  const [latestAppVersionAndroid, setLatestAppVersionAndroid] = useState('1.4.0');
+  const [updateTitle, setUpdateTitle] = useState('¡Nueva versión de ALOEC disponible!');
+  const [updateMessage, setUpdateMessage] = useState('Hemos preparado mejoras importantes en la calculadora de IMC, hábitos diarios y estabilidad.');
 
   useEffect(() => {
     async function loadSettings() {
@@ -36,6 +42,9 @@ export default function SettingsPage() {
           setMaintenanceMode(data.maintenanceMode || false);
           setMinAppVersionAndroid(data.minAppVersionAndroid || '1.0.0');
           setMinAppVersionIos(data.minAppVersionIos || '1.0.0');
+          setLatestAppVersionAndroid(data.latestAppVersionAndroid || '1.4.0');
+          setUpdateTitle(data.updateTitle || '¡Nueva versión de ALOEC disponible!');
+          setUpdateMessage(data.updateMessage || 'Hemos preparado mejoras importantes en la calculadora de IMC, hábitos diarios y estabilidad.');
         } else {
           // If settings document doesn't exist, create it with default values
           const defaultData = {
@@ -43,6 +52,9 @@ export default function SettingsPage() {
             maintenanceMode: false,
             minAppVersionAndroid: '1.0.0',
             minAppVersionIos: '1.0.0',
+            latestAppVersionAndroid: '1.4.0',
+            updateTitle: '¡Nueva versión de ALOEC disponible!',
+            updateMessage: 'Hemos preparado mejoras importantes en la calculadora de IMC, hábitos diarios y estabilidad.',
             updatedAt: new Date()
           };
           await setDoc(docRef, defaultData);
@@ -86,6 +98,9 @@ export default function SettingsPage() {
         maintenanceMode,
         minAppVersionAndroid: minAppVersionAndroid.trim(),
         minAppVersionIos: minAppVersionIos.trim(),
+        latestAppVersionAndroid: latestAppVersionAndroid.trim(),
+        updateTitle: updateTitle.trim(),
+        updateMessage: updateMessage.trim(),
         updatedAt: new Date()
       };
 
@@ -202,6 +217,50 @@ export default function SettingsPage() {
             <p className="text-[11px] text-ink-500">
               * Nota: Si la app móvil del usuario tiene una versión menor a la indicada, se le obligará a redirigirse a Play Store / App Store para actualizar.
             </p>
+          </div>
+
+          {/* New version notification banner */}
+          <div className="border-t border-ink-100 pt-5 space-y-4">
+            <label className="block text-xs font-bold text-ink-700 uppercase flex items-center gap-1.5">
+              <Smartphone size={14} className="text-[#008000]" /> Notificación de Nueva Versión (Aviso Recomendado)
+            </label>
+
+            <div>
+              <label className="block text-[10px] font-bold text-ink-500 uppercase mb-1">Última Versión Publicada (Android)</label>
+              <input
+                type="text"
+                className="w-full p-2 border border-ink-300 text-xs outline-none focus:border-ink-900 text-ink-900 font-mono"
+                placeholder="1.4.0"
+                value={latestAppVersionAndroid}
+                onChange={(e) => setLatestAppVersionAndroid(e.target.value)}
+                disabled={saving}
+              />
+              <p className="text-[11px] text-ink-500 mt-0.5">Si el usuario tiene una versión menor a esta, se le mostrará la ventana invitándole a actualizar.</p>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold text-ink-500 uppercase mb-1">Título del Aviso</label>
+              <input
+                type="text"
+                className="w-full p-2 border border-ink-300 text-xs outline-none focus:border-ink-900 text-ink-900"
+                placeholder="¡Nueva versión de ALOEC disponible!"
+                value={updateTitle}
+                onChange={(e) => setUpdateTitle(e.target.value)}
+                disabled={saving}
+              />
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold text-ink-500 uppercase mb-1">Mensaje o Novedades</label>
+              <textarea
+                rows={2}
+                className="w-full p-2 border border-ink-300 text-xs outline-none focus:border-ink-900 text-ink-900"
+                placeholder="Describe brevemente las mejoras de esta versión..."
+                value={updateMessage}
+                onChange={(e) => setUpdateMessage(e.target.value)}
+                disabled={saving}
+              />
+            </div>
           </div>
 
           {/* Submit button */}

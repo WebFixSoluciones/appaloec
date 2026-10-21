@@ -1764,7 +1764,24 @@
             submitBtn.textContent = 'Creando cuenta...';
             modalError.style.display = 'none';
 
-            auth.createUserWithEmailAndPassword(email, password)
+            var resolvedReferrerUid = null;
+            var lookupPromise = Promise.resolve();
+            if (refCode) {
+                var cleanRef = String(refCode).trim().toUpperCase();
+                lookupPromise = db.collection('referral_codes').doc(cleanRef).get()
+                    .then(function(snap) {
+                        if (snap.exists && snap.data() && snap.data().uid) {
+                            resolvedReferrerUid = snap.data().uid;
+                        }
+                    })
+                    .catch(function(err) {
+                        console.warn('Error resolviendo codigo de referido:', err);
+                    });
+            }
+
+            lookupPromise.then(function() {
+                return auth.createUserWithEmailAndPassword(email, password);
+            })
                 .then(function(cred) {
                     return cred.user.updateProfile({ displayName: name }).then(function() {
                         return cred.user;
@@ -1777,9 +1794,11 @@
                         role: 'user',
                         status: 'active',
                         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        referredByUid: resolvedReferrerUid,
+                        referredByCode: refCode || null,
                         referral: {
                             code: '',
-                            referredByUid: null,
+                            referredByUid: resolvedReferrerUid,
                             referredByCode: refCode || null,
                             status: refCode ? 'referred' : 'none',
                             registeredAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -1799,7 +1818,7 @@
                     if (refCode) {
                         return db.collection('referral_events').add({
                             type: 'registered',
-                            referrerUid: null,
+                            referrerUid: resolvedReferrerUid,
                             referredUid: auth.currentUser.uid,
                             referralCode: refCode,
                             metadata: {},

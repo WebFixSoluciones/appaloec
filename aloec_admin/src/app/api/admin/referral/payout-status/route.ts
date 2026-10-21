@@ -43,12 +43,21 @@ export async function POST(req: NextRequest) {
     // Si pasa a completado: restar de approvedUSD y sumar a paidUSD
     if (uid && amountUSD > 0 && status === 'completed' && prevStatus !== 'completed') {
       const userRef = db.collection('users').doc(uid);
+      const userSnap = await userRef.get();
+      const curBal = userSnap.data()?.affiliateBalance || { approvedUSD: 0, paidUSD: 0, pendingUSD: 0, rejectedUSD: 0 };
+      const curApproved = Number(curBal.approvedUSD) || 0;
+      const curPaid = Number(curBal.paidUSD) || 0;
+      const curPending = Number(curBal.pendingUSD) || 0;
+      const curRejected = Number(curBal.rejectedUSD) || 0;
+
       batch.set(
         userRef,
         {
           affiliateBalance: {
-            approvedUSD: FieldValue.increment(-amountUSD),
-            paidUSD: FieldValue.increment(amountUSD),
+            pendingUSD: curPending,
+            approvedUSD: Math.max(0, Math.round((curApproved - amountUSD) * 100) / 100),
+            paidUSD: Math.round((curPaid + amountUSD) * 100) / 100,
+            rejectedUSD: curRejected,
             updatedAt: FieldValue.serverTimestamp(),
           },
         },

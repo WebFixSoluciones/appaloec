@@ -350,10 +350,214 @@ class _ReferralDashboardScreenState extends State<ReferralDashboardScreen> {
                   ),
                 ],
               ),
+              if (approved >= 15) ...[
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () => _handleRequestPayout(approved),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryGreen,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 0,
+                    ),
+                    icon: const Icon(Icons.account_balance_wallet, size: 18),
+                    label: Text(
+                      'Solicitar Retiro de \$${approved.toStringAsFixed(2)}',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                  ),
+                ),
+              ] else if (approved > 0) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.amber.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, size: 16, color: Colors.amber.shade800),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Monto mínimo para solicitar retiro: \$15.00 USD (Tienes \$${approved.toStringAsFixed(2)})',
+                          style: TextStyle(fontSize: 11, color: Colors.amber.shade900, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ],
           ),
         );
       },
+    );
+  }
+
+  Future<void> _handleRequestPayout(double amount) async {
+    final user = _user;
+    if (user == null) return;
+
+    // Verificar si ya tiene una solicitud pendiente
+    final pendingPayouts = await FirebaseFirestore.instance
+        .collection('payouts')
+        .where('uid', isEqualTo: user.uid)
+        .where('status', isEqualTo: 'pending')
+        .get();
+
+    if (pendingPayouts.docs.isNotEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Ya tienes una solicitud de retiro pendiente de revisión.'),
+          backgroundColor: Colors.orange.shade800,
+        ),
+      );
+      return;
+    }
+
+    // Obtener métodos de pago
+    final methodsSnap = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('payout_methods')
+        .get();
+
+    if (methodsSnap.docs.isEmpty) {
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Método de Cobro Requerido', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          content: const Text(
+            'Para recibir tus comisiones, primero debes registrar tu cuenta bancaria ecuatoriana o PayPal.',
+            style: TextStyle(fontSize: 13),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryGreen,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              onPressed: () {
+                Navigator.pop(ctx);
+                context.push('/referral/methods');
+              },
+              child: const Text('Configurar Cuenta', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    // Elegir método predeterminado o el primero
+    final defaultDoc = methodsSnap.docs.firstWhere(
+      (d) => (d.data()['isDefault'] as bool? ?? false) == true,
+      orElse: () => methodsSnap.docs.first,
+    );
+    final methodData = defaultDoc.data();
+
+    if (!mounted) return;
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Confirmar Retiro', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(ctx)),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF0FDF4),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFFBBF7D0)),
+              ),
+              child: Column(
+                children: [
+                  const Text('Monto a transferir', style: TextStyle(fontSize: 12, color: Color(0xFF166534))),
+                  const SizedBox(height: 4),
+                  Text(
+                    '\$${amount.toStringAsFixed(2)} USD',
+                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Color(0xFF14532D)),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Destino: ${methodData['label'] ?? methodData['type'] ?? 'Cuenta configurada'}',
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'Tu retiro será revisado y transferido por el administrador a tu cuenta.',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryGreen,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: () async {
+                Navigator.pop(ctx);
+                try {
+                  await FirebaseFirestore.instance.collection('payouts').add({
+                    'uid': user.uid,
+                    'userName': user.displayName ?? 'Afiliado',
+                    'userEmail': user.email ?? '',
+                    'amountUSD': amount,
+                    'status': 'pending',
+                    'methodSnapshot': methodData,
+                    'createdAt': FieldValue.serverTimestamp(),
+                    'updatedAt': FieldValue.serverTimestamp(),
+                  });
+
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text('¡Solicitud de retiro enviada con éxito!'),
+                        backgroundColor: AppColors.primaryGreen,
+                      ),
+                    );
+                    context.push('/referral/payout-history');
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error al solicitar retiro: $e'), backgroundColor: Colors.red),
+                    );
+                  }
+                }
+              },
+              child: const Text('Enviar Solicitud de Retiro', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
