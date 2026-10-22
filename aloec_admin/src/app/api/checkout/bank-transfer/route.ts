@@ -4,7 +4,7 @@ import { verifyCheckoutToken } from '../../../../lib/checkout/token';
 
 export async function POST(request: Request) {
   try {
-    const { orderId, token, receiptUrl, receiptReference } = await request.json();
+    const { orderId, token, receiptUrl, receiptReference, payerIdNumber } = await request.json();
 
     if (!orderId) {
       return NextResponse.json(
@@ -40,6 +40,7 @@ export async function POST(request: Request) {
       status: 'pending',
       receiptUrl: receiptUrl || '',
       receiptReference: receiptReference ? String(receiptReference).trim() : '',
+      payerIdNumber: payerIdNumber ? String(payerIdNumber).trim() : '',
       country: 'EC',
       receiptUploadedAt: now,
       updatedAt: now,

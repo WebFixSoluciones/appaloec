@@ -36,6 +36,7 @@ interface Order {
   invoiceNumber?: string;
   receiptUrl?: string;
   receiptReference?: string;
+  payerIdNumber?: string;
   country?: string;
   rejectionReason?: string;
   approvedAt?: any;
@@ -84,6 +85,7 @@ export default function BillingPage() {
             invoiceNumber: data.invoiceNumber || docSnap.id.slice(0, 8).toUpperCase(),
             receiptUrl: data.receiptUrl || data.voucherUrl || '',
             receiptReference: data.receiptReference || data.receiptReferenceNumber || data.referenceNumber || '',
+            payerIdNumber: data.payerIdNumber || data.cedula || data.identification || '',
             country: data.country || 'EC',
             rejectionReason: data.rejectionReason || '',
             approvedAt: data.approvedAt,
@@ -420,9 +422,16 @@ export default function BillingPage() {
                   </td>
                   <td className="px-6 py-4">
                     <span className="font-medium block">{order.userEmail}</span>
-                    {order.receiptReference && (
-                      <span className="text-[10px] text-ink-400 font-mono">Ref: {order.receiptReference}</span>
-                    )}
+                    <div className="flex flex-wrap gap-1.5 mt-0.5">
+                      {order.payerIdNumber && (
+                        <span className="text-[10px] text-emerald-800 font-mono font-bold bg-emerald-50 px-1.5 py-0.2 rounded">
+                          CI: {order.payerIdNumber}
+                        </span>
+                      )}
+                      {order.receiptReference && (
+                        <span className="text-[10px] text-ink-400 font-mono">Ref: {order.receiptReference}</span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-4 text-xs font-bold text-[#008000]">
                     {order.membershipName}
@@ -502,11 +511,18 @@ export default function BillingPage() {
                   <span className="text-xs font-extrabold text-blue-900 uppercase flex items-center gap-1.5">
                     <Building2 size={14} className="text-blue-700" /> Comprobante Adjunto
                   </span>
-                  {selectedOrder.receiptReference && (
-                    <span className="text-xs font-mono font-bold bg-white px-2 py-0.5 border border-blue-200 text-blue-800">
-                      Ref: {selectedOrder.receiptReference}
-                    </span>
-                  )}
+                  <div className="flex items-center gap-1.5">
+                    {selectedOrder.payerIdNumber && (
+                      <span className="text-xs font-mono font-bold bg-white px-2 py-0.5 border border-blue-200 text-blue-900">
+                        CI: {selectedOrder.payerIdNumber}
+                      </span>
+                    )}
+                    {selectedOrder.receiptReference && (
+                      <span className="text-xs font-mono font-bold bg-white px-2 py-0.5 border border-blue-200 text-blue-800">
+                        Ref: {selectedOrder.receiptReference}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {selectedOrder.receiptUrl ? (
@@ -553,6 +569,14 @@ export default function BillingPage() {
                 <span className="text-ink-500 font-medium text-xs">Cliente:</span>
                 <span className="font-bold text-xs">{selectedOrder.userEmail}</span>
               </div>
+              {selectedOrder.payerIdNumber && (
+                <div className="flex justify-between">
+                  <span className="text-ink-500 font-medium text-xs">Cédula / Identificación:</span>
+                  <span className="font-mono font-bold text-xs text-ink-900 bg-gray-100 px-2 py-0.5 rounded">
+                    {selectedOrder.payerIdNumber}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span className="text-ink-500 font-medium text-xs">Plan Adquirido:</span>
                 <span className="font-bold text-[#008000] text-xs">{selectedOrder.membershipName}</span>

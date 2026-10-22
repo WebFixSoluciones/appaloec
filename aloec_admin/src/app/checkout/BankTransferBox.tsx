@@ -47,6 +47,7 @@ export default function BankTransferBox({
   accounts,
 }: BankTransferBoxProps) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [payerIdNumber, setPayerIdNumber] = useState('');
   const [referenceNumber, setReferenceNumber] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
@@ -86,6 +87,11 @@ export default function BankTransferBox({
 
   const handleSubmitReceipt = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!payerIdNumber.trim()) {
+      toast.error('Por favor ingresa la cédula de identidad o RUC de quien realiza el pago.');
+      return;
+    }
+
     if (!referenceNumber.trim()) {
       toast.error('Por favor ingresa el número de comprobante o referencia de tu transferencia.');
       return;
@@ -126,6 +132,7 @@ export default function BankTransferBox({
           token,
           receiptUrl: downloadUrl,
           receiptReference: referenceNumber.trim(),
+          payerIdNumber: payerIdNumber.trim(),
         }),
       });
 
@@ -154,11 +161,12 @@ export default function BankTransferBox({
           token,
           receiptUrl: '',
           receiptReference: referenceNumber.trim() || 'Notificado por WhatsApp',
+          payerIdNumber: payerIdNumber.trim(),
         }),
       });
     } catch (_) {}
 
-    const text = `¡Hola ALOEC! Acabo de realizar una transferencia bancaria para mi plan ${planName} por $${formattedAmount}.\n\n👤 Mi correo: ${email}\n🧾 Factura: #${invoiceNumber}${
+    const text = `¡Hola ALOEC! Acabo de realizar una transferencia bancaria para mi plan ${planName} por $${formattedAmount}.\n\n👤 Mi correo: ${email}\n🪪 Cédula de quien transfiere: ${payerIdNumber.trim() || 'Adjunta en comprobante'}\n🧾 Factura: #${invoiceNumber}${
       referenceNumber ? `\n🔢 N° Referencia: ${referenceNumber}` : ''
     }\n\nAdjunto mi comprobante en esta conversación para su validación.`;
 
@@ -186,6 +194,12 @@ export default function BankTransferBox({
             <span className="text-gray-500">Monto:</span>
             <span className="font-bold text-[#008000]">${formattedAmount} USD</span>
           </div>
+          {payerIdNumber && (
+            <div className="flex justify-between">
+              <span className="text-gray-500">Cédula / RUC del Pagador:</span>
+              <span className="font-mono font-bold text-gray-900">{payerIdNumber}</span>
+            </div>
+          )}
           <div className="flex justify-between">
             <span className="text-gray-500">N° Referencia:</span>
             <span className="font-mono font-bold text-gray-900">{referenceNumber}</span>
@@ -351,6 +365,21 @@ export default function BankTransferBox({
           <div className="flex items-center gap-2 text-emerald-950 font-bold text-sm">
             <span className="h-5 w-5 bg-[#008000] text-white rounded-full flex items-center justify-center text-xs">1</span>
             Subir comprobante directamente aquí:
+          </div>
+
+          <div>
+            <label className="block font-bold text-gray-700 mb-1.5">
+              Cédula de Identidad / RUC de quien realiza el pago: *
+            </label>
+            <input
+              type="text"
+              required
+              className="w-full p-3 bg-white rounded-xl outline-none focus:ring-2 focus:ring-[#008000] text-sm font-mono text-gray-900"
+              placeholder="Ej. 0928374651 o RUC"
+              value={payerIdNumber}
+              onChange={(e) => setPayerIdNumber(e.target.value)}
+              disabled={uploading}
+            />
           </div>
 
           <div>
