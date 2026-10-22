@@ -5,7 +5,7 @@ import {
   X, User, Mail, Phone, Calendar, CreditCard, Building,
   DollarSign, Copy, Check, ExternalLink, AlertCircle,
   Clock, ShieldCheck, ArrowUpRight, MessageCircle, RefreshCw, Send,
-  Coins, CheckCircle2
+  Coins, CheckCircle2, Plus
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -15,6 +15,22 @@ interface AffiliateDetailModalProps {
   onClose: () => void;
   onRefreshParent: () => void;
 }
+
+const ECUADOR_BANKS = [
+  'Banco Pichincha',
+  'Banco Guayaquil',
+  'Banco del Pacífico',
+  'Produbanco',
+  'Banco Bolivariano',
+  'Banco Internacional',
+  'Banco de Machala',
+  'Banco del Austro',
+  'Cooperativa JEP',
+  'Cooperativa Policía Nacional',
+  'Cooperativa 29 de Octubre',
+  'Mutualista Pichincha',
+  'Otro Banco / Cooperativa'
+];
 
 export default function AffiliateDetailModal({
   uid,
@@ -30,11 +46,35 @@ export default function AffiliateDetailModal({
   // Formulario de pago directo
   const [showPayoutForm, setShowPayoutForm] = useState(false);
   const [payoutAmount, setPayoutAmount] = useState<number>(0);
-  const [payoutMethodLabel, setPayoutMethodLabel] = useState('');
+  const [payoutType, setPayoutType] = useState<'bank_ec' | 'binance' | 'paypal'>('bank_ec');
+
+  // Campos para Transferencia Bancaria
+  const [bankName, setBankName] = useState('Banco Pichincha');
+  const [accountType, setAccountType] = useState<'Ahorros' | 'Corriente'>('Ahorros');
+  const [accountNumber, setAccountNumber] = useState('');
+  const [holderName, setHolderName] = useState('');
+  const [idNumber, setIdNumber] = useState('');
+
+  // Campos para Binance Pay
+  const [binancePayId, setBinancePayId] = useState('');
+
+  // Campos para PayPal
+  const [paypalEmail, setPaypalEmail] = useState('');
+
+  // Comprobante y notas
   const [payoutReference, setPayoutReference] = useState('');
   const [payoutNotes, setPayoutNotes] = useState('');
   const [submittingPayout, setSubmittingPayout] = useState(false);
   const [releasingPending, setReleasingPending] = useState(false);
+
+  // Formulario para Registrar Nueva Cuenta Bancaria
+  const [showAddBankForm, setShowAddBankForm] = useState(false);
+  const [newBankName, setNewBankName] = useState('Banco Pichincha');
+  const [newAccountType, setNewAccountType] = useState<'Ahorros' | 'Corriente'>('Ahorros');
+  const [newAccountNumber, setNewAccountNumber] = useState('');
+  const [newHolderName, setNewHolderName] = useState('');
+  const [newIdNumber, setNewIdNumber] = useState('');
+  const [savingNewBank, setSavingNewBank] = useState(false);
 
   useEffect(() => {
     if (isOpen && uid) {
@@ -42,6 +82,7 @@ export default function AffiliateDetailModal({
     } else {
       setData(null);
       setShowPayoutForm(false);
+      setShowAddBankForm(false);
     }
   }, [isOpen, uid]);
 
@@ -59,20 +100,34 @@ export default function AffiliateDetailModal({
       const initialPay = appr > 0 ? appr : pend;
       setPayoutAmount(initialPay);
 
-      // Preseleccionar método
-      if (json.payoutMethods && json.payoutMethods.length > 0) {
-        const first = json.payoutMethods[0];
-        const details = first.details || {};
-        if (first.type === 'binance' || details.payId) {
-          setPayoutMethodLabel(`Binance Pay (Pay ID: ${details.payId || first.label || ''})`);
-        } else if (first.type === 'paypal' || details.paypalEmail || details.email) {
-          setPayoutMethodLabel(`PayPal (${details.paypalEmail || details.email || first.label})`);
-        } else {
-          setPayoutMethodLabel(first.label || `${details.bank || details.bankName || 'Banco Ecuador'}`);
-        }
+      // Pre-cargar valores por defecto de los métodos del afiliado
+      const methods = json.payoutMethods || [];
+      const bankMethod = methods.find((m: any) => m.type === 'bank_ec' || m.type === 'bank' || m.details?.bankName || m.details?.bank);
+      const binanceMethod = methods.find((m: any) => m.type === 'binance' || m.details?.payId);
+      const paypalMethod = methods.find((m: any) => m.type === 'paypal' || m.details?.paypalEmail || m.details?.email);
+
+      if (bankMethod) {
+        const d = bankMethod.details || {};
+        setBankName(d.bankName || d.bank || 'Banco Pichincha');
+        setAccountType(d.accountType || 'Ahorros');
+        setAccountNumber(d.accountNumber || '');
+        setHolderName(d.holderName || json.user?.displayName || '');
+        setIdNumber(d.idNumber || '');
+        setPayoutType('bank_ec');
+      } else if (binanceMethod) {
+        const d = binanceMethod.details || {};
+        setBinancePayId(d.payId || '');
+        setPayoutType('binance');
+      } else if (paypalMethod) {
+        const d = paypalMethod.details || {};
+        setPaypalEmail(d.paypalEmail || d.email || json.user?.email || '');
+        setPayoutType('paypal');
       } else {
-        setPayoutMethodLabel('Transferencia Bancaria');
+        setHolderName(json.user?.displayName || '');
+        setPayoutType('bank_ec');
       }
+
+      setNewHolderName(json.user?.displayName || '');
     } catch (err: any) {
       toast.error(err.message || 'Error al cargar detalles');
     } finally {
@@ -112,6 +167,53 @@ export default function AffiliateDetailModal({
     }
   }
 
+  // Registrar nueva cuenta bancaria desde el modal
+  async function handleSaveNewBank(e: React.FormEvent) {
+    e.preventDefault();
+    if (!uid) return;
+
+    if (!newAccountNumber.trim()) {
+      toast.error('El número de cuenta es obligatorio');
+      return;
+    }
+
+    setSavingNewBank(true);
+    const toastId = toast.loading('Guardando cuenta bancaria...');
+
+    try {
+      const res = await fetch('/api/admin/referral/add-payout-method', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          uid,
+          type: 'bank_ec',
+          label: `${newBankName} - ${newAccountType}`,
+          details: {
+            bankName: newBankName,
+            accountType: newAccountType,
+            accountNumber: newAccountNumber.trim(),
+            holderName: newHolderName.trim() || user?.displayName,
+            idNumber: newIdNumber.trim(),
+            email: user?.email || '',
+          },
+        }),
+      });
+
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Error al guardar cuenta');
+
+      toast.success('Cuenta bancaria agregada exitosamente', { id: toastId });
+      setShowAddBankForm(false);
+      setNewAccountNumber('');
+      setNewIdNumber('');
+      await loadDetail();
+    } catch (err: any) {
+      toast.error(err.message || 'Error al guardar cuenta', { id: toastId });
+    } finally {
+      setSavingNewBank(false);
+    }
+  }
+
   // Registrar pago directo
   async function handleDirectPayout(e: React.FormEvent) {
     e.preventDefault();
@@ -130,6 +232,33 @@ export default function AffiliateDetailModal({
       return;
     }
 
+    // Armar snapshot descriptivo del método usado
+    let methodSnapshot: any = { type: payoutType };
+
+    if (payoutType === 'bank_ec') {
+      methodSnapshot = {
+        type: 'bank_ec',
+        label: `Transferencia Bancaria - ${bankName} (${accountType})`,
+        bankName,
+        accountType,
+        accountNumber,
+        holderName,
+        idNumber,
+      };
+    } else if (payoutType === 'binance') {
+      methodSnapshot = {
+        type: 'binance',
+        label: `Binance Pay (Pay ID: ${binancePayId})`,
+        payId: binancePayId,
+      };
+    } else if (payoutType === 'paypal') {
+      methodSnapshot = {
+        type: 'paypal',
+        label: `PayPal (${paypalEmail})`,
+        paypalEmail,
+      };
+    }
+
     setSubmittingPayout(true);
     const toastId = toast.loading('Registrando pago a afiliado...');
 
@@ -140,10 +269,7 @@ export default function AffiliateDetailModal({
         body: JSON.stringify({
           uid,
           amountUSD: payoutAmount,
-          methodSnapshot: {
-            label: payoutMethodLabel || 'Pago de Afiliado',
-            type: payoutMethodLabel.toLowerCase().includes('binance') ? 'binance' : 'direct',
-          },
+          methodSnapshot,
           transactionReference: payoutReference.trim(),
           notes: payoutNotes.trim(),
         }),
@@ -185,7 +311,7 @@ export default function AffiliateDetailModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-slate-900/40 backdrop-blur-xs">
       <div
-        className="bg-white w-full max-w-2xl max-h-[90vh] rounded-xl shadow-xl flex flex-col overflow-hidden"
+        className="bg-white w-full max-w-2xl max-h-[92vh] rounded-xl shadow-xl flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header - Flat Minimalist */}
@@ -312,65 +438,246 @@ export default function AffiliateDetailModal({
                 </button>
               </div>
 
-              {/* Formulario de Pago Plano */}
+              {/* Formulario de Pago Plano con Selector de Método */}
               {showPayoutForm && (
                 <form
                   onSubmit={handleDirectPayout}
-                  className="p-4 bg-slate-50 rounded-lg space-y-3 text-xs"
+                  className="p-4 bg-slate-50 rounded-lg space-y-4 text-xs"
                 >
-                  <p className="font-bold text-slate-900 text-sm">
-                    Registrar Pago al Afiliado
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <p className="font-bold text-slate-900 text-sm">
+                      Registrar Pago al Afiliado
+                    </p>
+                    <span className="text-[11px] text-slate-500">
+                      Saldo a liquidar: <strong>${totalEarned.toFixed(2)} USD</strong>
+                    </span>
+                  </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-slate-600 font-semibold mb-1">Monto a pagar (USD) *</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0.01"
-                        max={totalEarned}
-                        required
-                        value={payoutAmount}
-                        onChange={(e) => setPayoutAmount(parseFloat(e.target.value) || 0)}
-                        className="w-full px-3 py-2 bg-white rounded font-mono font-bold text-slate-900 outline-none"
-                      />
-                    </div>
+                  {/* Selector de Método: Transferencia Bancaria / Binance / PayPal */}
+                  <div>
+                    <label className="block text-slate-600 font-semibold mb-1.5">
+                      Selecciona la opción de pago:
+                    </label>
+                    <div className="grid grid-cols-3 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setPayoutType('bank_ec')}
+                        className={`p-2.5 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-colors ${
+                          payoutType === 'bank_ec'
+                            ? 'bg-emerald-700 text-white'
+                            : 'bg-white text-slate-700 hover:bg-slate-100'
+                        }`}
+                      >
+                        <Building size={14} />
+                        <span>Transferencia</span>
+                      </button>
 
-                    <div>
-                      <label className="block text-slate-600 font-semibold mb-1">Cuenta o Método Destino *</label>
-                      <input
-                        type="text"
-                        required
-                        value={payoutMethodLabel}
-                        onChange={(e) => setPayoutMethodLabel(e.target.value)}
-                        placeholder="Ej. Binance Pay ID 11931006"
-                        className="w-full px-3 py-2 bg-white rounded text-slate-900 outline-none"
-                      />
-                    </div>
+                      <button
+                        type="button"
+                        onClick={() => setPayoutType('binance')}
+                        className={`p-2.5 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-colors ${
+                          payoutType === 'binance'
+                            ? 'bg-emerald-700 text-white'
+                            : 'bg-white text-slate-700 hover:bg-slate-100'
+                        }`}
+                      >
+                        <Coins size={14} />
+                        <span>Binance Pay</span>
+                      </button>
 
-                    <div>
-                      <label className="block text-slate-600 font-semibold mb-1">Nº Comprobante / ID Transacción *</label>
-                      <input
-                        type="text"
-                        required
-                        value={payoutReference}
-                        onChange={(e) => setPayoutReference(e.target.value)}
-                        placeholder="Ej. ID de orden Binance Pay / Nº de transferencia"
-                        className="w-full px-3 py-2 bg-white rounded text-slate-900 outline-none"
-                      />
+                      <button
+                        type="button"
+                        onClick={() => setPayoutType('paypal')}
+                        className={`p-2.5 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-colors ${
+                          payoutType === 'paypal'
+                            ? 'bg-emerald-700 text-white'
+                            : 'bg-white text-slate-700 hover:bg-slate-100'
+                        }`}
+                      >
+                        <CreditCard size={14} />
+                        <span>PayPal</span>
+                      </button>
                     </div>
+                  </div>
 
-                    <div>
-                      <label className="block text-slate-600 font-semibold mb-1">Notas (opcional)</label>
-                      <input
-                        type="text"
-                        value={payoutNotes}
-                        onChange={(e) => setPayoutNotes(e.target.value)}
-                        placeholder="Observación interna"
-                        className="w-full px-3 py-2 bg-white rounded text-slate-900 outline-none"
-                      />
+                  {/* Monto a pagar */}
+                  <div>
+                    <label className="block text-slate-600 font-semibold mb-1">Monto a liquidar (USD) *</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0.01"
+                      max={totalEarned}
+                      required
+                      value={payoutAmount}
+                      onChange={(e) => setPayoutAmount(parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-2 bg-white rounded font-mono font-bold text-slate-900 outline-none"
+                    />
+                  </div>
+
+                  {/* CAMPOS ESPECÍFICOS: TRANSFERENCIA BANCARIA */}
+                  {payoutType === 'bank_ec' && (
+                    <div className="space-y-3 p-3 bg-white rounded-lg">
+                      <p className="font-bold text-slate-800 text-[11px] uppercase tracking-wider">
+                        Datos de la Transferencia Bancaria (Ecuador)
+                      </p>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div>
+                          <label className="block text-slate-500 text-[11px] mb-1">Banco de Destino *</label>
+                          <select
+                            value={bankName}
+                            onChange={(e) => setBankName(e.target.value)}
+                            className="w-full px-3 py-2 bg-slate-50 rounded text-slate-900 font-medium outline-none"
+                          >
+                            {ECUADOR_BANKS.map((b) => (
+                              <option key={b} value={b}>{b}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-slate-500 text-[11px] mb-1">Tipo de Cuenta *</label>
+                          <select
+                            value={accountType}
+                            onChange={(e) => setAccountType(e.target.value as any)}
+                            className="w-full px-3 py-2 bg-slate-50 rounded text-slate-900 font-medium outline-none"
+                          >
+                            <option value="Ahorros">Cuenta de Ahorros</option>
+                            <option value="Corriente">Cuenta Corriente</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-slate-500 text-[11px] mb-1">Número de Cuenta *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="Ej. 2200910810"
+                            value={accountNumber}
+                            onChange={(e) => setAccountNumber(e.target.value)}
+                            className="w-full px-3 py-2 bg-slate-50 rounded font-mono font-bold text-slate-900 outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-slate-500 text-[11px] mb-1">Nombre del Titular *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="Ej. María José Macías"
+                            value={holderName}
+                            onChange={(e) => setHolderName(e.target.value)}
+                            className="w-full px-3 py-2 bg-slate-50 rounded text-slate-900 outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-slate-500 text-[11px] mb-1">Cédula / RUC del Titular *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="Ej. 1717340846"
+                            value={idNumber}
+                            onChange={(e) => setIdNumber(e.target.value)}
+                            className="w-full px-3 py-2 bg-slate-50 rounded font-mono text-slate-900 outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-slate-500 text-[11px] mb-1">Nº Comprobante / Referencia Transferencia *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="Ej. TRF-192840 / Nº Comprobante banco"
+                            value={payoutReference}
+                            onChange={(e) => setPayoutReference(e.target.value)}
+                            className="w-full px-3 py-2 bg-slate-50 rounded font-mono font-bold text-slate-900 outline-none"
+                          />
+                        </div>
+                      </div>
                     </div>
+                  )}
+
+                  {/* CAMPOS ESPECÍFICOS: BINANCE PAY */}
+                  {payoutType === 'binance' && (
+                    <div className="space-y-3 p-3 bg-white rounded-lg">
+                      <p className="font-bold text-slate-800 text-[11px] uppercase tracking-wider">
+                        Datos de Pago Binance Pay
+                      </p>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div>
+                          <label className="block text-slate-500 text-[11px] mb-1">Binance Pay ID *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="Ej. 11931006"
+                            value={binancePayId}
+                            onChange={(e) => setBinancePayId(e.target.value)}
+                            className="w-full px-3 py-2 bg-slate-50 rounded font-mono font-bold text-slate-900 outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-slate-500 text-[11px] mb-1">ID Transacción / Orden Binance *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="Ej. 294819201 / ID de pago Binance"
+                            value={payoutReference}
+                            onChange={(e) => setPayoutReference(e.target.value)}
+                            className="w-full px-3 py-2 bg-slate-50 rounded font-mono font-bold text-slate-900 outline-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* CAMPOS ESPECÍFICOS: PAYPAL */}
+                  {payoutType === 'paypal' && (
+                    <div className="space-y-3 p-3 bg-white rounded-lg">
+                      <p className="font-bold text-slate-800 text-[11px] uppercase tracking-wider">
+                        Datos de Pago PayPal
+                      </p>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div>
+                          <label className="block text-slate-500 text-[11px] mb-1">Correo de PayPal *</label>
+                          <input
+                            type="email"
+                            required
+                            placeholder="afiliado@correo.com"
+                            value={paypalEmail}
+                            onChange={(e) => setPaypalEmail(e.target.value)}
+                            className="w-full px-3 py-2 bg-slate-50 rounded text-slate-900 outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-slate-500 text-[11px] mb-1">ID Transacción de PayPal *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="Ej. 8XP928194"
+                            value={payoutReference}
+                            onChange={(e) => setPayoutReference(e.target.value)}
+                            className="w-full px-3 py-2 bg-slate-50 rounded font-mono font-bold text-slate-900 outline-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-slate-600 font-semibold mb-1">Notas u Observaciones (opcional)</label>
+                    <input
+                      type="text"
+                      value={payoutNotes}
+                      onChange={(e) => setPayoutNotes(e.target.value)}
+                      placeholder="Observación de la transferencia"
+                      className="w-full px-3 py-2 bg-white rounded text-slate-900 outline-none"
+                    />
                   </div>
 
                   <div className="flex justify-end gap-2 pt-1">
@@ -402,7 +709,7 @@ export default function AffiliateDetailModal({
                       : 'border-transparent text-slate-500 hover:text-slate-800'
                   }`}
                 >
-                  Métodos de Pago ({methods.length})
+                  Cuentas y Métodos ({methods.length})
                 </button>
                 <button
                   onClick={() => setActiveTab('referred')}
@@ -439,9 +746,114 @@ export default function AffiliateDetailModal({
               {/* CONTENIDO TAB 1: MÉTODOS DE PAGO */}
               {activeTab === 'methods' && (
                 <div className="space-y-3">
+                  {/* Botón para que el admin agregue cuenta de transferencia al afiliado */}
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-slate-500">Cuentas registradas para cobros:</span>
+                    <button
+                      type="button"
+                      onClick={() => setShowAddBankForm(!showAddBankForm)}
+                      className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded text-xs flex items-center gap-1 transition-colors"
+                    >
+                      <Plus size={14} />
+                      <span>{showAddBankForm ? 'Cerrar' : 'Registrar Cuenta de Transferencia'}</span>
+                    </button>
+                  </div>
+
+                  {/* Formulario Inline para Registrar Cuenta de Banco */}
+                  {showAddBankForm && (
+                    <form
+                      onSubmit={handleSaveNewBank}
+                      className="p-4 bg-slate-50 rounded-lg space-y-3 text-xs"
+                    >
+                      <p className="font-bold text-slate-900 text-xs uppercase tracking-wider">
+                        Registrar Cuenta Bancaria para este Afiliado
+                      </p>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div>
+                          <label className="block text-slate-500 text-[11px] mb-1">Banco *</label>
+                          <select
+                            value={newBankName}
+                            onChange={(e) => setNewBankName(e.target.value)}
+                            className="w-full px-3 py-2 bg-white rounded text-slate-900 outline-none"
+                          >
+                            {ECUADOR_BANKS.map((b) => (
+                              <option key={b} value={b}>{b}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-slate-500 text-[11px] mb-1">Tipo de Cuenta *</label>
+                          <select
+                            value={newAccountType}
+                            onChange={(e) => setNewAccountType(e.target.value as any)}
+                            className="w-full px-3 py-2 bg-white rounded text-slate-900 outline-none"
+                          >
+                            <option value="Ahorros">Cuenta de Ahorros</option>
+                            <option value="Corriente">Cuenta Corriente</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-slate-500 text-[11px] mb-1">Número de Cuenta *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="Ej. 2200910810"
+                            value={newAccountNumber}
+                            onChange={(e) => setNewAccountNumber(e.target.value)}
+                            className="w-full px-3 py-2 bg-white rounded font-mono font-bold text-slate-900 outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-slate-500 text-[11px] mb-1">Nombre del Titular *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="Nombre del afiliado"
+                            value={newHolderName}
+                            onChange={(e) => setNewHolderName(e.target.value)}
+                            className="w-full px-3 py-2 bg-white rounded text-slate-900 outline-none"
+                          />
+                        </div>
+
+                        <div className="sm:col-span-2">
+                          <label className="block text-slate-500 text-[11px] mb-1">Cédula o RUC del Titular *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="Ej. 1717340846"
+                            value={newIdNumber}
+                            onChange={(e) => setNewIdNumber(e.target.value)}
+                            className="w-full px-3 py-2 bg-white rounded font-mono text-slate-900 outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => setShowAddBankForm(false)}
+                          className="px-3 py-1.5 text-slate-600 font-semibold"
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={savingNewBank}
+                          className="px-4 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded transition-colors disabled:opacity-50"
+                        >
+                          {savingNewBank ? 'Guardando...' : 'Guardar Cuenta Bancaria'}
+                        </button>
+                      </div>
+                    </form>
+                  )}
+
                   {methods.length === 0 ? (
                     <div className="p-4 bg-slate-50 rounded-lg text-center text-xs text-slate-500">
-                      El afiliado aún no ha configurado sus métodos de cobro en la app móvil.
+                      Sin métodos registrados. Puedes registrarle una cuenta bancaria con el botón de arriba.
                     </div>
                   ) : (
                     methods.map((m: any, idx: number) => {
@@ -463,9 +875,34 @@ export default function AffiliateDetailModal({
                                 ? 'Transferencia Bancaria Ecuador'
                                 : 'PayPal'}
                             </span>
-                            <span className="text-[10px] text-slate-400 font-mono">
-                              {m.label || ''}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] text-slate-400 font-mono">
+                                {m.label || ''}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (isBank) {
+                                    setPayoutType('bank_ec');
+                                    setBankName(details.bankName || details.bank || 'Banco Pichincha');
+                                    setAccountType(details.accountType || 'Ahorros');
+                                    setAccountNumber(details.accountNumber || '');
+                                    setHolderName(details.holderName || user.displayName || '');
+                                    setIdNumber(details.idNumber || '');
+                                  } else if (isBinance) {
+                                    setPayoutType('binance');
+                                    setBinancePayId(details.payId || '');
+                                  } else if (isPaypal) {
+                                    setPayoutType('paypal');
+                                    setPaypalEmail(details.paypalEmail || details.email || '');
+                                  }
+                                  setShowPayoutForm(true);
+                                }}
+                                className="px-2 py-0.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 font-bold rounded text-[10px]"
+                              >
+                                Usar para Pago
+                              </button>
+                            </div>
                           </div>
 
                           {/* CASO BINANCE */}
@@ -505,7 +942,7 @@ export default function AffiliateDetailModal({
                             <div className="p-3 bg-white rounded space-y-1.5">
                               <div className="flex justify-between">
                                 <span className="text-slate-500">Banco:</span>
-                                <span className="font-bold text-slate-800">{details.bank || details.bankName || 'No especificado'}</span>
+                                <span className="font-bold text-slate-800">{details.bankName || details.bank || 'No especificado'}</span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-slate-500">Tipo de Cuenta:</span>

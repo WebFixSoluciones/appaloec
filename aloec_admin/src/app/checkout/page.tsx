@@ -51,8 +51,8 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
         const bData = bankSnap.data()!;
         bankConfig = {
           isActive: bData.isActive !== false,
-          whatsappNumber: bData.whatsappNumber || '593999504321',
-          supportEmail: bData.supportEmail || 'pagos@aloec.com',
+          whatsappNumber: bData.whatsappNumber || '0967791142',
+          supportEmail: bData.supportEmail || 'sasaloec@gmail.com',
           instructions: bData.instructions || '',
           accounts: (bData.accounts || []).map((acc: any) => ({
             id: acc.id || 'acc_1',
@@ -64,6 +64,26 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
             email: acc.email || '',
             isActive: acc.isActive !== false,
           })),
+        };
+      } else {
+        // Fallback para asegurar que Transferencia Bancaria siempre esté activa
+        bankConfig = {
+          isActive: true,
+          whatsappNumber: '0967791142',
+          supportEmail: 'sasaloec@gmail.com',
+          instructions: 'Por favor realiza la transferencia bancaria por el valor exacto de la membresía y adjunta tu comprobante.',
+          accounts: [
+            {
+              id: 'acc_pichincha_1',
+              bankName: 'Banco Pichincha',
+              accountType: 'Ahorros',
+              accountNumber: '2200910810',
+              holderName: 'Jose Rengifo',
+              idNumber: '1717340846',
+              email: 'sasaloec@gmail.com',
+              isActive: true,
+            }
+          ],
         };
       }
     } catch (err) {

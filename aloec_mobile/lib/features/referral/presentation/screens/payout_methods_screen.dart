@@ -129,18 +129,22 @@ class _PayoutMethodsScreenState extends State<PayoutMethodsScreen> {
 
   String _typeLabel(String t) {
     switch (t) {
+      case 'bank_ec': return 'Transferencia Bancaria';
+      case 'binance': return 'Binance Pay';
       case 'paypal': return 'PayPal';
-      case 'binance': return 'Binance';
-      case 'bank_ec': return 'Banco Ecuador';
       default: return t;
     }
   }
 
   String _typeSubtitle(String t, Map<String, dynamic> d) {
     switch (t) {
-      case 'paypal': return d['email'] ?? '';
-      case 'binance': return d['payId'] ?? '';
-      case 'bank_ec': return '${d['bank'] ?? ''} ${d['accountNumber'] ?? ''}';
+      case 'bank_ec':
+        final bName = d['bankName'] ?? d['bank'] ?? 'Banco';
+        final acc = d['accountNumber'] ?? '';
+        final accType = d['accountType'] ?? '';
+        return '$bName ($accType) • $acc';
+      case 'binance': return 'Pay ID: ${d['payId'] ?? ''}';
+      case 'paypal': return d['paypalEmail'] ?? d['email'] ?? '';
       default: return '';
     }
   }
@@ -155,61 +159,168 @@ class _AddMethodSheet extends StatefulWidget {
 }
 
 class _AddMethodSheetState extends State<_AddMethodSheet> {
-  String _type = 'paypal';
+  String _type = 'bank_ec';
+  String _accountType = 'Ahorros';
   final _labelCtrl = TextEditingController();
-  final _detail1Ctrl = TextEditingController();
-  final _detail2Ctrl = TextEditingController();
+  final _bankCtrl = TextEditingController();
+  final _accountNumberCtrl = TextEditingController();
+  final _holderCtrl = TextEditingController();
+  final _idNumberCtrl = TextEditingController();
+  final _payIdCtrl = TextEditingController();
+  final _paypalEmailCtrl = TextEditingController();
 
   @override
   void dispose() {
     _labelCtrl.dispose();
-    _detail1Ctrl.dispose();
-    _detail2Ctrl.dispose();
+    _bankCtrl.dispose();
+    _accountNumberCtrl.dispose();
+    _holderCtrl.dispose();
+    _idNumberCtrl.dispose();
+    _payIdCtrl.dispose();
+    _paypalEmailCtrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
+    return SingleChildScrollView(
+      padding: EdgeInsets.fromLTRB(24, 20, 24, MediaQuery.of(context).viewInsets.bottom + 24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text('Agregar método de cobro', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Agregar método de cobro', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+              IconButton(icon: const Icon(Icons.close, size: 20), onPressed: () => Navigator.pop(context)),
+            ],
+          ),
+          const SizedBox(height: 14),
           DropdownButtonFormField<String>(
-            value: _type,
+            initialValue: _type,
             items: const [
+              DropdownMenuItem(value: 'bank_ec', child: Text('Transferencia Bancaria (Ecuador)')),
+              DropdownMenuItem(value: 'binance', child: Text('Binance Pay (Pay ID)')),
               DropdownMenuItem(value: 'paypal', child: Text('PayPal')),
-              DropdownMenuItem(value: 'binance', child: Text('Binance')),
-              DropdownMenuItem(value: 'bank_ec', child: Text('Transferencia Ecuador')),
             ],
             onChanged: (v) => setState(() => _type = v!),
-            decoration: const InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12)))),
+            decoration: const InputDecoration(
+              labelText: 'Tipo de método',
+              border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+            ),
           ),
           const SizedBox(height: 12),
-          TextField(controller: _labelCtrl, decoration: const InputDecoration(labelText: 'Nombre descriptivo', border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))))),
-          const SizedBox(height: 12),
-          TextField(controller: _detail1Ctrl, decoration: InputDecoration(
-            labelText: _type == 'paypal' ? 'Email de PayPal' : _type == 'binance' ? 'Pay ID de Binance' : 'Banco',
-            border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
-          )),
+
           if (_type == 'bank_ec') ...[
+            TextField(
+              controller: _bankCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Banco (ej. Banco Pichincha, Guayaquil, etc.) *',
+                border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+              ),
+            ),
             const SizedBox(height: 12),
-            TextField(controller: _detail2Ctrl, decoration: const InputDecoration(labelText: 'Número de cuenta', border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))))),
+            DropdownButtonFormField<String>(
+              initialValue: _accountType,
+              items: const [
+                DropdownMenuItem(value: 'Ahorros', child: Text('Cuenta de Ahorros')),
+                DropdownMenuItem(value: 'Corriente', child: Text('Cuenta Corriente')),
+              ],
+              onChanged: (v) => setState(() => _accountType = v!),
+              decoration: const InputDecoration(
+                labelText: 'Tipo de Cuenta',
+                border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _accountNumberCtrl,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Número de cuenta *',
+                border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _holderCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Nombre completo del titular *',
+                border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _idNumberCtrl,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Cédula o RUC del titular *',
+                border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+              ),
+            ),
+          ] else if (_type == 'binance') ...[
+            TextField(
+              controller: _payIdCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Binance Pay ID *',
+                border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _labelCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Usuario / Alias de Binance (opcional)',
+                border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+              ),
+            ),
+          ] else if (_type == 'paypal') ...[
+            TextField(
+              controller: _paypalEmailCtrl,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(
+                labelText: 'Correo electrónico de PayPal *',
+                border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+              ),
+            ),
           ],
+
           const SizedBox(height: 20),
           ElevatedButton(
             onPressed: () {
               final details = <String, String>{};
-              if (_type == 'paypal') details['email'] = _detail1Ctrl.text;
-              if (_type == 'binance') details['payId'] = _detail1Ctrl.text;
+              String methodLabel = _labelCtrl.text.trim();
+
               if (_type == 'bank_ec') {
-                details['bank'] = _detail1Ctrl.text;
-                details['accountNumber'] = _detail2Ctrl.text;
+                if (_bankCtrl.text.trim().isEmpty || _accountNumberCtrl.text.trim().isEmpty) {
+                  return;
+                }
+                details['bank'] = _bankCtrl.text.trim();
+                details['bankName'] = _bankCtrl.text.trim();
+                details['accountType'] = _accountType;
+                details['accountNumber'] = _accountNumberCtrl.text.trim();
+                details['holderName'] = _holderCtrl.text.trim();
+                details['idNumber'] = _idNumberCtrl.text.trim();
+                if (methodLabel.isEmpty) {
+                  methodLabel = '${_bankCtrl.text.trim()} - $_accountType';
+                }
+              } else if (_type == 'binance') {
+                if (_payIdCtrl.text.trim().isEmpty) return;
+                details['payId'] = _payIdCtrl.text.trim();
+                if (methodLabel.isEmpty) {
+                  methodLabel = 'Binance Pay (${_payIdCtrl.text.trim()})';
+                }
+              } else if (_type == 'paypal') {
+                if (_paypalEmailCtrl.text.trim().isEmpty) return;
+                details['email'] = _paypalEmailCtrl.text.trim();
+                details['paypalEmail'] = _paypalEmailCtrl.text.trim();
+                if (methodLabel.isEmpty) {
+                  methodLabel = 'PayPal (${_paypalEmailCtrl.text.trim()})';
+                }
               }
-              widget.onAdd(_type, _labelCtrl.text, details);
+
+              widget.onAdd(_type, methodLabel, details);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF064E3B),
@@ -217,9 +328,8 @@ class _AddMethodSheetState extends State<_AddMethodSheet> {
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: const Text('Guardar'),
+            child: const Text('Guardar Cuenta de Cobro', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
-          const SizedBox(height: 12),
         ],
       ),
     );
