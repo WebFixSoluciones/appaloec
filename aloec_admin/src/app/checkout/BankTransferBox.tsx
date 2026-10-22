@@ -7,16 +7,10 @@ import {
   Check, 
   UploadCloud, 
   Phone, 
-  FileText, 
   CheckCircle2, 
-  AlertCircle, 
-  ArrowRight,
-  ShieldCheck,
   RefreshCw
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { storage } from '../../lib/firebase/config';
 
 export interface BankAccount {
   id: string;
@@ -106,13 +100,22 @@ export default function BankTransferBox({
     const toastId = toast.loading('Subiendo comprobante bancario...');
 
     try {
-      // 1. Upload to Firebase Storage
-      const ext = selectedFile.name.split('.').pop() || 'jpg';
-      const storagePath = `receipts/${orderId}_${Date.now()}.${ext}`;
-      const storageRef = ref(storage, storagePath);
-      
-      const uploadResult = await uploadBytes(storageRef, selectedFile);
-      const downloadUrl = await getDownloadURL(uploadResult.ref);
+      // 1. Upload via backend endpoint (bypasses Firebase client storage rules & auth restrictions)
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', selectedFile);
+      uploadFormData.append('orderId', orderId);
+
+      const uploadRes = await fetch('/api/checkout/upload-receipt', {
+        method: 'POST',
+        body: uploadFormData,
+      });
+
+      const uploadData = await uploadRes.json();
+      if (!uploadRes.ok || !uploadData.url) {
+        throw new Error(uploadData.error || 'Error al subir la imagen del comprobante.');
+      }
+
+      const downloadUrl = uploadData.url;
 
       // 2. Call backend endpoint to register receipt
       const res = await fetch('/api/checkout/bank-transfer', {
@@ -142,7 +145,6 @@ export default function BankTransferBox({
   };
 
   const handleOpenWhatsApp = async () => {
-    // Notify backend that user chose bank transfer
     try {
       await fetch('/api/checkout/bank-transfer', {
         method: 'POST',
@@ -166,23 +168,23 @@ export default function BankTransferBox({
 
   if (isSuccess) {
     return (
-      <div className="max-w-xl mx-auto my-6 p-8 bg-white border border-emerald-200 shadow-lg text-center rounded-2xl">
-        <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
+      <div className="max-w-xl mx-auto my-6 p-8 bg-[#F4FBF6] text-center rounded-2xl space-y-5">
+        <div className="w-16 h-16 bg-[#E8F5E9] text-[#008000] rounded-full flex items-center justify-center mx-auto">
           <CheckCircle2 size={36} />
         </div>
-        <h3 className="text-xl font-black text-gray-900 mb-2">¡Comprobante Recibido con Éxito!</h3>
-        <p className="text-sm text-gray-600 mb-6 leading-relaxed">
+        <h3 className="text-xl font-black text-gray-900">¡Comprobante Recibido con Éxito!</h3>
+        <p className="text-sm text-gray-600 leading-relaxed">
           Tu comprobante bancario para la factura <strong className="font-mono text-gray-900">#{invoiceNumber}</strong> ha sido enviado a nuestro equipo de validación.
         </p>
 
-        <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl text-left text-xs space-y-2 mb-6">
+        <div className="bg-white p-5 rounded-2xl text-left text-xs space-y-2.5">
           <div className="flex justify-between">
             <span className="text-gray-500">Plan:</span>
             <span className="font-bold text-gray-900">{planName}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-500">Monto:</span>
-            <span className="font-bold text-emerald-700">${formattedAmount} USD</span>
+            <span className="font-bold text-[#008000]">${formattedAmount} USD</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-500">N° Referencia:</span>
@@ -190,17 +192,17 @@ export default function BankTransferBox({
           </div>
           <div className="flex justify-between">
             <span className="text-gray-500">Estado:</span>
-            <span className="inline-block px-2 py-0.5 bg-amber-100 text-amber-800 font-bold rounded">
+            <span className="inline-block px-2.5 py-1 bg-amber-100 text-amber-900 font-bold rounded-lg text-[11px]">
               En revisión (activación en minutos)
             </span>
           </div>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-3 pt-2">
           <button
             type="button"
             onClick={handleOpenWhatsApp}
-            className="w-full py-3 bg-[#25D366] hover:bg-[#1EBE5B] text-white font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm"
+            className="w-full py-3.5 bg-[#25D366] hover:bg-[#1EBE5B] text-white font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2"
           >
             <Phone size={16} />
             Acelerar Validación por WhatsApp
@@ -216,10 +218,10 @@ export default function BankTransferBox({
   const activeAccounts = accounts.filter((a) => a.isActive !== false);
 
   return (
-    <div className="max-w-2xl mx-auto my-4 p-4 sm:p-6 bg-white border border-gray-200 rounded-2xl shadow-xs space-y-6">
+    <div className="max-w-2xl mx-auto my-4 p-5 sm:p-7 bg-white rounded-2xl space-y-6">
       {/* Header Info */}
-      <div className="border-b border-gray-100 pb-4">
-        <div className="flex items-center gap-2.5 text-emerald-800 font-extrabold text-base mb-1">
+      <div className="space-y-1">
+        <div className="flex items-center gap-2 text-[#008000] font-extrabold text-base">
           <Building2 size={20} className="text-[#008000]" />
           <span>Datos para Transferencia Bancaria (Ecuador)</span>
         </div>
@@ -229,15 +231,15 @@ export default function BankTransferBox({
         </p>
       </div>
 
-      {/* Monto destacado */}
-      <div className="bg-emerald-50 border border-emerald-200/80 p-4 rounded-xl flex items-center justify-between">
+      {/* Monto destacado - Flat ALOEC Modern */}
+      <div className="bg-[#E8F5E9] p-5 rounded-2xl flex items-center justify-between">
         <div>
           <span className="text-xs font-bold text-emerald-800 block">Total a transferir:</span>
           <span className="text-2xl font-black text-emerald-900">${formattedAmount} <span className="text-xs font-medium text-emerald-700">USD</span></span>
         </div>
         <div className="text-right">
           <span className="text-xs font-bold text-emerald-800 block">{planName}</span>
-          <span className="text-[11px] text-emerald-600">Factura #{invoiceNumber}</span>
+          <span className="text-[11px] text-emerald-700 font-medium">Factura #{invoiceNumber}</span>
         </div>
       </div>
 
@@ -248,7 +250,7 @@ export default function BankTransferBox({
         </h4>
 
         {activeAccounts.length === 0 ? (
-          <div className="p-4 border border-amber-200 bg-amber-50 text-amber-800 text-xs rounded-lg">
+          <div className="p-4 bg-amber-50 text-amber-800 text-xs rounded-xl">
             No hay cuentas bancarias activas registradas en este momento. Por favor notifica tu pago por WhatsApp.
           </div>
         ) : (
@@ -256,18 +258,18 @@ export default function BankTransferBox({
             {activeAccounts.map((acc) => (
               <div
                 key={acc.id}
-                className="p-4 bg-gray-50 border border-gray-200 rounded-xl space-y-2 hover:border-emerald-500 transition-colors"
+                className="p-5 bg-[#F8FAF9] rounded-2xl space-y-3"
               >
                 <div className="flex items-center justify-between">
                   <span className="font-extrabold text-sm text-gray-900">{acc.bankName}</span>
-                  <span className="text-[11px] font-bold px-2 py-0.5 bg-white border border-gray-200 text-gray-700 rounded uppercase">
+                  <span className="text-[11px] font-bold px-2.5 py-0.5 bg-white text-gray-700 rounded-lg uppercase">
                     Cuenta {acc.accountType}
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs pt-1">
                   {/* Account Number */}
-                  <div className="bg-white p-2 border border-gray-200 rounded flex items-center justify-between">
+                  <div className="bg-white p-3 rounded-xl flex items-center justify-between">
                     <div>
                       <span className="text-[10px] text-gray-400 block">Número de Cuenta:</span>
                       <span className="font-mono font-bold text-gray-900">{acc.accountNumber}</span>
@@ -275,15 +277,15 @@ export default function BankTransferBox({
                     <button
                       type="button"
                       onClick={() => copyToClipboard(acc.accountNumber, `num_${acc.id}`)}
-                      className="p-1.5 text-gray-500 hover:text-emerald-700 hover:bg-emerald-50 rounded transition-colors"
+                      className="p-1.5 text-gray-500 hover:text-[#008000] hover:bg-emerald-50 rounded-lg transition-colors"
                       title="Copiar número de cuenta"
                     >
-                      {copiedKey === `num_${acc.id}` ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
+                      {copiedKey === `num_${acc.id}` ? <Check size={14} className="text-[#008000]" /> : <Copy size={14} />}
                     </button>
                   </div>
 
                   {/* ID / RUC */}
-                  <div className="bg-white p-2 border border-gray-200 rounded flex items-center justify-between">
+                  <div className="bg-white p-3 rounded-xl flex items-center justify-between">
                     <div>
                       <span className="text-[10px] text-gray-400 block">Cédula / RUC:</span>
                       <span className="font-mono font-bold text-gray-900">{acc.idNumber}</span>
@@ -291,15 +293,15 @@ export default function BankTransferBox({
                     <button
                       type="button"
                       onClick={() => copyToClipboard(acc.idNumber, `id_${acc.id}`)}
-                      className="p-1.5 text-gray-500 hover:text-emerald-700 hover:bg-emerald-50 rounded transition-colors"
+                      className="p-1.5 text-gray-500 hover:text-[#008000] hover:bg-emerald-50 rounded-lg transition-colors"
                       title="Copiar identificación"
                     >
-                      {copiedKey === `id_${acc.id}` ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
+                      {copiedKey === `id_${acc.id}` ? <Check size={14} className="text-[#008000]" /> : <Copy size={14} />}
                     </button>
                   </div>
 
                   {/* Holder */}
-                  <div className="bg-white p-2 border border-gray-200 rounded flex items-center justify-between">
+                  <div className="bg-white p-3 rounded-xl flex items-center justify-between">
                     <div>
                       <span className="text-[10px] text-gray-400 block">Titular:</span>
                       <span className="font-medium text-gray-900 truncate max-w-[150px]">{acc.holderName}</span>
@@ -307,16 +309,16 @@ export default function BankTransferBox({
                     <button
                       type="button"
                       onClick={() => copyToClipboard(acc.holderName, `name_${acc.id}`)}
-                      className="p-1.5 text-gray-500 hover:text-emerald-700 hover:bg-emerald-50 rounded transition-colors"
+                      className="p-1.5 text-gray-500 hover:text-[#008000] hover:bg-emerald-50 rounded-lg transition-colors"
                       title="Copiar titular"
                     >
-                      {copiedKey === `name_${acc.id}` ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
+                      {copiedKey === `name_${acc.id}` ? <Check size={14} className="text-[#008000]" /> : <Copy size={14} />}
                     </button>
                   </div>
 
                   {/* Email */}
                   {acc.email && (
-                    <div className="bg-white p-2 border border-gray-200 rounded flex items-center justify-between">
+                    <div className="bg-white p-3 rounded-xl flex items-center justify-between">
                       <div>
                         <span className="text-[10px] text-gray-400 block">Correo para avisos:</span>
                         <span className="font-medium text-gray-900 truncate max-w-[150px]">{acc.email}</span>
@@ -324,10 +326,10 @@ export default function BankTransferBox({
                       <button
                         type="button"
                         onClick={() => copyToClipboard(acc.email, `mail_${acc.id}`)}
-                        className="p-1.5 text-gray-500 hover:text-emerald-700 hover:bg-emerald-50 rounded transition-colors"
+                        className="p-1.5 text-gray-500 hover:text-[#008000] hover:bg-emerald-50 rounded-lg transition-colors"
                         title="Copiar correo"
                       >
-                        {copiedKey === `mail_${acc.id}` ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
+                        {copiedKey === `mail_${acc.id}` ? <Check size={14} className="text-[#008000]" /> : <Copy size={14} />}
                       </button>
                     </div>
                   )}
@@ -339,26 +341,26 @@ export default function BankTransferBox({
       </div>
 
       {/* Opciones de Reporte de Pago */}
-      <div className="pt-2 border-t border-gray-100 space-y-4">
+      <div className="space-y-4 pt-2">
         <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wide">
           ¿Cómo deseas confirmar tu pago?
         </h4>
 
         {/* Opción 1: Formulario directo en pantalla */}
-        <form onSubmit={handleSubmitReceipt} className="p-4 border border-emerald-300 bg-emerald-50/30 rounded-xl space-y-3 text-xs">
-          <div className="flex items-center gap-2 text-emerald-900 font-bold text-sm">
-            <span className="h-5 w-5 bg-emerald-700 text-white rounded-full flex items-center justify-center text-xs">1</span>
+        <form onSubmit={handleSubmitReceipt} className="p-5 bg-[#F4FBF6] rounded-2xl space-y-4 text-xs">
+          <div className="flex items-center gap-2 text-emerald-950 font-bold text-sm">
+            <span className="h-5 w-5 bg-[#008000] text-white rounded-full flex items-center justify-center text-xs">1</span>
             Subir comprobante directamente aquí:
           </div>
 
           <div>
-            <label className="block font-bold text-gray-700 mb-1">
+            <label className="block font-bold text-gray-700 mb-1.5">
               Número de referencia / comprobante bancario: *
             </label>
             <input
               type="text"
               required
-              className="w-full p-2.5 bg-white border border-gray-300 rounded-lg outline-none focus:border-emerald-600 text-sm font-mono text-gray-900"
+              className="w-full p-3 bg-white rounded-xl outline-none focus:ring-2 focus:ring-[#008000] text-sm font-mono text-gray-900"
               placeholder="Ej. 00482910 o número de documento"
               value={referenceNumber}
               onChange={(e) => setReferenceNumber(e.target.value)}
@@ -367,7 +369,7 @@ export default function BankTransferBox({
           </div>
 
           <div>
-            <label className="block font-bold text-gray-700 mb-1">
+            <label className="block font-bold text-gray-700 mb-1.5">
               Foto o captura de pantalla del comprobante: *
             </label>
             <input
@@ -376,14 +378,14 @@ export default function BankTransferBox({
               accept="image/*,application/pdf"
               onChange={handleFileChange}
               disabled={uploading}
-              className="w-full p-2 bg-white border border-gray-300 rounded-lg text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-bold file:bg-emerald-100 file:text-emerald-800 hover:file:bg-emerald-200"
+              className="w-full p-2.5 bg-white rounded-xl text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#E8F5E9] file:text-emerald-900 hover:file:bg-emerald-200"
             />
           </div>
 
           {filePreview && (
-            <div className="p-2 border border-emerald-200 bg-white rounded flex items-center gap-3">
+            <div className="p-3 bg-white rounded-xl flex items-center gap-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={filePreview} alt="Vista previa" className="h-16 w-16 object-cover rounded border" />
+              <img src={filePreview} alt="Vista previa" className="h-16 w-16 object-cover rounded-lg" />
               <div className="text-[11px] text-gray-600">
                 <span className="font-bold block text-gray-900 truncate max-w-xs">{selectedFile?.name}</span>
                 <span>{(selectedFile!.size / 1024).toFixed(1)} KB</span>
@@ -394,7 +396,7 @@ export default function BankTransferBox({
           <button
             type="submit"
             disabled={uploading}
-            className="w-full py-3 bg-[#008000] hover:bg-[#006400] text-white font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
+            className="w-full py-3.5 bg-[#008000] hover:bg-[#006400] text-white font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {uploading ? (
               <>
@@ -410,26 +412,26 @@ export default function BankTransferBox({
           </button>
         </form>
 
-        {/* Separador visual */}
-        <div className="relative flex items-center justify-center my-2">
-          <div className="border-t border-gray-200 w-full"></div>
+        {/* Separador visual minimalista */}
+        <div className="relative flex items-center justify-center py-1">
+          <div className="h-[1px] bg-gray-100 w-full"></div>
           <span className="bg-white px-3 text-[11px] font-bold text-gray-400 uppercase">o también</span>
         </div>
 
         {/* Opción 2: Notificar por WhatsApp */}
-        <div className="p-4 border border-gray-200 bg-gray-50/70 rounded-xl space-y-2 text-xs">
+        <div className="p-5 bg-[#F8FAF9] rounded-2xl space-y-3 text-xs">
           <div className="flex items-center gap-2 text-gray-900 font-bold text-sm">
             <span className="h-5 w-5 bg-gray-600 text-white rounded-full flex items-center justify-center text-xs">2</span>
             Notificar compra y adjuntar comprobante por WhatsApp:
           </div>
-          <p className="text-[11px] text-gray-500">
+          <p className="text-[11px] text-gray-500 leading-relaxed">
             Si lo prefieres, puedes enviarnos el comprobante directamente a nuestro WhatsApp oficial para que un asesor te asista de inmediato.
           </p>
 
           <button
             type="button"
             onClick={handleOpenWhatsApp}
-            className="w-full py-3 bg-[#25D366] hover:bg-[#1EBE5B] text-white font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm"
+            className="w-full py-3.5 bg-[#25D366] hover:bg-[#1EBE5B] text-white font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2"
           >
             <Phone size={16} />
             Notificar mi Transferencia por WhatsApp
